@@ -1,0 +1,46 @@
+<?php
+/**
+ * Celebros
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish correct extension functionality.
+ * If you wish to customize it, please contact Celebros.
+ *
+ ******************************************************************************
+ * @category    Celebros
+ * @package     Celebros_Celexport
+ */
+namespace Celebros\Celexport\Controller\Adminhtml\Export;
+
+class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
+{
+    /**
+     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Magento\Cron\Model\Config $cronSchedule
+     */
+    public function __construct(
+        \Magento\Backend\App\Action\Context $context
+    ) {
+        parent::__construct($context);
+    }
+    
+    public function execute()
+    {
+        $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
+        
+        $isWebRun = $this->getRequest()->getParam('webadmin');
+        $model->export_celebros($this->_objectManager, $isWebRun); die;
+    }
+    
+    /**
+     * Check for is allowed
+     *
+     * @return boolean
+     */
+    protected function _isAllowed()
+    {
+        return $this->_authorization->isAllowed('Celebros_Celexport::export_menu_manual_export');
+    }
+    
+}

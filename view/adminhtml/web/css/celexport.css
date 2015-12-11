@@ -1,0 +1,32 @@
+/**
+ * @category    Celebros
+ * @package     Celebros_Celexport
+ */
+#cronlogGrid_table .col-executed_at,
+#cronlogGrid_table .col-event {
+    max-width: 50%;
+    width: 50%;
+}
+
+#crontasksGrid_table  .col-created-at,
+#crontasksGrid_table  .col-scheduled-at,
+#crontasksGrid_table  .col-executed-at,
+#crontasksGrid_table  .col-finished-at {
+    max-width: 150px;
+    width: 150px;
+}
+#crontasksGrid_table option:empty {
+    display: block;    
+}
+.entry-edit {
+    display: inline-block;
+    width: 49.5%;
+}
+#celebros_cron_settings label,
+#magento_cron_settings label{
+    width: 50%;
+}
+#celebros_cron_settings .control,
+#magento_cron_settings .control{
+    width: 48%;
+}

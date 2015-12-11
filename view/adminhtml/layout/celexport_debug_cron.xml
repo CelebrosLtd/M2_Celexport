@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+ * Celebros
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish correct extension functionality.
+ * If you wish to customize it, please contact Celebros.
+ *
+ ******************************************************************************
+ * @category    Celebros
+ * @package     Celebros_Celexport
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Celebros_Celexport::css/celexport.css"/>
+    </head> 
+    <body>
+        <referenceContainer name="content">
+            <block class="Celebros\Celexport\Block\Adminhtml\Debug\Cron\System" name="admin.celexport.system.fieldset"/>
+            <block class="Celebros\Celexport\Block\Adminhtml\Debug\Cron\Settings" name="admin.celexport.settings.fieldset"/>
+            <block class="Celebros\Celexport\Block\Adminhtml\Debug\Cron\Cron" name="admin.celexport.cron.grid">
+                <action method="setTemplate">
+                    <argument name="template" xsi:type="string">widget/grid.phtml</argument>
+                </action>
+                <action method="setGridHeader">
+                    <argument name="grid_header" xsi:type="string">Magento Cron Module Executions</argument>
+                </action>
+            </block>
+            <block class="Celebros\Celexport\Block\Adminhtml\Debug\Cron\Tasks" name="admin.celexport.tasks.grid">
+                <action method="setTemplate">
+                    <argument name="template" xsi:type="string">widget/grid.phtml</argument>
+                </action>
+                <action method="setGridHeader">
+                    <argument name="grid_header" xsi:type="string">Magento Cron Tasks</argument>
+                </action>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

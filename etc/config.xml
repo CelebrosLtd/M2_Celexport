@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+ * Celebros
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish correct extension functionality.
+ * If you wish to customize it, please contact Celebros.
+ *
+ ******************************************************************************
+ * @category    Celebros
+ * @package     Celebros_Celexport
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+    <default>
+        <celexport>
+            <export_settings>
+                <export_enabled>0</export_enabled>
+                <export_data_history>0</export_data_history>
+                <zipname>products.zip</zipname>
+                <datahistoryname>Data_History.zip</datahistoryname>
+                <delimiter>\t</delimiter>
+                <enclosed_values>"</enclosed_values>
+                <type>file</type>
+                <export_lifetime>10</export_lifetime>
+                <path>/var/celebros/export</path>
+                <global_export>0</global_export>
+                <extra_tables></extra_tables>
+                <rootcat_products_export>0</rootcat_products_export>
+            </export_settings>
+            <advanced>
+                <single_process>0</single_process>
+                <export_chunk_size>1000</export_chunk_size>
+                <export_process_limit>3</export_process_limit>
+                <memory_limit>1024</memory_limit>
+                <enable_log>1</enable_log>
+                <cronlog_lifetime>168</cronlog_lifetime>
+            </advanced>
+        </celexport>
+    </default>
+</config>

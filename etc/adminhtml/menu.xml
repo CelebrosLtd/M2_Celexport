@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+ * Celebros
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish correct extension functionality.
+ * If you wish to customize it, please contact Celebros.
+ *
+ ******************************************************************************
+ * @category    Celebros
+ * @package     Celebros_Celexport
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Backend/etc/menu.xsd">
+    <menu>
+        <add id="Celebros_Celexport::export_menu" title="Celebros" module="Celebros_Celexport" sortOrder="100" parent="Magento_Backend::system" dependsOnModule="Magento_Catalog" resource="Celebros_Celexport::export_menu"/>
+        <add id="Celebros_Celexport::export_menu_cron_debug" title="Cron Debug" module="Celebros_Celexport" sortOrder="10" parent="Celebros_Celexport::export_menu" action="celexport/debug/cron" resource="Celebros_Celexport::export_menu_cron_debug"/>
+        <add id="Celebros_Celexport::export_menu_manual_export" title="Start Manual Export" module="Celebros_Celexport" sortOrder="20" parent="Celebros_Celexport::export_menu" action="celexport/export/manual/webadmin/1" resource="Celebros_Celexport::export_menu_manual_export"/>
+        <add id="Celebros_Celexport::export_menu_cron_export" title="Manual Cron Export" module="Celebros_Celexport" sortOrder="30" parent="Celebros_Celexport::export_menu" action="celexport/export/schedule/" resource="Celebros_Celexport::export_menu_cron_export"/>
+    </menu>
+</config>
