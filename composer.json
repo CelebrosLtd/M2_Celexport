@@ -1,6 +1,6 @@
 {
     "name": "celebros/module-celexport",
-    "description": "Add automatically created price lists to your store",
+    "description": "Export Products for Celebros Service",
     "type": "magento2-module",
     "version": "1.0.0",
     "license": [
@@ -15,13 +15,5 @@
         "psr-4": {
             "Celebros\\Celexport\\": ""
         }
-    },
-    "extra": {
-        "map": [
-            [
-                "*",
-                "app/code/Celebros/Celexport"
-            ]
-        ]
     }
 }
