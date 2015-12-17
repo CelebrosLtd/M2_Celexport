@@ -15,5 +15,13 @@
         "psr-4": {
             "Celebros\\Celexport\\": ""
         }
+    },
+    "extra": {
+        "map": [
+            [
+                "*",
+                "app/code/Celebros/Celexport"
+            ]
+        ]
     }
 }
