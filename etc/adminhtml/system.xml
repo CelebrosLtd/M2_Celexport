@@ -185,7 +185,7 @@
                 <field id="info" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="1">
                     <frontend_model>Celebros\Celexport\Block\System\Config\Form\Field\Info</frontend_model>
                 </field>
-            </group> 
+            </group>
         </section>
     </system>
 </config>
