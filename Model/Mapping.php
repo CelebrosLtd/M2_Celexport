@@ -24,7 +24,7 @@ class Mapping extends \Magento\Framework\Model\AbstractModel
      */
     protected function _construct()
     {
-        $this->_init('Celebros\Celexport\Model\Resource\Mapping');
+        $this->_init('Celebros\Celexport\Model\ResourceModel\Mapping');
         $this->_mapping = $this->prepareMapping();
     }
     

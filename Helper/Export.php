@@ -15,30 +15,32 @@ use Magento\Framework\Stdlib\Datetime;
 class Export extends Data
 {
     const MIN_MEMORY_LIMIT = 256;
-    const MAIN_IMAGE_SIZE_W = 700;
-    const MAIN_IMAGE_SIZE_H = 700;
-    const SMALL_IMAGE_SIZE_W = 240;
-    const SMALL_IMAGE_SIZE_H = 300;
-    const THUMBNAIL_SIZE_W = 90;
-    const THUMBNAIL_SIZE_H = 90;
     protected $_storeId;
     protected $_objectManager;
     protected $_catalogProductMediaConfig;
+    public $images = [
+        'image' => [
+            'h' => 700,
+            'w' => 700
+        ],
+        'thumbnail' => [
+            'h' => 90,
+            'w' => 90
+        ]
+    ];
    
     public function getProductImage($product, $type = NULL)
     {
         $bImageExists = 'no_errors';
         $url = NULL;
         try {
-            switch ($type) {
-                case 'image':
-                    $url = (string)$this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, 'image', $product->getImage())->resize(self::MAIN_IMAGE_SIZE_W, self::MAIN_IMAGE_SIZE_H);
-                    break;
-                case 'thumbnail':  
-                    $url = (string)$this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, 'thumbnail', $product->getThumbnail())->resize(self::THUMBNAIL_SIZE_W, self::THUMBNAIL_SIZE_H);
-                    break;  
-                default:
-                    $url = (string)$product->getMediaConfig()->getMediaUrl($product->getImage());
+            if ($type && isset($this->images[$type])) {
+                $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
+                    ->setImageFile($product->getData($type))
+                    ->resize($this->images[$type]['w'], $this->images[$type]['h'])
+                    ->getUrl();
+            } else {
+                $url = (string)$product->getMediaConfig()->getMediaUrl($product->getImage());
             }
         } catch (Exception $e) {
             // We get here in case that there is no product image and no placeholder image is set.
@@ -164,10 +166,5 @@ class Export extends Data
         
         return $limit;
     }
-    
-    public function getClassVars()
-    {
-        return get_object_vars($this); 
-    }    
     
 }

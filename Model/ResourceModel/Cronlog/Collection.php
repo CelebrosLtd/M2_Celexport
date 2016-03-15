@@ -11,17 +11,17 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Resource;
-class Cronlog extends \Magento\Framework\Model\Resource\Db\AbstractDb
+namespace Celebros\Celexport\Model\ResourceModel\Cronlog;
+class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
-     /**
-     * Initialize resource model
+    /**
+     * Initialize resource collection
      *
      * @return void
      */
-    protected function _construct()
+    public function _construct()
     {
-        $this->_init('celebros_cronlog', 'id');
+        $this->_init('Celebros\Celexport\Model\Cronlog', 'Celebros\Celexport\Model\ResourceModel\Cronlog');
     }
-    
+
 }

@@ -10,8 +10,8 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Resource;
-class Mapping extends \Magento\Framework\Model\Resource\Db\AbstractDb
+namespace Celebros\Celexport\Model\ResourceModel;
+class Mapping extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
      /**
      * Initialize resource model
@@ -21,7 +21,6 @@ class Mapping extends \Magento\Framework\Model\Resource\Db\AbstractDb
     protected function _construct()
     {
         $this->_init('celebros_mapping', 'id');
-        /*$this->_mainTable = 'celebros_mapping';*/
     }
     
 }

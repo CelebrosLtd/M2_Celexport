@@ -11,8 +11,8 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Resource;
-class Cache extends \Magento\Framework\Model\Resource\Db\AbstractDb
+namespace Celebros\Celexport\Model\ResourceModel;
+class Cronlog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
      /**
      * Initialize resource model
@@ -21,8 +21,7 @@ class Cache extends \Magento\Framework\Model\Resource\Db\AbstractDb
      */
     protected function _construct()
     {
-        $this->_init('celebros_cache', 'cache_id');
-        /*$this->_mainTable = 'celebros_cache';*/
+        $this->_init('celebros_cronlog', 'id');
     }
     
 }

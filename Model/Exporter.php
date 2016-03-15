@@ -40,7 +40,7 @@ class Exporter
     
     public function __construct(
         \Celebros\Celexport\Helper\Export $helper,
-        \Magento\Framework\App\Resource $resource,
+        \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Framework\Shell $shell,
         \Magento\Framework\Filesystem\DirectoryList $dir
     ) {
@@ -1296,7 +1296,7 @@ class Exporter
                 }
                 
                 $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_chunk_' . $this->_exportProcessId . '_' . $i)->setContent(json_encode($chunk))->save();
-                $pids[$i] = (int)shell_exec('nohup php ' . $this->_dir->getPath('code') . '/Celebros/Celexport/Shell/Export.php ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_dir->getPath('app') . '/bootstrap.php ' . $this->_exportProcessId . ' > /dev/null & echo $!');
+                $pids[$i] = (int)shell_exec('nohup php ' . $this->_dir->getPath('app') . '/code/Celebros/Celexport/Shell/Export.php ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_dir->getPath('app') . '/bootstrap.php ' . $this->_exportProcessId . ' > /dev/null & echo $!');
                 
                 if (!$pids[$i]) {
                     $this->comments_style('error','Could not create a new system process. Please enable shell_exec in php.ini.','problem with process');

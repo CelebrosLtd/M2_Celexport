@@ -10,9 +10,9 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Resource\Mapping;
+namespace Celebros\Celexport\Model\ResourceModel\Mapping;
 
-class Collection extends \Magento\Framework\Model\Resource\Db\Collection\AbstractCollection
+class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
     /**
      * Initialize resource collection
@@ -21,7 +21,7 @@ class Collection extends \Magento\Framework\Model\Resource\Db\Collection\Abstrac
      */
     public function _construct()
     {
-        $this->_init('Celebros\Celexport\Model\Mapping', 'Celebros\Celexport\Model\Resource\Mapping');
+        $this->_init('Celebros\Celexport\Model\Mapping', 'Celebros\Celexport\Model\ResourceModel\Mapping');
     }
 
 }

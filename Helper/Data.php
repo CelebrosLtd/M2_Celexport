@@ -35,20 +35,26 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     
     /**
      * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\UrlInterface $urlBuilder
-     * @param \Magento\Framework\Code\Minifier\Adapter\Css\CssMinifier $cssMin
-     * @param \Magento\Framework\Code\Minifier\Adapter\Js\Jsmin $jsMin
+     * @param \Magento\Framework\App\Helper\Context $context,
+     * @param \Magento\Framework\UrlInterface $urlBuilder,
+     * @param \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
+     * @param \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
+     * @param \Magento\Store\Model\StoreManager $stores,
+     * @param \Magento\Framework\View\Asset\Repository $assetRepo,
+     * @param \Magento\Framework\Filesystem\DirectoryList $dir,
+     * @param \Magento\Framework\Filesystem $filesystem,
+     * @param \Magento\Framework\App\ResourceConnection $resource
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\UrlInterface $urlBuilder,
-        \Magento\Framework\Code\Minifier\Adapter\Css\CssMinifier $cssMin,
-        \Magento\Framework\Code\Minifier\Adapter\Js\Jsmin $jsMin,
+        \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
+        \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
         \Magento\Store\Model\StoreManager $stores,
         \Magento\Framework\View\Asset\Repository $assetRepo,
         \Magento\Framework\Filesystem\DirectoryList $dir,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\Framework\App\Resource $resource        
+        \Magento\Framework\App\ResourceConnection $resource        
     ) {
         $this->_urlBuilder = $urlBuilder;
         $this->_cssMin = $cssMin;

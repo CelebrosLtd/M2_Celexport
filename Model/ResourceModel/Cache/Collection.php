@@ -11,8 +11,8 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Resource\Cronlog;
-class Collection extends \Magento\Framework\Model\Resource\Db\Collection\AbstractCollection
+namespace Celebros\Celexport\Model\ResourceModel\Cache;
+class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
     /**
      * Initialize resource collection
@@ -21,7 +21,7 @@ class Collection extends \Magento\Framework\Model\Resource\Db\Collection\Abstrac
      */
     public function _construct()
     {
-        $this->_init('Celebros\Celexport\Model\Cronlog', 'Celebros\Celexport\Model\Resource\Cronlog');
+        $this->_init('Celebros\Celexport\Model\Cache', 'Celebros\Celexport\Model\ResourceModel\Cache');
     }
 
 }

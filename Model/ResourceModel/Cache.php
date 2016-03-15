@@ -11,17 +11,18 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Resource\Cache;
-class Collection extends \Magento\Framework\Model\Resource\Db\Collection\AbstractCollection
+namespace Celebros\Celexport\Model\ResourceModel;
+class Cache extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
-    /**
-     * Initialize resource collection
+     /**
+     * Initialize resource model
      *
      * @return void
      */
-    public function _construct()
+    protected function _construct()
     {
-        $this->_init('Celebros\Celexport\Model\Cache', 'Celebros\Celexport\Model\Resource\Cache');
+        $this->_init('celebros_cache', 'cache_id');
+        /*$this->_mainTable = 'celebros_cache';*/
     }
-
+    
 }

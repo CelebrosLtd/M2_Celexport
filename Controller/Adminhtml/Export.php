@@ -13,7 +13,7 @@
  */
 namespace Celebros\Celexport\Controller\Adminhtml;
 
-class Export extends \Magento\Backend\App\Action
+abstract class Export extends \Magento\Backend\App\Action
 {
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -24,4 +24,13 @@ class Export extends \Magento\Backend\App\Action
         parent::__construct($context);
     }
     
+    /**
+     * Check for is allowed
+     *
+     * @return boolean
+     */
+    protected function _isAllowed()
+    {
+        return $this->_authorization->isAllowed('Celebros_Celexport::export');
+    }
 }

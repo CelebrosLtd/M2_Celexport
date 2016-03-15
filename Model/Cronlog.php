@@ -20,7 +20,7 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
 
     protected function _construct()
     {
-        $this->_init('Celebros\Celexport\Model\Resource\Cronlog');
+        $this->_init('Celebros\Celexport\Model\ResourceModel\Cronlog');
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $this->_timezone = $objectManager->create('Magento\Framework\Stdlib\DateTime\TimezoneInterface');
         $this->helper = $objectManager->create('Celebros\Celexport\Helper\Data');

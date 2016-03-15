@@ -22,7 +22,7 @@ class Cache extends \Magento\Framework\Model\AbstractModel
      */
     protected function _construct()
     {
-        $this->_init('Celebros\Celexport\Model\Resource\Cache');
+        $this->_init('Celebros\Celexport\Model\ResourceModel\Cache');
     }
 
 }
