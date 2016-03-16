@@ -24,9 +24,9 @@
 }
 #celebros_cron_settings label,
 #magento_cron_settings label{
-    width: 46%;
+    width: 40%;
 }
 #celebros_cron_settings .control,
 #magento_cron_settings .control{
-    width: 48%;
+    width: 40%;
 }

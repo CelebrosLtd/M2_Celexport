@@ -13,6 +13,6 @@
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../lib/internal/Magento/Framework/Event/etc/events.xsd">
     <event name="default">
-        <observer name="celebros_cron_observer" instance="Celebros\Celexport\Model\Observer" method="dispatch" />
+        <observer name="celebros_cron_observer" instance="Celebros\Celexport\Observer\Cronlog" />
     </event>
 </config>

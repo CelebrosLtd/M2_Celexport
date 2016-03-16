@@ -17,7 +17,6 @@ class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
 {
     /**
      * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Cron\Model\Config $cronSchedule
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context

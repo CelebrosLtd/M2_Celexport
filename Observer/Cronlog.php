@@ -11,9 +11,11 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model;
-use Magento\Framework\App\Filesystem\DirectoryList;
-class Observer
+namespace Celebros\Celexport\Observer;
+
+use Magento\Framework\Event\ObserverInterface;
+
+class Cronlog implements ObserverInterface
 {
     /**
      * @var \Magento\Framework\App\ObjectManager
@@ -33,18 +35,10 @@ class Observer
      * @param \Magento\Framework\Event\Observer $observer
      * @return void
      */ 
-    public function dispatch($observer)
+    public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $model = $this->_objectManager->create('Celebros\Celexport\Model\Cronlog');
         $model->addNewTask($observer->getEvent()->getName());
-    }
-
-    
-    public function catalogUpdate($observer)
-    {
-        $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
-        $model->export_celebros($this->_objectManager, FALSE);
-        return $this;
     }
     
 }

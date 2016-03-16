@@ -1124,7 +1124,7 @@ class Exporter
         $collection->setStoreId($store_id)
             ->addStoreFilter($store_id)
             ->addAttributeToFilter($attribute_code, $attribute_value);
-        
+      
         $fh = $this->create_file($filename);
         if (!$fh) {
             $this->comments_style('error', 'Could not create the file ' . $filename . ' path', 'problem with file');

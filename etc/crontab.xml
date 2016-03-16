@@ -11,9 +11,9 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Cron/etc/crontab.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
-        <job name="celebros_export" instance="Celebros\Celexport\Model\Observer" method="catalogUpdate">
+        <job name="celebros_export" instance="Celebros\Celexport\Observer\CatalogUpdate" method="execute">
             <config_path>celexport/export_settings/cron_expr</config_path>
         </job>
     </group>
