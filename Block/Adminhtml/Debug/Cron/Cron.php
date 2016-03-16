@@ -25,7 +25,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
-        \Celebros\Celexport\Model\Resource\Cronlog\Collection $collection,
+        \Celebros\Celexport\Model\ResourceModel\Cronlog\Collection $collection,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
         array $data = []
     ) {

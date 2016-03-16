@@ -13,7 +13,7 @@
  */
 namespace Celebros\Celexport\Controller\Adminhtml;
 
-class Debug extends \Magento\Backend\App\Action
+abstract class Debug extends \Magento\Backend\App\Action
 {
     /**
      * Check for is allowed

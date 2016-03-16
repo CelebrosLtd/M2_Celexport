@@ -24,7 +24,7 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Cron\Model\Resource\Schedule\Collection $collection,
+        \Magento\Cron\Model\ResourceModel\Schedule\Collection $collection,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
         array $data = []
     ) {
