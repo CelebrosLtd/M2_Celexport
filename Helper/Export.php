@@ -47,7 +47,7 @@ class Export extends Data
             $bImageExists = FALSE;
         }
         
-        if (!$bImageExists || (stripos($url, 'no_selection') != FALSE) || (substr($url, -1) == '/')) {
+        if (!$bImageExists || (stripos($url, 'no_selection') !== false) || (substr($url, -1) == '/')) {
             //$this->logProfiler('Warning: '. $type . ' Error: Product ID: '. $product->getEntityId() . ', image url: ' . $url, NULL);
             return NULL;
         }
