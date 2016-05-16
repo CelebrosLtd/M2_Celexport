@@ -2,4 +2,4 @@ Celebros Export Products
 ------------------------
 1.0.0 - stable version for magento Magento 2.0.0-rc
 1.0.1 - adapted to Magento 2.0.2
-1.0.2 - fixed issue with stripos() function
+1.0.2 - fixing coding conventions when working with stripos()
