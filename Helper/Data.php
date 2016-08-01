@@ -113,7 +113,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         try {
             $this->_stores->setCurrentStore($storeId);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             
         }
     }

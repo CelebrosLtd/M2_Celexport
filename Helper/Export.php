@@ -42,7 +42,7 @@ class Export extends Data
             } else {
                 $url = (string)$product->getMediaConfig()->getMediaUrl($product->getImage());
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // We get here in case that there is no product image and no placeholder image is set.
             $bImageExists = FALSE;
         }

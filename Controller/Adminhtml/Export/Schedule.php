@@ -91,8 +91,8 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                         echo "{$jobCode} cron job are already exist at $timescheduled <br/>";
                     }
                 
-                } catch (Exception $e) {
-                    throw new Exception(__('Unable to schedule Cron'));
+                } catch (\Exception $e) {
+                    throw new \Exception(__('Unable to schedule Cron'));
                 }
                 
                 $i++;

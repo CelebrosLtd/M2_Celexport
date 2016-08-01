@@ -99,7 +99,7 @@ class Export implements \Magento\Framework\AppInterface
             $str = $this->helper->getProductsData($ids, $customAttributes, $this->_storeId, $this->_objectManager);
             fwrite($fh, $str);
             fclose($fh);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->helper->logProfiler('Caught exception: ' . $e->getMessage(), $this->_chunkId);
         }
         

@@ -261,7 +261,7 @@ class Exporter
         
         try {
             $zip = new \ZipArchive();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->comments_style('error', 'ZipArchive is not installed', 'ZipArchive is not installed');
             exit();
         }    
@@ -728,7 +728,7 @@ class Exporter
             }
             $filePath = $this->_fPath . '/' . $name . "." . $ext;
             $fh = fopen($filePath, 'wb');       
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->comments_style('error', 'Could not create export directory or files.', 'file permissions');
             $this->logProfiler('Failed creating the export files or directory.');
             return;
@@ -966,7 +966,7 @@ class Exporter
         try {
             $dh = opendir($this->_fPath);
         
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->comments_style('error', 'Could not open folder for archiving.', 'problem with folder');
             $this->logProfiler('Could not open folder for archiving.');
             return;
@@ -995,7 +995,7 @@ class Exporter
         
         try {
             $zip = new \ZipArchive();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->comments_style('error', 'ZipArchive is not installed', 'ZipArchive is not installed');
             exit();
         }    
@@ -1004,7 +1004,7 @@ class Exporter
             $fileName = basename($filePath);
             $out = $zip->addFile($filePath, basename($filePath));
             if (!$out) {
-                throw new Exception("Could not add file '{$fileName}' to_zip_file");
+                throw new \Exception("Could not add file '{$fileName}' to_zip_file");
             }
             
             $zip->close();
@@ -1013,7 +1013,7 @@ class Exporter
                 unlink($filePath);
             }
         } else {
-            throw new Exception("Could not create zip file");
+            throw new \Exception("Could not create zip file");
         }
         
         return $out;
@@ -1154,7 +1154,7 @@ class Exporter
             
             try {
                 $tableName = $this->_resource->getTableName(trim($table));
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 $this->comments_style('error', "Table '{$table}' does not exist", 'error');
                 continue;
             }
@@ -1319,7 +1319,7 @@ class Exporter
             if (!is_dir($_fPath)) {
                 try {
                     $dir = mkdir($_fPath, 0777, TRUE);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->comments_style('error', 'Could not create the directory in ' . $_fPath . ' path', 'problem with dir');
                     $this->logProfiler('Failed creating a directory at: '. $_fPath);
                     return;

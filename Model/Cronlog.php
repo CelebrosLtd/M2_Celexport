@@ -37,7 +37,7 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
         $data['event'] = $event;
         try {
             $this->setData($data)->save();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return FALSE;
         }
         
