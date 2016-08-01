@@ -22,7 +22,6 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\Data\FormFactory $formFactory
-     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone
      * @param \Celebros\Celexport\Helper\Export $helper
      * @param array $data
      */
@@ -30,12 +29,11 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Data\FormFactory $formFactory,
-        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
         \Celebros\Celexport\Helper\Export $helper,
         array $data = []
     ) {
         $this->helper = $helper;
-        $this->timezone = $timezone;
+        $this->timezone = $context->getLocaleDate();
         parent::__construct($context, $registry, $formFactory, $data);
     }
     
