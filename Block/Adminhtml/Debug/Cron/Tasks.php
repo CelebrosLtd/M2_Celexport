@@ -25,11 +25,10 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
         \Magento\Cron\Model\ResourceModel\Schedule\Collection $collection,
-        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
         array $data = []
     ) {
         $this->_collection = $collection;
-        $this->_timezone = $timezone;
+        $this->_timezone = $context->getLocaleDate();
         parent::__construct($context, $backendHelper, $data);
     }
     

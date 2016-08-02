@@ -34,9 +34,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $dirWrite;
     
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\App\Helper\Context $context,
-     * @param \Magento\Framework\UrlInterface $urlBuilder,
      * @param \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
      * @param \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
      * @param \Magento\Store\Model\StoreManager $stores,
@@ -47,7 +45,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\UrlInterface $urlBuilder,
         \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
         \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
         \Magento\Store\Model\StoreManager $stores,
@@ -56,7 +53,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Filesystem $filesystem,
         \Magento\Framework\App\ResourceConnection $resource        
     ) {
-        $this->_urlBuilder = $urlBuilder;
+        $this->_urlBuilder = $context->getUrlBuilder();
         $this->_cssMin = $cssMin;
         $this->_jsMin = $jsMin;
         $this->_stores = $stores;
