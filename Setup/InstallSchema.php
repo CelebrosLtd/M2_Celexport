@@ -39,8 +39,8 @@ class InstallSchema implements InstallSchemaInterface
         )->addColumn(
             'cache_id',
             \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-            NULL,
-            ['identity' => TRUE, 'unsigned' => TRUE, 'nullable' => FALSE, 'primary' => TRUE],
+            null,
+            ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
             'Cache Id'
         )->addColumn(
             'name',
@@ -51,7 +51,7 @@ class InstallSchema implements InstallSchemaInterface
         )->addColumn(
             'content',
             \Magento\Framework\DB\Ddl\Table::TYPE_BLOB,
-            NULL,
+            null,
             [],
             'Content'
         )->setComment(
@@ -67,8 +67,8 @@ class InstallSchema implements InstallSchemaInterface
         )->addColumn(
             'id',
             \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-            NULL,
-            ['identity' => TRUE, 'unsigned' => TRUE, 'nullable' => FALSE, 'primary' => TRUE],
+            null,
+            ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
             'Id'
         )->addColumn(
             'xml_field',
@@ -95,13 +95,13 @@ class InstallSchema implements InstallSchemaInterface
         )->addColumn(
             'id',
             \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-            NULL,
-            ['identity' => TRUE, 'unsigned' => TRUE, 'nullable' => FALSE, 'primary' => TRUE],
+            null,
+            ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
             'Id'
         )->addColumn(
             'executed_at',
             \Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
-            NULL,
+            null,
             [],
             'Executed At'
         )->addColumn(
@@ -116,7 +116,5 @@ class InstallSchema implements InstallSchemaInterface
         $installer->getConnection()->createTable($table);
         
         $installer->endSetup();
-        
     }
-    
 }

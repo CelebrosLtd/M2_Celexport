@@ -67,7 +67,7 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
         if (isset($jobs[self::CRON_GROUP])) {
             $i = 0;
             foreach ($jobs[self::CRON_GROUP] as $jobCode => $jobConfig) {
-                if (strpos($jobCode, self::CRON_JOB) === FALSE) {
+                if (strpos($jobCode, self::CRON_JOB) === false) {
                     continue;
                 }
                 
@@ -75,7 +75,7 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                 $timescheduled = strftime('%Y-%m-%d %H:%M:%S', $startTimeSeconds + $i * 60 * $SCHEDULE_EVERY_MINUTES);
                 try {
                     $lastItem = $this->_cronSchedule->getCollection()
-                        ->addFieldToFilter('job_code', 'celebros_export')                    
+                        ->addFieldToFilter('job_code', 'celebros_export')
                         ->addFieldToFilter('scheduled_at', $timescheduled)
                         ->getLastItem();
                      
@@ -90,7 +90,6 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                     } else {
                         echo "{$jobCode} cron job are already exist at $timescheduled <br/>";
                     }
-                
                 } catch (\Exception $e) {
                     throw new \Exception(__('Unable to schedule Cron'));
                 }
@@ -109,5 +108,4 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
     {
         return $this->_authorization->isAllowed('Celebros_Celexport::export_menu_cron_export');
     }
-    
 }

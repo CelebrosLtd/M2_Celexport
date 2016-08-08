@@ -27,5 +27,4 @@ class Fileftp implements \Magento\Framework\Option\ArrayInterface
             ['value' => 'ftp', 'label'  => __('FTP')],
         ];
     }
-
 }

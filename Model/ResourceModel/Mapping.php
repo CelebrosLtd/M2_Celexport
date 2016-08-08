@@ -11,6 +11,7 @@
  * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Model\ResourceModel;
+
 class Mapping extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
      /**
@@ -22,5 +23,4 @@ class Mapping extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $this->_init('celebros_mapping', 'id');
     }
-    
 }

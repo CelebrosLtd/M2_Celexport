@@ -12,8 +12,10 @@
  * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Block\System\Config\Form\Field;
+
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Framework\Setup\ModuleContextInterface;
+
 class Info extends \Magento\Config\Block\System\Config\Form\Field
 {
     const MODULE_NAME = 'Celebros_Celexport';
@@ -39,5 +41,4 @@ class Info extends \Magento\Config\Block\System\Config\Form\Field
     {
         return $this->_moduleDb->getDbVersion(self::MODULE_NAME);
     }
-    
 }

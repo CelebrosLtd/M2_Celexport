@@ -51,7 +51,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\View\Asset\Repository $assetRepo,
         \Magento\Framework\Filesystem\DirectoryList $dir,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\Framework\App\ResourceConnection $resource        
+        \Magento\Framework\App\ResourceConnection $resource
     ) {
         $this->_urlBuilder = $context->getUrlBuilder();
         $this->_cssMin = $cssMin;
@@ -64,28 +64,28 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
     
-    public function isEnabled($store = NULL)
+    public function isEnabled($store = null)
     {
         if (!$store) {
-           $store = $this->getCurrentStore();
+            $store = $this->getCurrentStore();
         }
         
         return (bool)$this->scopeConfig->getValue(self::CONFIG_ENABLED, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
     }
     
-    public function isOrdersExport($store = NULL)
+    public function isOrdersExport($store = null)
     {
         if ($store) {
-            $store = $this->getCurrentStore();    
+            $store = $this->getCurrentStore();
         }
         
         return (bool)$this->scopeConfig->getValue(self::CONFIG_EXPORT_ORDERS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
     }
     
-    public function getDataHistoryFileName($store = NULL)
+    public function getDataHistoryFileName($store = null)
     {
         if ($store) {
-            $store = $this->getCurrentStore();    
+            $store = $this->getCurrentStore();
         }
         
         return $this->scopeConfig->getValue(self::CONFIG_EXPORT_ORDERS_FILENAME, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
@@ -111,7 +111,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         try {
             $this->_stores->setCurrentStore($storeId);
         } catch (\Exception $e) {
-            
         }
     }
     
@@ -120,16 +119,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->_stores->getStore();
     }
     
-    public function getConfig($path, $store = NULL)
+    public function getConfig($path, $store = null)
     {
         if ($store) {
-            $store = $this->getCurrentStore();    
+            $store = $this->getCurrentStore();
         }
         
-        return $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store); 
+        return $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
     }
     
-    public function getExportPath($id = NULL)
+    public function getExportPath($id = null)
     {
         return $this->_dir->getRoot() . $this->scopeConfig->getValue(self::CONFIG_EXPORT_PATH) . '/' . $id;
     }
@@ -149,10 +148,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return (int)$this->scopeConfig->getValue(self::CONFIG_EXPORT_PROCESS_LIMIT);
     }
     
-    public function logProfiler($msg, $process = NULL)
+    public function logProfiler($msg, $process = null)
     {
         if (!$this->scopeConfig->getValue('celexport/advanced/enable_log')) {
-            return;   
+            return;
         }
         
         $str = date('Y-m-d H:i:s') . ' ' .  $msg . "\r\n";
@@ -171,10 +170,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     
     public function getLogFilename($processId)
     {
-        return $processId . '.log';	
+        return $processId . '.log';
     }
     
-    public function comments_style($kind,$text,$alt)
+    public function comments_style($kind, $text, $alt)
     {
         switch ($kind) {
             case 'header':
@@ -219,5 +218,4 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(self::CONFIG_CRON_LOG_LIFETIME);
     }
-    
 }

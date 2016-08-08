@@ -11,7 +11,9 @@
  * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Helper;
+
 use Magento\Framework\Stdlib\Datetime;
+
 class Export extends Data
 {
     const MIN_MEMORY_LIMIT = 256;
@@ -29,10 +31,10 @@ class Export extends Data
         ]
     ];
    
-    public function getProductImage($product, $type = NULL)
+    public function getProductImage($product, $type = null)
     {
         $bImageExists = 'no_errors';
-        $url = NULL;
+        $url = null;
         try {
             if ($type && isset($this->images[$type])) {
                 $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
@@ -44,12 +46,12 @@ class Export extends Data
             }
         } catch (\Exception $e) {
             // We get here in case that there is no product image and no placeholder image is set.
-            $bImageExists = FALSE;
+            $bImageExists = false;
         }
         
         if (!$bImageExists || (stripos($url, 'no_selection') !== false) || (substr($url, -1) == '/')) {
             //$this->logProfiler('Warning: '. $type . ' Error: Product ID: '. $product->getEntityId() . ', image url: ' . $url, NULL);
-            return NULL;
+            return null;
         }
      
         return $url;
@@ -64,7 +66,7 @@ class Export extends Data
         
         if ($product->getData("type_id") == "bundle") {
             $priceModel  = $product->getPriceModel();
-            $price = $priceModel->getTotalPrices($product, 'min', NULL, FALSE);
+            $price = $priceModel->getTotalPrices($product, 'min', null, false);
         } elseif ($product->getData("type_id") == "grouped") {
             $aProductIds = $product->getTypeInstance()->getChildrenIds($product->getEntityId());
             $prices = array();
@@ -81,7 +83,7 @@ class Export extends Data
         } elseif ($product->getData("type_id") == "giftcard") {
             $min_amount = PHP_INT_MAX;
             $product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($product->getId());
-            if ($product->getData("open_amount_min") != NULL && $product->getData("allow_open_amount")) {
+            if ($product->getData("open_amount_min") != null && $product->getData("allow_open_amount")) {
                 $min_amount = $product->getData("open_amount_min");
             }
             foreach ($product->getData("giftcard_amounts") as $amount) {
@@ -101,7 +103,7 @@ class Export extends Data
     {
         $this->_storeId = $storeId;
         $this->_objectManager = $objectManager;
-        $str = NULL;
+        $str = null;
         $this->setCurrentStore(0);
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
             ->addFieldToFilter('entity_id', array('in' => $ids))
@@ -113,7 +115,7 @@ class Export extends Data
                 $this->_resource->getTableName('cataloginventory_stock_item'),
                 'product_id=entity_id',
                 array('manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'),
-                NULL,
+                null,
                 'left'
             )->load();
         
@@ -148,7 +150,9 @@ class Export extends Data
             ));
             
             $fDel = $this->getConfig('celexport/export_settings/delimiter');
-            if ($fDel === '\t') $fDel = chr(9);
+            if ($fDel === '\t') {
+                $fDel = chr(9);
+            }
             
             $str .= "^" . implode("^" . $fDel . "^", $values) . "^" . "\r\n";
         }
@@ -166,5 +170,4 @@ class Export extends Data
         
         return $limit;
     }
-    
 }

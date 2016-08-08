@@ -24,5 +24,4 @@ abstract class Debug extends \Magento\Backend\App\Action
     {
         return $this->_authorization->isAllowed('Celebros_Celexport::export_menu_cron_debug');
     }
-    
 }

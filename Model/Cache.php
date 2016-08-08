@@ -24,5 +24,4 @@ class Cache extends \Magento\Framework\Model\AbstractModel
     {
         $this->_init('Celebros\Celexport\Model\ResourceModel\Cache');
     }
-
 }

@@ -31,12 +31,12 @@ class Mapping extends \Magento\Framework\Model\AbstractModel
     protected function prepareMapping()
     {
         $collection = $this->getCollection();
-        foreach ($collection->getData() as $item) { 
+        foreach ($collection->getData() as $item) {
             $this->_mapping[$item['xml_field']] = $item['code_field'];
         }
     }
     
-    public function getMapping($field = NULL)
+    public function getMapping($field = null)
     {
         if ($field) {
             if (isset($this->_mapping[$field])) {
@@ -52,6 +52,5 @@ class Mapping extends \Magento\Framework\Model\AbstractModel
     public function testm()
     {
         return 'sdfgsdfssdfhsdf';
-        
     }
 }

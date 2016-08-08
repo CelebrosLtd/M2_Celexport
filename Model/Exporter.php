@@ -25,15 +25,15 @@ class Exporter
     protected $_fStore_id;
     protected $_fStore;
     protected $_fileNameZip;
-    protected $_bUpload = TRUE;
-    protected $isWebRun = FALSE;
-    protected $_exportProcessId = NULL;
+    protected $_bUpload = true;
+    protected $isWebRun = false;
+    protected $_exportProcessId = null;
     protected $_resource;
-    protected $_product_entity_type_id = NULL;
-    protected $_category_entity_type_id = NULL;
+    protected $_product_entity_type_id = null;
+    protected $_category_entity_type_id = null;
     protected $_objectManager;
     protected $prod_file_name = "source_products";
-    protected $bExportProductLink = TRUE;
+    protected $bExportProductLink = true;
     protected $_dir;
     protected $_shell;
     public $helper;
@@ -58,7 +58,7 @@ class Exporter
         $this->_read = $this->_resource->getConnection('read');
     }
     
-    protected function logProfiler($msg, $process = NULL)
+    protected function logProfiler($msg, $process = null)
     {
         if (!$process) {
             $process = $this->_exportProcessId;
@@ -73,7 +73,7 @@ class Exporter
         $this->_objectManager = $objectManager;
         $this->_exportProcessId = $this->helper->getExportProcessId();
        
-        $export_start = (float) array_sum(explode(' ',microtime()));
+        $export_start = (float) array_sum(explode(' ', microtime()));
         $this->comments_style('header', 0, 0);
         $this->comments_style('icon', date('Y/m/d H:i:s') . ', Starting profile execution, please wait...', 'icon');
         $this->comments_style('icon', 'Memory Limit: ' . ini_get('memory_limit'), 'icon');
@@ -86,7 +86,7 @@ class Exporter
         
         $export_end = (float)array_sum(explode(' ', microtime()));
         
-        $this->comments_style('info','Finished profile execution within ' . round($export_end - $export_start, 3) . ' sec.','finish');
+        $this->comments_style('info', 'Finished profile execution within ' . round($export_end - $export_start, 3) . ' sec.', 'finish');
         $this->comments_style('finish', 0, 0);
     }
     
@@ -115,11 +115,11 @@ class Exporter
             $ftppath = NULL;
         }*/
         
-        $this->_fFTPHost = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_host', $store) : NULL;
-        $this->_fFTPPort = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_port', $store) : NULL;
-        $this->_fFTPUser = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_user', $store) : NULL;
-        $this->_fFTPPassword = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_password', $store) : NULL;
-        $this->_fFTPPassive = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/passive', $store) : NULL;
+        $this->_fFTPHost = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_host', $store) : null;
+        $this->_fFTPPort = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_port', $store) : null;
+        $this->_fFTPUser = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_user', $store) : null;
+        $this->_fFTPPassword = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_password', $store) : null;
+        $this->_fFTPPassive = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/passive', $store) : null;
         
         
         //feature is not in use
@@ -164,16 +164,15 @@ class Exporter
             $this->_createAndUploadOrders($zipFileName, $strResult);
             
             $this->logProfiler("Exported orders of store {$this->_fStore_id} to file {$zipFileName} . Memory peak was: " . memory_get_peak_usage());
-            $this->comments_style('success',"Exported orders of store '{$this->_fStore_id} to file {$zipFileName}'. Memory peak was: " . memory_get_peak_usage(),'orders'); 
+            $this->comments_style('success', "Exported orders of store '{$this->_fStore_id} to file {$zipFileName}'. Memory peak was: " . memory_get_peak_usage(), 'orders');
         }
-        
     }
     
     public function cleanExportDirectory()
     {
         $dir = $this->helper->getExportPath();
         if (is_dir($dir)) {
-            $files = scandir($dir); 
+            $files = scandir($dir);
             foreach ($files as $file) {
                 if (filectime($dir . '/' . $file) < strtotime('-' . $this->helper->getExportLifetime() . ' day')
                 && !in_array($file, array('.', '..'))) {
@@ -185,7 +184,9 @@ class Exporter
     
     public function comments_style($kind, $text, $alt)
     {
-        if (!$this->isWebRun) return;
+        if (!$this->isWebRun) {
+            return;
+        }
         return $this->helper->comments_style($kind, $text, $alt);
     }
     
@@ -215,8 +216,7 @@ class Exporter
         $this->_zipFile($filePath, $zipFilePath);
         
         //Ftp file
-        if($this->_fType==="ftp" && $this->_bUpload)
-        {
+        if ($this->_fType==="ftp" && $this->_bUpload) {
             $ftpRes = $this->ftpfile($zipFilePath);
             if (!$ftpRes) {
                 $this->comments_style('error', 'Could not upload ' . $zipFilePath . ' to ftp', 'Could_not_upload_to_ftp');
@@ -227,22 +227,20 @@ class Exporter
     protected function _createDir($dirPath)
     {
         if (!is_dir($dirPath)) {
-            $dir = @mkdir($dirPath, 0777, TRUE);
+            $dir = @mkdir($dirPath, 0777, true);
         }
         
         return $dirPath;
-        
     }
     
     protected function _createFile($filePath)
     {
-    if (file_exists($filePath)) {
-        unlink($filePath);
+        if (file_exists($filePath)) {
+            unlink($filePath);
         }
         
         $fh = fopen($filePath, 'ab');
         return $fh ;
-        
     }
     
     protected function _stringToTextFile($str, $fh)
@@ -252,11 +250,11 @@ class Exporter
     
     protected function _zipFile($filePath, $zipFilePath)
     {
-        $out = FALSE;
+        $out = false;
         if (!file_exists($filePath)) {
             $this->comments_style('error', 'No ' . $filePath . ' file found', 'No_txt_file_found');
             exit();
-            return FALSE;
+            return false;
         }
         
         try {
@@ -264,9 +262,9 @@ class Exporter
         } catch (\Exception $e) {
             $this->comments_style('error', 'ZipArchive is not installed', 'ZipArchive is not installed');
             exit();
-        }    
+        }
         
-        if ($zip->open($zipFilePath, \ZipArchive::CREATE) == TRUE) {
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE) == true) {
             $out = $zip->addFile($filePath, basename($filePath));
             if (!$out) {
                 $this->comments_style('error', 'Could not add ' . $filePath . 'to zip archive', 'Could_not_add_txt_file_to_zip_file');
@@ -302,7 +300,7 @@ class Exporter
             $this->comments_style('section', "Zip file name: {$this->_fileNameZip}", 'STORE');
            
             //Resetting store categories mapping.
-            $this->_categoriesForStore = FALSE;
+            $this->_categoriesForStore = false;
             $this->_categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
             
             $this->logProfiler('===============');
@@ -310,23 +308,23 @@ class Exporter
             $this->logProfiler('===============');
             $this->logProfiler("Store code: {$this->_fStore_id}, name: {$store->getName()}");
             $this->logProfiler("Zip file name: {$this->_fileNameZip}");
-            $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+            $this->logProfiler('Mem usage: ' . memory_get_usage(true));
             
-            $this->comments_style('icon', "Memory usage: " . memory_get_usage(TRUE), 'icon');
+            $this->comments_style('icon', "Memory usage: " . memory_get_usage(true), 'icon');
             $this->comments_style('icon', 'Exporting tables', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
             
             $this->logProfiler('Exporting tables');
             $this->logProfiler('----------------');
             
             $this->export_tables($store);
             
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
             
             //Only run export products if there are categories assigned to the current store view.
             if ($this->_categoriesForStore && count($this->_categoriesForStore)) {
                 $this->comments_style('icon', 'Exporting products', 'icon');
-                $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
                 
                 $this->logProfiler('Writing products file');
                 $this->logProfiler('---------------------');
@@ -335,15 +333,15 @@ class Exporter
             }
             
             //Running over the products that aren't assigned to a category separately.
-            $this->comments_style('icon', 'Exporting category-less products' , 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+            $this->comments_style('icon', 'Exporting category-less products', 'icon');
+            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
             
             $this->logProfiler('Writing category-less products file');
             $this->logProfiler('-----------------------------------');
             $this->export_categoryless_products($store);
             
-            $this->comments_style('icon', 'Creating ZIP file' , 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+            $this->comments_style('icon', 'Creating ZIP file', 'icon');
+            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
             
             $this->logProfiler('Creating ZIP file');
             $this->logProfiler('-----------------');
@@ -351,7 +349,7 @@ class Exporter
             $zipFilePath = $this->zipLargeFiles();
             
             $this->comments_style('icon', 'Checking FTP upload', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
             
             if ($this->_fType === "ftp"/* && $this->_bUpload*/) {
                 $this->comments_style('info', 'Uploading export file', 'info');
@@ -361,19 +359,19 @@ class Exporter
                     $this->logProfiler('FTP upload ERROR');
                 } else {
                     $this->logProfiler('FTP upload success');
-                } 
+                }
             } else {
                 $this->comments_style('info', 'No need to upload export file', 'info');
                 $this->logProfiler('No need to upload export file');
             }
             
-            $this->comments_style('icon', 'Finished' , 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
-            $this->comments_style('info', "Memory peek usage: " . memory_get_peak_usage(TRUE), 'info');
-            $this->comments_style('icon', date('Y/m/d H:i:s') , 'icon');
+            $this->comments_style('icon', 'Finished', 'icon');
+            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+            $this->comments_style('info', "Memory peek usage: " . memory_get_peak_usage(true), 'info');
+            $this->comments_style('icon', date('Y/m/d H:i:s'), 'icon');
             
-            $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
-            $this->logProfiler('Mem peek usage: ' . memory_get_peak_usage(TRUE));
+            $this->logProfiler('Mem usage: ' . memory_get_usage(true));
+            $this->logProfiler('Mem peek usage: ' . memory_get_peak_usage(true));
             
             //self::stopProfiling(__FUNCTION__);
             
@@ -383,7 +381,8 @@ class Exporter
         }
     }
     
-    protected function export_tables($store) {
+    protected function export_tables($store)
+    {
         /*----- catalog_eav_attribute.txt -----*/
         $table = $this->_resource->getTableName("catalog_eav_attribute");
         $query = $this->_read->select()->from(
@@ -401,7 +400,7 @@ class Exporter
         )->where('entity_type_id = ?', $this->_product_entity_type_id);
         $this->export_attributes_table($query, "attributes_lookup");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity.txt -----*/
@@ -413,13 +412,13 @@ class Exporter
             $table,
             array('entity_id', 'type_id', 'sku')
         )->joinLeft(
-            $categoryProductsTable, 
+            $categoryProductsTable,
             "`{$table}`.`entity_id` = `{$categoryProductsTable}`.`product_id`",
             array()
         )->group('entity_id');
         $this->export_table($query, "catalog_product_entity");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- disabled_products.txt -----*/
@@ -438,16 +437,16 @@ class Exporter
             'not_visible_individually_products'
         );
       
-        /*----- catalog_product_entity_varchar.txt -----*/    
-        $table = $this->_resource->getTableName("catalog_product_entity_varchar");     
+        /*----- catalog_product_entity_varchar.txt -----*/
+        $table = $this->_resource->getTableName("catalog_product_entity_varchar");
         $this->logProfiler("START {$table}");
         $sql = $this->_read->select()->from(
-            $table, 
+            $table,
             array('entity_id', 'value', 'attribute_id')
         );
         $this->export_product_att_table($sql, "catalog_product_entity_varchar");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_int.txt -----*/
@@ -459,11 +458,11 @@ class Exporter
         );
         $this->export_product_att_table($query, "catalog_product_entity_int");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_text.txt -----*/
-        $table = $this->_resource->getTableName("catalog_product_entity_text");        
+        $table = $this->_resource->getTableName("catalog_product_entity_text");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -471,11 +470,11 @@ class Exporter
         );
         $this->export_product_att_table($query, "catalog_product_entity_text");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_decimal.txt -----*/
-        $table = $this->_resource->getTableName("catalog_product_entity_decimal");     
+        $table = $this->_resource->getTableName("catalog_product_entity_decimal");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -483,7 +482,7 @@ class Exporter
         );
         $this->export_product_att_table($query, "catalog_product_entity_decimal");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_datetime.txt -----*/
@@ -495,7 +494,7 @@ class Exporter
         );
         $this->export_product_att_table($query, "catalog_product_entity_datetime");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- eav_attribute_option_value.txt -----*/
@@ -507,11 +506,11 @@ class Exporter
         );
         $this->export_table($query, "eav_attribute_option_value", array('option_id'));
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- eav_attribute_option.txt -----*/
-        $table = $this->_resource->getTableName("eav_attribute_option");       
+        $table = $this->_resource->getTableName("eav_attribute_option");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -519,11 +518,11 @@ class Exporter
         );
         $this->export_table($query, "eav_attribute_option");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_category_product.txt -----*/
-        $table = $this->_resource->getTableName("catalog_category_product");       
+        $table = $this->_resource->getTableName("catalog_category_product");
         $this->logProfiler("START {$table}");
         $categories = implode(',', $this->_getAllCategoriesForStore());
         $query = $this->_read->select()->from(
@@ -532,11 +531,11 @@ class Exporter
         )->where("`category_id` IN ({$categories})");
         $this->export_table($query, "catalog_category_product");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_category_entity.txt -----*/
-        $table = $this->_resource->getTableName("catalog_category_entity");        
+        $table = $this->_resource->getTableName("catalog_category_entity");
         $this->logProfiler("START {$table}");
         $categories = implode(',', $this->_getAllCategoriesForStore());
         $query = $this->_read->select()->from(
@@ -545,7 +544,7 @@ class Exporter
         )->where("`entity_id` IN ({$categories})");
         $this->export_table($query, "catalog_category_entity");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- category_lookup.txt -----*/
@@ -560,18 +559,18 @@ class Exporter
         ->where("`entity_id` IN ({$categories})");
         $this->export_table($query, "category_lookup", array('entity_id'));
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- disabled_categories.txt -----*/
         $this->logProfiler("START {$table}");
-        $this->exportDisabledCategories("disabled_categories");        
+        $this->exportDisabledCategories("disabled_categories");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
-        $this->logProfiler('------------------------------------');        
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
+        $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_super_link.txt -----*/
-        $table = $this->_resource->getTableName("catalog_product_super_link");     
+        $table = $this->_resource->getTableName("catalog_product_super_link");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -579,7 +578,7 @@ class Exporter
         );
         $this->export_table($query, "catalog_product_super_link");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_relation.txt -----*/
@@ -591,7 +590,7 @@ class Exporter
         );
         $this->export_table($query, "catalog_product_relation");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_super_attribute.txt -----*/
@@ -603,8 +602,8 @@ class Exporter
         );
         $this->export_table($query, "catalog_product_super_attribute");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
-        $this->logProfiler('------------------------------------');        
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
+        $this->logProfiler('------------------------------------');
        
         /*----- celebros_mapping.txt -----*/
         $table = $this->_resource->getTableName("celebros_mapping");
@@ -615,13 +614,13 @@ class Exporter
         );
         $this->export_table($query, "celebros_mapping");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE), NULL, TRUE);      
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true), null, true);
         
         
         /*----- review_entity.txt -----*/
         $table = $this->_resource->getTableName("review_entity");
         $product_entity_id = $this->_read->select()->from(
-            $table, 
+            $table,
             array('entity_id')
         )->where("`entity_code` = 'product'")
         ->query()->fetch();
@@ -633,7 +632,7 @@ class Exporter
         )->where("`entity_type` = '{$product_entity_id['entity_id']}'");
         $this->export_table($query, "review_entity", array('entity_pk_value'));
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_website.txt -----*/
@@ -645,7 +644,7 @@ class Exporter
         )->where('website_id = ?', $this->_fStore->getWebsiteId());
         $this->export_table($query, "catalog_product_website");
         $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         $this->export_extra_tables($store);
@@ -676,7 +675,7 @@ class Exporter
         fclose($fh);
     }
     
-    protected function export_table($sql, $filename, $main_fields = NULL)
+    protected function export_table($sql, $filename, $main_fields = null)
     {
         $fh = $this->create_file($filename);
         if (!$fh) {
@@ -714,7 +713,7 @@ class Exporter
             }
             
             //Run the actual process of getting each row again, this time selecting rows with the default store view.
-            $this->export_table_rows($secondSql, NULL, $fh);
+            $this->export_table_rows($secondSql, null, $fh);
         }
         
         fclose($fh);
@@ -724,10 +723,10 @@ class Exporter
     {
         try {
             if (!is_dir($this->_fPath)) {
-                $dir = mkdir($this->_fPath, 0777, TRUE);
+                $dir = mkdir($this->_fPath, 0777, true);
             }
             $filePath = $this->_fPath . '/' . $name . "." . $ext;
-            $fh = fopen($filePath, 'wb');       
+            $fh = fopen($filePath, 'wb');
         } catch (\Exception $e) {
             $this->comments_style('error', 'Could not create export directory or files.', 'file permissions');
             $this->logProfiler('Failed creating the export files or directory.');
@@ -738,7 +737,7 @@ class Exporter
     }
     
     protected function write_headers($sql, $fh)
-    {   
+    {
         $header = "^";
         $columns = $sql->getPart('columns');
         $fields = array();
@@ -789,7 +788,7 @@ class Exporter
             
             if (($rowCount%1000)==0) {
                 //$this->logProfiler("Write block start");
-                $this->write_to_file($str , $fh);
+                $this->write_to_file($str, $fh);
                 //$this->logProfiler("Write block end");
                 $str="";
             }
@@ -797,7 +796,7 @@ class Exporter
         
         if (($rowCount%1000)!=0) {
             //$this->logProfiler("Write last block start");
-            $this->write_to_file($str , $fh);
+            $this->write_to_file($str, $fh);
             //$this->logProfiler("Write last block end");
         }
         
@@ -831,7 +830,7 @@ class Exporter
         $table = array_shift($table);
         $labelTable = $this->_resource->getTableName("eav_attribute_label");
         $sql->joinLeft(
-            $labelTable, 
+            $labelTable,
             "{$table['tableName']}.`attribute_id` = `{$labelTable}`.`attribute_id` AND `{$labelTable}`.`store_id` = {$this->_fStore_id}",
             array('value')
         )->where("`{$labelTable}`.`value` IS NOT NULL")
@@ -846,7 +845,7 @@ class Exporter
             $secondSql->where("`attribute_id` NOT IN (?)", $processedRows);
         }
         
-        $this->export_table_rows($secondSql, NULL, $fh);
+        $this->export_table_rows($secondSql, null, $fh);
         
         fclose($fh);
     }
@@ -855,7 +854,7 @@ class Exporter
     {
         $fh = $this->create_file($filename);
         if (!$fh) {
-            $this->comments_style('error','Could not create the file ' . $filename . ' path','problem with file');
+            $this->comments_style('error', 'Could not create the file ' . $filename . ' path', 'problem with file');
             $this->logProfiler('Could not create the file ' . $filename . ' path');
             return;
         }
@@ -900,7 +899,7 @@ class Exporter
         $sql->order('entity_id', 'ASC');
         
         //Run the query on each row and save results to the file.
-        $this->export_table_rows($sql, NULL, $fh);
+        $this->export_table_rows($sql, null, $fh);
        
         //Prepare the second query.
         $secondSql->where('store_id = 0');
@@ -911,10 +910,10 @@ class Exporter
         $secondSql->order('entity_id', 'ASC');
         
         //Run for the second time, now with the default store view.
-        $this->export_table_rows($secondSql, NULL, $fh);
+        $this->export_table_rows($secondSql, null, $fh);
         
         fclose($fh);
-    } 
+    }
     
     protected function get_product_entity_type_id()
     {
@@ -960,12 +959,11 @@ class Exporter
     
     public function zipLargeFiles()
     {
-        $out = FALSE;
+        $out = false;
         $zipPath = $this->_fPath . '/' . $this->_fileNameZip;
         
         try {
             $dh = opendir($this->_fPath);
-        
         } catch (\Exception $e) {
             $this->comments_style('error', 'Could not open folder for archiving.', 'problem with folder');
             $this->logProfiler('Could not open folder for archiving.');
@@ -973,7 +971,7 @@ class Exporter
         }
         
         $filesToZip = array();
-        while (($item = readdir($dh)) !== FALSE && !is_null($item)) {
+        while (($item = readdir($dh)) !== false && !is_null($item)) {
             $filePath = $this->_fPath . '/' . $item;
             $ext = pathinfo($filePath, PATHINFO_EXTENSION);
             if (is_file($filePath) && ($ext == "txt" || $ext == "log")) {
@@ -986,21 +984,21 @@ class Exporter
             $out = $this->zipLargeFile($filePath, $zipPath);
         }
         
-        return $out ? $zipPath : FALSE;
+        return $out ? $zipPath : false;
     }
     
     public function zipLargeFile($filePath, $zipPath)
     {
-        $out = FALSE;
+        $out = false;
         
         try {
             $zip = new \ZipArchive();
         } catch (\Exception $e) {
             $this->comments_style('error', 'ZipArchive is not installed', 'ZipArchive is not installed');
             exit();
-        }    
+        }
         
-        if ($zip->open($zipPath, \ZipArchive::CREATE) == TRUE) {
+        if ($zip->open($zipPath, \ZipArchive::CREATE) == true) {
             $fileName = basename($filePath);
             $out = $zip->addFile($filePath, basename($filePath));
             if (!$out) {
@@ -1019,21 +1017,21 @@ class Exporter
         return $out;
     }
     
-    public function ftpfile($zipFilePath, $zipUpload = TRUE)
+    public function ftpfile($zipFilePath, $zipUpload = true)
     {
         if (!file_exists($zipFilePath)) {
             $this->comments_style('error', 'No ' . $zipFilePath . ' file found', 'No_zip_file_found');
             
-            return FALSE;
-        }   
+            return false;
+        }
         
         $ioConfig = array();
         
         if ($this->_fFTPHost != '') {
             $ioConfig['host'] = $this->_fFTPHost;
         } else {
-            $this->comments_style('error','Empty host specified','Empty_host');
-            return FALSE;
+            $this->comments_style('error', 'Empty host specified', 'Empty_host');
+            return false;
         }
         
         if ($this->_fFTPPort != '') {
@@ -1061,29 +1059,29 @@ class Exporter
         
         if (!$this->_conn) {
             $this->comments_style('error', 'Could not establish FTP connection, invalid host or port', 'invalid_ftp_host/port');
-            return FALSE;
+            return false;
         }
         if (!@ftp_login($this->_conn, $this->_config['user'], $this->_config['password'])) {
             $this->close();
             $this->comments_style('error', 'Could not establish FTP connection, invalid user name or password', 'Invalid_ftp_user_name_or_password');
-            return FALSE;
+            return false;
         }
         
-        if (!@ftp_pasv($this->_conn, TRUE)) {
+        if (!@ftp_pasv($this->_conn, true)) {
             $this->close();
-            $this->comments_style('error', 'Invalid file transfer mode','Invalid_file_transfer_mode');
-            return FALSE;
+            $this->comments_style('error', 'Invalid file transfer mode', 'Invalid_file_transfer_mode');
+            return false;
         }
         
         if ($zipUpload) {
             if (!file_exists($zipFilePath)) {
                 $this->comments_style('error', 'No ' . $zipFilePath . ' file found', 'No_zip_file_found');
-            }       
+            }
             
             $upload = @ftp_put($this->_conn, basename($zipFilePath), $zipFilePath, FTP_BINARY);
             if (!$upload) {
                  $this->comments_style('error', 'File upload failed', 'File_upload_failed');
-                 $upload=FALSE;
+                 $upload=false;
             }
         }
         
@@ -1095,7 +1093,7 @@ class Exporter
     public function uploadLog($connection)
     {
         $logfilename = $this->helper->getLogFilename($this->_exportProcessId);
-        @ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);  
+        @ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);
     }
     
     protected function get_category_is_active_attribute_id()
@@ -1190,7 +1188,7 @@ class Exporter
         }
           
         $this->export_products($sql, $this->prod_file_name, $store);
-    }  
+    }
     
     protected function export_categoryless_products($store)
     {
@@ -1202,7 +1200,7 @@ class Exporter
             LEFT JOIN (`{$categoryProductsTable}`) ON ({$table}.`entity_id` = `{$categoryProductsTable}`.`product_id`)
             LEFT JOIN (`{$catalogProductWebsite}`) ON ({$table}.`entity_id` = `{$catalogProductWebsite}`.`product_id`)
             WHERE (`{$categoryProductsTable}`.`product_id` IS NULL OR `{$categoryProductsTable}`.`category_id` NOT IN ({$this->_categoriesForStore}))
-            AND `{$catalogProductWebsite}`.`website_id` = " . $store->getWebsiteId();           
+            AND `{$catalogProductWebsite}`.`website_id` = " . $store->getWebsiteId();
             
         $this->export_products($sql, 'categoryless_products', $store);
     }
@@ -1210,10 +1208,10 @@ class Exporter
     protected function export_products($sql, $fileName, $store)
     {
         $this->comments_style('info', "Begining products export", 'info');
-        $this->comments_style('info', "Memory usage: " . memory_get_usage(TRUE), 'info');
+        $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
         
         $this->logProfiler("START export products");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $startTime = time();
         
         $fields = array('mag_id', 'price', 'image_link', 'thumbnail', 'original_product_image_link', 'type_id', 'sku', 'is_saleable', 'manage_stock', 'is_in_stock', 'qty', 'min_qty');
@@ -1268,13 +1266,13 @@ class Exporter
         $process_limit = $this->helper->getExportProcessLimit();
         $count = 0;
         
-        if (!$this->helper->getConfig('celexport/advanced/single_process')) { //print_r($chunks);die; 
+        if (!$this->helper->getConfig('celexport/advanced/single_process')) { //print_r($chunks);die;
             //$_fPath = Mage::helper('celexport')->getExportPath($this->_exportProcessId) . '/' . $this->_fStore->getWebsite()->getCode() . '/' . $this->_fStore->getCode();
             /* export with parallel processes */
-            foreach ($chunks as $chunk) {             
+            foreach ($chunks as $chunk) {
                 //Using a random number to identify data chunks in the db and the processes that process them.
                 //This is useful in case several exports (for several store views, from different cron jobs)
-                // are running in parallel. Had the identifiers been incremental, they'd be the same in each 
+                // are running in parallel. Had the identifiers been incremental, they'd be the same in each
                 // of these different exports.
                 $count += 1;
                 $i = $this->_fStore_id * 1000 + $count; //mt_rand();
@@ -1284,10 +1282,10 @@ class Exporter
                         //$counter--;
                         //if ($counter == 0) break;
                         sleep(1);
-                        $state = TRUE;
+                        $state = true;
                         foreach ($pids as $key => $pid) {
                             if (!$this->is_process_running($pid)) {
-                                $state = FALSE;
+                                $state = false;
                                 $finished[] = $key;
                                 unset($pids[$key]);
                             }
@@ -1299,7 +1297,7 @@ class Exporter
                 $pids[$i] = (int)shell_exec('nohup php ' . $this->_dir->getPath('app') . '/code/Celebros/Celexport/Shell/Export.php ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_dir->getPath('app') . '/bootstrap.php ' . $this->_exportProcessId . ' > /dev/null & echo $!');
                 
                 if (!$pids[$i]) {
-                    $this->comments_style('error','Could not create a new system process. Please enable shell_exec in php.ini.','problem with process');
+                    $this->comments_style('error', 'Could not create a new system process. Please enable shell_exec in php.ini.', 'problem with process');
                     $this->logProfiler('Failed creating a new system process for export parsing.');
                     return;
                 }
@@ -1318,7 +1316,7 @@ class Exporter
             $_fPath = $this->helper->getExportPath($this->_exportProcessId) . '/' . $this->_fStore->getWebsite()->getCode() . '/' . $this->_fStore->getCode();
             if (!is_dir($_fPath)) {
                 try {
-                    $dir = mkdir($_fPath, 0777, TRUE);
+                    $dir = mkdir($_fPath, 0777, true);
                 } catch (\Exception $e) {
                     $this->comments_style('error', 'Could not create the directory in ' . $_fPath . ' path', 'problem with dir');
                     $this->logProfiler('Failed creating a directory at: '. $_fPath);
@@ -1337,10 +1335,9 @@ class Exporter
                     $filePath = $_fPath . '/' . 'export_chunk_' . $key . "." . 'txt';
                     fwrite($fh, file_get_contents($filePath));
                     unlink($filePath);
-                    
                 } else {
                     $this->comments_style('error', 'Exception from process: ' . $status, 'problem with process');
-                    $this->ftpfile(NULL, FALSE);
+                    $this->ftpfile(null, false);
                     die;
                 }
                 
@@ -1354,9 +1351,7 @@ class Exporter
                 ->addFieldToFilter('name', 'export_custom_fields_' . $this->_exportProcessId)
                 ->getLastItem()
                 ->delete();
-                
         } else {
-        
             /* export without parallel processes */
             $customAttributes = json_decode($this->_objectManager->create('Celebros\Celexport\Model\Cache')
                 ->getCollection()
@@ -1378,7 +1373,7 @@ class Exporter
             fclose($fh);
         }
         
-        $this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+        $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler("FINISH export products");
     }
     
@@ -1402,5 +1397,4 @@ class Exporter
         exec("ps $PID", $ProcessState);
         return (count($ProcessState) >= 2);
     }
-    
 }

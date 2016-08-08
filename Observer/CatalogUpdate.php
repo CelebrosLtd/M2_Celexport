@@ -34,8 +34,7 @@ class CatalogUpdate
     public function execute($observer)
     {
         $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
-        $model->export_celebros($this->_objectManager, FALSE);
+        $model->export_celebros($this->_objectManager, false);
         return $this;
     }
-    
 }

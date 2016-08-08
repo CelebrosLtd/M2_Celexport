@@ -48,37 +48,36 @@ class Settings extends \Magento\Backend\Block\Widget\Form\Generic
         $fieldset = $form->addFieldset('magento_cron_settings', ['legend' => __('Magento Cron Settings')]);
 
         $fieldset->addField('generate_schedules_every', 'label', [
-            'name'     => 'generate_schedules_every', 
-            'label'    => __('Generate Schedules Every') . ' (' . __('index') . '/' . __('default') . ')', 
+            'name'     => 'generate_schedules_every',
+            'label'    => __('Generate Schedules Every') . ' (' . __('index') . '/' . __('default') . ')',
             'title'    => __('Generate Schedules Every') . ' (' . __('index') . '/' . __('default') . ')',
-            'required' => FALSE, 
-            'disabled' => TRUE
+            'required' => false,
+            'disabled' => true
         ]);
         
         $fieldset->addField('schedule_ahead_for', 'label', [
-            'name'     => 'schedule_ahead_for', 
-            'label'    => __('Schedule Ahead For') . ' (' . __('index') . '/' . __('default') . ')', 
+            'name'     => 'schedule_ahead_for',
+            'label'    => __('Schedule Ahead For') . ' (' . __('index') . '/' . __('default') . ')',
             'title'    => __('Schedule Ahead For') . ' (' . __('index') . '/' . __('default') . ')',
-            'required' => FALSE, 
-            'disabled' => TRUE
+            'required' => false,
+            'disabled' => true
         ]);
         
         $fieldset->addField('schedule_lifetime', 'label', [
-            'name'     => 'schedule_lifetime', 
-            'label'    => __('Missed if Not Run Within') . ' (' . __('index') . '/' . __('default') . ')', 
+            'name'     => 'schedule_lifetime',
+            'label'    => __('Missed if Not Run Within') . ' (' . __('index') . '/' . __('default') . ')',
             'title'    => __('Missed if Not Run Within') . ' (' . __('index') . '/' . __('default') . ')',
-            'required' => FALSE, 
-            'disabled' => TRUE
+            'required' => false,
+            'disabled' => true
         ]);
 
         $form->setValues($data);
         $form->setMethod('post');
-        $form->setUseContainer(FALSE);
+        $form->setUseContainer(false);
         $form->setId('magento_cron_settings');
 
         $this->setForm($form);
 
         return parent::_prepareForm();
     }
-    
 }

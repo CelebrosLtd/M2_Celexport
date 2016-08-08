@@ -60,14 +60,14 @@ class Export implements \Magento\Framework\AppInterface
         ini_set('display_errors', 1);
         ini_set('output_buffering', 0);
         
-        $bExportProductLink = TRUE;
+        $bExportProductLink = true;
         $process_error = 'no_errors';
         
         try {
             $_fPath = $this->helper->getExportPath((int)$this->_processId) . '/' . $this->_store->getWebsite()->getCode() . '/' . $this->_store->getCode();
            
             if (!is_dir($_fPath)) {
-                $dir = @mkdir($_fPath, 0777, TRUE);
+                $dir = @mkdir($_fPath, 0777, true);
             }
             
             $filePath = $_fPath . '/' . 'export_chunk_' . $this->_chunkId . "." . 'txt';
@@ -78,13 +78,13 @@ class Export implements \Magento\Framework\AppInterface
                 exit;
             }
             
-            $item = $this->_cache->getCollection()->addFieldToFilter('name', 'export_chunk_' . $this->_processId . '_' . $this->_chunkId)->getLastItem();           
-            $rows = json_decode($item->getContent()); 
+            $item = $this->_cache->getCollection()->addFieldToFilter('name', 'export_chunk_' . $this->_processId . '_' . $this->_chunkId)->getLastItem();
+            $rows = json_decode($item->getContent());
             
             $item->delete();
             $hasData = count($rows);
             
-            $str = NULL;
+            $str = null;
             $ids = array();
             foreach ($rows as $row) {
                 $ids[] = $row->entity_id;
@@ -113,5 +113,4 @@ class Export implements \Magento\Framework\AppInterface
     {
         return false;
     }
-    
 }

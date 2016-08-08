@@ -50,32 +50,32 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
         $fieldset = $form->addFieldset('celebros_cron_settings', ['legend' => __('Celebros Cron Settings')]);
         
         $fieldset->addField('current_magento_time', 'label', [
-            'name'     => 'current_magento_time', 
-            'label'    => __('Current Magento Time'), 
+            'name'     => 'current_magento_time',
+            'label'    => __('Current Magento Time'),
             'title'    => __('Current Magento Time'),
-            'required' => FALSE, 
-            'disabled' => TRUE
+            'required' => false,
+            'disabled' => true
         ]);
         
         $fieldset->addField('celebros_cron_expression', 'label', [
-            'name'     => 'celebros_cron_expression', 
-            'label'    => __('Celebros Cron Expression'), 
+            'name'     => 'celebros_cron_expression',
+            'label'    => __('Celebros Cron Expression'),
             'title'    => __('Celebros Cron Expression'),
-            'required' => FALSE, 
-            'disabled' => TRUE
+            'required' => false,
+            'disabled' => true
         ]);
         
         $fieldset->addField('celebros_cron_enabled', 'label', [
-            'name'     => 'celebros_cron_enabled', 
-            'label'    => __('Enable Cron Catalog Update'), 
+            'name'     => 'celebros_cron_enabled',
+            'label'    => __('Enable Cron Catalog Update'),
             'title'    => __('Enable Cron Catalog Update'),
-            'required' => FALSE, 
-            'disabled' => TRUE
+            'required' => false,
+            'disabled' => true
         ]);
         
         $form->setValues($data);
         $form->setMethod('post');
-        $form->setUseContainer(FALSE);
+        $form->setUseContainer(false);
         $form->setId('celebros_cron_settings');
         
         $this->setForm($form);

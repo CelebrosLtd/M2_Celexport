@@ -26,7 +26,7 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
         $this->helper = $objectManager->create('Celebros\Celexport\Helper\Data');
     }
 
-    public function addNewTask($event, $time = NULL)
+    public function addNewTask($event, $time = null)
     {
         if (!$time) {
             $data['executed_at'] = $this->_timezone->scopeTimeStamp();
@@ -38,7 +38,7 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
         try {
             $this->setData($data)->save();
         } catch (\Exception $e) {
-            return FALSE;
+            return false;
         }
         
         $this->cleanUpCollection($this->getCronlogLifetime());
@@ -48,7 +48,7 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
     {
         $tableName = $this->getCollection()->getResource()->getMainTable();
         $conn = $this->getCollection()->getConnection();
-        $conn->truncateTable($tableName);    
+        $conn->truncateTable($tableName);
     }
 
     public function cleanUpCollection($hours)
@@ -66,5 +66,4 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
     {
         return (int)$this->helper->getCronlogLifetime();
     }
-
 }

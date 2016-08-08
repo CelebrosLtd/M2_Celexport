@@ -50,8 +50,8 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
         );
         $borderTime = new \DateTime($borderTime, $adminTimeZone);
         $this->setDefaultFilter(['created-at' => ['from' => $this->_localeDate->formatDateTime($borderTime), 'locale' => 'en_US']]);
-        $this->setUseAjax(TRUE);
-        $this->setCelebrosFlag(TRUE);
+        $this->setUseAjax(true);
+        $this->setCelebrosFlag(true);
         $this->setVarNameFilter('tasks_filter');
     }
     
@@ -96,28 +96,28 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
             'header'      => __('Created At'),
             'index'       => 'created_at',
             'type'        => 'datetime',
-            'filter_time' => TRUE
+            'filter_time' => true
         ]);
         
         $this->addColumn('scheduled-at', [
             'header'      => __('Scheduled At'),
             'index'       => 'scheduled_at',
             'type'        => 'datetime',
-            'filter_time' => TRUE
+            'filter_time' => true
         ]);
         
         $this->addColumn('executed-at', [
             'header'           => __('Executed At'),
             'index'            => 'executed_at',
             'type'             => 'datetime',
-            'filter_time'      => TRUE
+            'filter_time'      => true
         ]);
         
         $this->addColumn('finished-at', [
             'header'           => __('Finished At'),
             'index'            => 'finished_at',
             'type'             => 'datetime',
-            'filter_time'      => TRUE
+            'filter_time'      => true
         ]);
         
         return parent::_prepareColumns();
@@ -128,22 +128,21 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     public function getGridUrl()
     {
-        return $this->getUrl('*/*/tasks', ['_current' => TRUE]);
+        return $this->getUrl('*/*/tasks', ['_current' => true]);
     }
     
     public function getRowUrl($row)
     {
-        return FALSE;
+        return false;
     }
     
     public function getCelebrosFlag()
     {
-        return TRUE;
+        return true;
     }
     
     public function getCelebrosOnly()
     {
         return (bool)$this->_request->getParam('celebros_only');
     }
-    
 }

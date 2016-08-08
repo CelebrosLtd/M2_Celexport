@@ -26,5 +26,4 @@ class Cron extends \Celebros\Celexport\Controller\Adminhtml\Debug
         $this->_view->getPage()->getConfig()->getTitle()->prepend(__('Celebros Cron Debug'));
         $this->_view->renderLayout();
     }
-    
 }

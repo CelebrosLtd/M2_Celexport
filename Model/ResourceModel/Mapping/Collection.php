@@ -23,5 +23,4 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     {
         $this->_init('Celebros\Celexport\Model\Mapping', 'Celebros\Celexport\Model\ResourceModel\Mapping');
     }
-
 }

@@ -12,6 +12,7 @@
  * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Model\ResourceModel;
+
 class Cronlog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
      /**
@@ -23,5 +24,4 @@ class Cronlog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $this->_init('celebros_cronlog', 'id');
     }
-    
 }

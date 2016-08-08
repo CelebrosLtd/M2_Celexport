@@ -20,5 +20,4 @@ class Crongrid extends \Celebros\Celexport\Controller\Adminhtml\Debug
         $this->_view->loadLayout();
         $this->_view->renderLayout();
     }
-    
 }

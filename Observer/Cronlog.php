@@ -34,11 +34,10 @@ class Cronlog implements ObserverInterface
     /**
      * @param \Magento\Framework\Event\Observer $observer
      * @return void
-     */ 
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $model = $this->_objectManager->create('Celebros\Celexport\Model\Cronlog');
         $model->addNewTask($observer->getEvent()->getName());
     }
-    
 }

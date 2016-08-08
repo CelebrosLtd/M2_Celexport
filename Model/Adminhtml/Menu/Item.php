@@ -47,5 +47,4 @@ class Item extends \Magento\Backend\Model\Menu\Item
         }
         return '';
     }
-
 }

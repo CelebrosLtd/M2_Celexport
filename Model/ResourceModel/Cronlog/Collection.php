@@ -12,6 +12,7 @@
  * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Model\ResourceModel\Cronlog;
+
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
     /**
@@ -23,5 +24,4 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     {
         $this->_init('Celebros\Celexport\Model\Cronlog', 'Celebros\Celexport\Model\ResourceModel\Cronlog');
     }
-
 }

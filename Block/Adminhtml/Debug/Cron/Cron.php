@@ -51,7 +51,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
         );
         $borderTime = new \DateTime($borderTime, $adminTimeZone);
         $this->setDefaultFilter(['executed-at' => ['from' => $this->_localeDate->formatDateTime($borderTime), 'locale' => 'en_US']]);
-        $this->setUseAjax(TRUE);
+        $this->setUseAjax(true);
     }
     
     /**
@@ -71,7 +71,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
             'header'           => __('Executed At'),
             'index'            => 'executed_at',
             'type'             => 'datetime',
-            'filter_time'      => TRUE
+            'filter_time'      => true
         ]);
         
         $this->addColumn('event', [
@@ -84,12 +84,11 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
     
     public function getGridUrl()
     {
-        return $this->getUrl('*/*/crongrid', ['_current' => TRUE]);
+        return $this->getUrl('*/*/crongrid', ['_current' => true]);
     }
     
     public function getRowUrl($row)
     {
-        return FALSE;
+        return false;
     }
-    
 }
