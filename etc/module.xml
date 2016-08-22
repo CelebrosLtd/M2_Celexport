@@ -12,5 +12,5 @@
  * @package     Celebros_Celexport
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Module/etc/module.xsd">
-    <module name="Celebros_Celexport" setup_version="1.0.4" />
+    <module name="Celebros_Celexport" setup_version="1.0.5" />
 </config>

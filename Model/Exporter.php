@@ -67,6 +67,24 @@ class Exporter
         $this->helper->logProfiler($msg, $process);
     }
    
+    public function getProductEntityIdName($tableName)
+    {
+        $entityIds = [
+            'entity_id',
+            'row_id'
+        ];
+        $table = $this->_resource->getTableName($tableName);
+        foreach ($entityIds as $entityId) {
+            $sql = "SHOW COLUMNS FROM `{$table}` LIKE '{$entityId}'";
+            if ($this->_resource->getConnection('read')->fetchOne($sql)) {
+                return $entityId;
+            }
+        }
+
+        return false;
+    }
+   
+   
     public function export_celebros($objectManager, $webAdmin)
     {
         $this->isWebRun = $webAdmin;
@@ -439,60 +457,65 @@ class Exporter
       
         /*----- catalog_product_entity_varchar.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_varchar");
+        $idName = $this->getProductEntityIdName("catalog_product_entity_varchar");
         $this->logProfiler("START {$table}");
         $sql = $this->_read->select()->from(
             $table,
-            array('entity_id', 'value', 'attribute_id')
+            array($idName, 'value', 'attribute_id')
         );
-        $this->export_product_att_table($sql, "catalog_product_entity_varchar");
+        $this->export_product_att_table($sql, "catalog_product_entity_varchar", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_int.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_int");
+        $idName = $this->getProductEntityIdName("catalog_product_entity_int");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'value', 'attribute_id')
+            array($idName, 'value', 'attribute_id')
         );
-        $this->export_product_att_table($query, "catalog_product_entity_int");
+        $this->export_product_att_table($query, "catalog_product_entity_int", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_text.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_text");
+        $idName = $this->getProductEntityIdName("catalog_product_entity_text");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'value', 'attribute_id')
+            array($idName, 'value', 'attribute_id')
         );
-        $this->export_product_att_table($query, "catalog_product_entity_text");
+        $this->export_product_att_table($query, "catalog_product_entity_text", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_decimal.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_decimal");
+        $idName = $this->getProductEntityIdName("catalog_product_entity_decimal");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'value', 'attribute_id')
+            array($idName, 'value', 'attribute_id')
         );
-        $this->export_product_att_table($query, "catalog_product_entity_decimal");
+        $this->export_product_att_table($query, "catalog_product_entity_decimal", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_datetime.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_datetime");
+        $idName = $this->getProductEntityIdName("catalog_product_entity_datetime");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'value', 'attribute_id')
+            array($idName, 'value', 'attribute_id')
         );
-        $this->export_product_att_table($query, "catalog_product_entity_datetime");
+        $this->export_product_att_table($query, "catalog_product_entity_datetime", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
@@ -549,15 +572,16 @@ class Exporter
         
         /*----- category_lookup.txt -----*/
         $table = $this->_resource->getTableName("catalog_category_entity_varchar");
+        $idName = $this->getProductEntityIdName("catalog_category_entity_varchar");
         $this->logProfiler("START {$table}");
         $name_attribute_id = $this->get_category_name_attribute_id();
         $categories = implode(',', $this->_getAllCategoriesForStore());
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'value')
+            array($idName, 'value')
         )->where('attribute_id = ?', $name_attribute_id)
-        ->where("`entity_id` IN ({$categories})");
-        $this->export_table($query, "category_lookup", array('entity_id'));
+        ->where("`{$idName}` IN ({$categories})");
+        $this->export_table($query, "category_lookup", array($idName));
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
@@ -850,7 +874,7 @@ class Exporter
         fclose($fh);
     }
     
-    protected function export_product_att_table($sql, $filename)
+    protected function export_product_att_table($sql, $filename, $entityIdName = 'entity_id')
     {
         $fh = $this->create_file($filename);
         if (!$fh) {
@@ -876,27 +900,27 @@ class Exporter
         $productCollection = $this->_objectManager->create('Magento\Catalog\Model\Product')
             ->getCollection()
             ->addStoreFilter($this->_fStore_id)
-            ->getColumnValues('entity_id');
+            ->getColumnValues($entityIdName);
         $relevant_products = implode(',', $productCollection);
         
         $table = $sql->getPart('from');
         $table = array_shift($table);
-        $sql->where("{$table['tableName']}.`entity_id` IN ({$relevant_products})");
+        $sql->where("{$table['tableName']}.`{$entityIdName}` IN ({$relevant_products})");
         
         $secondSql = clone($sql);
         
         $sql->where('`store_id` = ?', $this->_fStore_id);
         
         //Get list of rows with this specific store view, to exclude when running on the default store view.
-        $sql->columns('entity_id');
+        $sql->columns($entityIdName);
         $sql->columns('attribute_id');
         $query = $sql->query();
         $processedRows = array();
         while ($row = $query->fetch()) {
-            $processedRows[] = $row['attribute_id'] . '-' . $row['entity_id'];
+            $processedRows[] = $row['attribute_id'] . '-' . $row[$entityIdName];
         }
         $sql->setPart('columns', $columns);
-        $sql->order('entity_id', 'ASC');
+        $sql->order($entityIdName, 'ASC');
         
         //Run the query on each row and save results to the file.
         $this->export_table_rows($sql, null, $fh);
@@ -904,10 +928,10 @@ class Exporter
         //Prepare the second query.
         $secondSql->where('store_id = 0');
         if (count($processedRows)) {
-            $secondSql->where("CONCAT(`attribute_id`, '-', `entity_id`) NOT IN (?)", $processedRows);
+            $secondSql->where("CONCAT(`attribute_id`, '-', `{$entityIdName}`) NOT IN (?)", $processedRows);
         }
         
-        $secondSql->order('entity_id', 'ASC');
+        $secondSql->order($entityIdName, 'ASC');
         
         //Run for the second time, now with the default store view.
         $this->export_table_rows($secondSql, null, $fh);
