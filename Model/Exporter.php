@@ -1238,10 +1238,15 @@ class Exporter
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $startTime = time();
         
-        $fields = array('mag_id', 'price', 'image_link', 'thumbnail', 'original_product_image_link', 'type_id', 'sku', 'is_saleable', 'manage_stock', 'is_in_stock', 'qty', 'min_qty');
+        $fields = array('mag_id', 'price', 'type_id', 'sku', 'is_saleable', 'manage_stock', 'is_in_stock', 'qty', 'min_qty');
         
         if ($this->bExportProductLink) {
             $fields[] = 'link';
+        }
+        
+        $imageTypes = $this->helper->getImageTypes($this->_objectManager);
+        foreach ($imageTypes as $imgType) {
+            $fields[] = (string)$imgType['label'];
         }
         
         $mapping = $this->_objectManager->create('Celebros\Celexport\Model\Mapping');

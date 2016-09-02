@@ -28,6 +28,9 @@
                 <extra_tables></extra_tables>
                 <rootcat_products_export>0</rootcat_products_export>
             </export_settings>
+            <image_settings>
+                <image_types>image,thumbnail</image_types>
+            </image_settings>
             <advanced>
                 <single_process>0</single_process>
                 <export_chunk_size>1000</export_chunk_size>

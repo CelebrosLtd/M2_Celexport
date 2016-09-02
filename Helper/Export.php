@@ -25,6 +25,10 @@ class Export extends Data
             'h' => 700,
             'w' => 700
         ],
+        'small_image' => [
+            'h' => 120,
+            'w' => 120
+        ],
         'thumbnail' => [
             'h' => 90,
             'w' => 90
@@ -36,7 +40,7 @@ class Export extends Data
         $bImageExists = 'no_errors';
         $url = null;
         try {
-            if ($type && isset($this->images[$type])) {
+            if ($type && $type != 'original' && isset($this->images[$type])) {
                 $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
                     ->setImageFile($product->getData($type))
                     ->resize($this->images[$type]['w'], $this->images[$type]['h'])
@@ -109,7 +113,7 @@ class Export extends Data
             ->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($storeId)
             ->addStoreFilter($storeId)
-            ->addAttributeToSelect(array('sku', 'price', 'image', 'thumbnail', 'type', 'is_salable'))
+            ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
             ->addAttributeToSelect($customAttributes)
             ->joinTable(
                 $this->_resource->getTableName('cataloginventory_stock_item'),
@@ -124,9 +128,6 @@ class Export extends Data
             $values = array(
                 "id"                          => $product->getEntityId(),
                 "price"                       => $this->getCalculatedPrice($product),
-                "image_link"                  => $this->getProductImage($product, 'image'),
-                "thumbnail"                   => $this->getProductImage($product, 'thumbnail'),
-                "original_product_image_link" => $this->getProductImage($product),
                 "type_id"                     => $product->getTypeId(),
                 "product_sku"                 => $product->getSku(),
                 "is_salable"                  => $product->isSaleable() ? "1" : "0",
@@ -137,6 +138,11 @@ class Export extends Data
                 "link"                        => $product->getProductUrl()
             );
 
+            $imageTypes = $this->getImageTypes($this->_objectManager);         
+            foreach ($imageTypes as $imgType) {
+                $values[(string)$imgType['label']] = $this->getProductImage($product, $imgType['value']);              
+            }
+            
             //Process custom attributes.
             /*foreach ($customAttributes as $customAttribute) {
                 $values[$customAttribute] = ($product->getData($customAttribute) == "") ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
@@ -158,6 +164,19 @@ class Export extends Data
         }
         
         return $str;
+    }
+    
+    public function getImageTypes($objectManager)
+    {
+        $avTypes = $this->getConfig('celexport/image_settings/image_types');
+        $imageTypes = $objectManager->create('Celebros\Celexport\Model\Config\Source\Images')->toOptionArray();
+        foreach ($imageTypes as $key => $imageType) {
+            if (!in_array($imageType['value'], explode(',', $avTypes))) {
+                unset($imageTypes[$key]);
+            }
+        }
+        
+        return $imageTypes;
     }
     
     public function getMemoryLimit()
