@@ -11,3 +11,5 @@ Celebros Export Products
 1.0.5 - compability with magento 2.1.0EE added (row_id instead of entity_id for some tables)
 
 1.1.0 - images managment feature added to plugin settings
+
+1.1.1 - technical fixes

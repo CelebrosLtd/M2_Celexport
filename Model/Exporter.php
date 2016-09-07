@@ -1086,13 +1086,13 @@ class Exporter
             return false;
         }
         if (!@ftp_login($this->_conn, $this->_config['user'], $this->_config['password'])) {
-            $this->close();
+            $this->ftpClose();
             $this->comments_style('error', 'Could not establish FTP connection, invalid user name or password', 'Invalid_ftp_user_name_or_password');
             return false;
         }
         
         if (!@ftp_pasv($this->_conn, true)) {
-            $this->close();
+            $this->ftpClose();
             $this->comments_style('error', 'Invalid file transfer mode', 'Invalid_file_transfer_mode');
             return false;
         }
@@ -1425,5 +1425,10 @@ class Exporter
     {
         exec("ps $PID", $ProcessState);
         return (count($ProcessState) >= 2);
+    }
+    
+    public function ftpClose()
+    {
+        return ftp_close($this->_conn);
     }
 }

@@ -11,7 +11,7 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Backend/etc/menu.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
         <add id="Celebros_Celexport::export_menu" title="Celebros" module="Celebros_Celexport" sortOrder="100" parent="Magento_Backend::system" dependsOnModule="Magento_Catalog" resource="Celebros_Celexport::export_menu"/>
         <add id="Celebros_Celexport::export_menu_cron_debug" title="Cron Debug" module="Celebros_Celexport" sortOrder="10" parent="Celebros_Celexport::export_menu" action="celexport/debug/cron" resource="Celebros_Celexport::export_menu_cron_debug"/>

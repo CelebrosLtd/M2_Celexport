@@ -11,7 +11,7 @@
  * @category    Celebros
  * @package     Celebros_Celexport
 -->
-<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/layout_generic.xsd">
+<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/layout_generic.xsd">
     <container name="root" label="Root">
         <block class="Celebros\Celexport\Block\Adminhtml\Debug\Cron\Cron" name="admin.celexport.cron.grid">
             <action method="setTemplate">
