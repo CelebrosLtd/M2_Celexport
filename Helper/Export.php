@@ -97,7 +97,11 @@ class Export extends Data
             }
             $price =  $min_amount;
         } else {
-            $price = $product->getFinalPrice();
+            try {
+                $price = $product->getFinalPrice();
+            } catch (\Exception $e) {
+                $price = 0;
+            }
         }
        
         return number_format($price, 2, ".", "");

@@ -1201,7 +1201,7 @@ class Exporter
         $categoryProductsTable = $this->_resource->getTableName("catalog_category_product");
         $catalogProductWebsite = $this->_resource->getTableName("catalog_product_website");
         $rootCategoryId = $store->getRootCategoryId();
-        $sql = "SELECT DISTINCT(entity_id), type_id, sku FROM {$table}
+        $sql = "SELECT DISTINCT(`{$table}`.`entity_id`), type_id, sku FROM {$table}
             LEFT JOIN (`{$categoryProductsTable}`) ON (`{$categoryProductsTable}`.`category_id` IN ({$this->_categoriesForStore}))
             LEFT JOIN (`{$catalogProductWebsite}`) ON ({$table}.`entity_id` = `{$catalogProductWebsite}`.`product_id`)
             WHERE {$table}.`entity_id` = `{$categoryProductsTable}`.`product_id`
@@ -1220,7 +1220,7 @@ class Exporter
         $categoryProductsTable = $this->_resource->getTableName("catalog_category_product");
         $catalogProductWebsite = $this->_resource->getTableName("catalog_product_website");
         $rootCategoryId = $this->_fStore->getRootCategoryId();
-        $sql = "SELECT DISTINCT(entity_id), type_id, sku FROM {$table}
+        $sql = "SELECT DISTINCT(`{$table}`.`entity_id`), type_id, sku FROM {$table}
             LEFT JOIN (`{$categoryProductsTable}`) ON ({$table}.`entity_id` = `{$categoryProductsTable}`.`product_id`)
             LEFT JOIN (`{$catalogProductWebsite}`) ON ({$table}.`entity_id` = `{$catalogProductWebsite}`.`product_id`)
             WHERE (`{$categoryProductsTable}`.`product_id` IS NULL OR `{$categoryProductsTable}`.`category_id` NOT IN ({$this->_categoriesForStore}))
