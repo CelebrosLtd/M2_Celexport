@@ -148,9 +148,9 @@ class Export extends Data
             }
             
             //Process custom attributes.
-            /*foreach ($customAttributes as $customAttribute) {
+            foreach ($customAttributes as $customAttribute) {
                 $values[$customAttribute] = ($product->getData($customAttribute) == "") ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
-            }*/
+            }
             
             //Dispatching an event so that custom modules would be able to extend the functionality of the export,
             // by adding their own fields to the products export file.
