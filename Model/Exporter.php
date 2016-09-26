@@ -1408,17 +1408,21 @@ class Exporter
     
     protected function _getCustomAttributes()
     {
-        $eav_attributes = $this->_resource->getTableName("eav_attribute");
-        $catalog_eav_attribute = $this->_resource->getTableName("catalog_eav_attribute");
-        $sql = "SELECT `attribute_code` FROM `{$eav_attributes}` 
-            LEFT JOIN `{$catalog_eav_attribute}` ON `{$catalog_eav_attribute}`.`attribute_id` = `{$eav_attributes}`.`attribute_id`
-            WHERE `backend_model` IS NOT NULL 
-                AND NOT `backend_model` = '' 
-                AND `source_model` IS NOT NULL 
-                AND NOT `source_model` = ''
-                AND (`is_searchable` = 1 OR `is_filterable` = 1)";
-        $stm = $this->_resource->getConnection('read')->query($sql);
-        return $stm->fetchAll();
+        if ($this->helper->isCustomAttributesEnabled()) {
+            $eav_attributes = $this->_resource->getTableName("eav_attribute");
+            $catalog_eav_attribute = $this->_resource->getTableName("catalog_eav_attribute");
+            $sql = "SELECT `attribute_code` FROM `{$eav_attributes}` 
+                LEFT JOIN `{$catalog_eav_attribute}` ON `{$catalog_eav_attribute}`.`attribute_id` = `{$eav_attributes}`.`attribute_id`
+                WHERE `backend_model` IS NOT NULL 
+                    AND NOT `backend_model` = '' 
+                    AND `source_model` IS NOT NULL 
+                    AND NOT `source_model` = ''
+                    AND (`is_searchable` = 1 OR `is_filterable` = 1)";
+            $stm = $this->_resource->getConnection('read')->query($sql);
+            return $stm->fetchAll();
+        }
+        
+        return [];
     }
     
     protected function is_process_running($PID)

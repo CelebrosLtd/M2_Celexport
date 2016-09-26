@@ -27,6 +27,7 @@
                 <global_export>0</global_export>
                 <extra_tables></extra_tables>
                 <rootcat_products_export>0</rootcat_products_export>
+                <custom_attributes>1</custom_attributes>
             </export_settings>
             <image_settings>
                 <image_types>image,thumbnail</image_types>

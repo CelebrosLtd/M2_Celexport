@@ -12,7 +12,8 @@
  */
 namespace Celebros\Celexport\Helper;
 
-use Magento\Framework\Stdlib\Datetime;
+use \Magento\Framework\Stdlib\Datetime;
+use \Magento\Store\Model\ScopeInterface;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -24,6 +25,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_CHUNK_SIZE = 'celexport/advanced/export_chunk_size';
     const CONFIG_EXPORT_PROCESS_LIMIT = 'celexport/advanced/export_process_limit';
     const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
+    const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
     protected $_urlBuilder;
     public $_cssMin;
     public $_jsMin;
@@ -217,5 +219,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getCronlogLifetime()
     {
         return (int)$this->scopeConfig->getValue(self::CONFIG_CRON_LOG_LIFETIME);
+    }
+    
+    public function isCustomAttributesEnabled($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::CONFIG_CUSTOM_ATTRIBUTES,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 }
