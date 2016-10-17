@@ -61,46 +61,74 @@ class Export extends Data
         return $url;
     }
     
+    public function getIndexedPrice($product)
+    {
+        $type = $product->getTypeId();
+        switch ($type) {
+            case 'configurable':
+                $price = $product->getMinPrice();
+                break;
+            case 'grouped':
+                $price = $product->getMinPrice();
+                break;
+            case 'bundle':
+                $price = $product->getMinPrice();
+                break;
+            default:
+                $price = $product->getFinalPrice();
+        }
+        
+        return $price; 
+    }
+    
     public function getCalculatedPrice($product)
     {
-        $product = $this->_objectManager->create('Magento\Catalog\Model\Product')
-            ->setStoreId($this->_storeId)
-            ->load($product->getEntityId());
-        $price = "";
+        $price = null;
+        if ($this->useIndexedPrices()) {
+            $price = $this->getIndexedPrice($product);
+        }
         
-        if ($product->getData("type_id") == "bundle") {
-            $priceModel  = $product->getPriceModel();
-            $price = $priceModel->getTotalPrices($product, 'min', null, false);
-        } elseif ($product->getData("type_id") == "grouped") {
-            $aProductIds = $product->getTypeInstance()->getChildrenIds($product->getEntityId());
-            $prices = array();
-            foreach ($aProductIds as $ids) {
-                foreach ($ids as $id) {
-                    $aProduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($id);
-                    if ($aProduct->isInStock()) {
-                        $prices[] = $aProduct->getPriceModel()->getFinalPrice(null, $aProduct, true);
+        if (!$price) {
+            if ($product->getData("type_id") == "bundle") {
+                $product = $this->_objectManager->create('Magento\Catalog\Model\Product')
+                    ->setStoreId($this->_storeId)
+                    ->load($product->getEntityId());
+                $priceModel  = $product->getPriceModel();
+                $price = $priceModel->getTotalPrices($product, 'min', null, false);
+            } elseif ($product->getData("type_id") == "grouped") {
+                $product = $this->_objectManager->create('Magento\Catalog\Model\Product')
+                    ->setStoreId($this->_storeId)
+                    ->load($product->getEntityId());
+                $aProductIds = $product->getTypeInstance()->getChildrenIds($product->getEntityId());
+                $prices = array();
+                foreach ($aProductIds as $ids) {
+                    foreach ($ids as $id) {
+                        $aProduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($id);
+                        if ($aProduct->isInStock()) {
+                            $prices[] = $aProduct->getPriceModel()->getFinalPrice(null, $aProduct, true);
+                        }
                     }
                 }
-            }
-            asort($prices);
-            $price =  array_shift($prices);
-        } elseif ($product->getData("type_id") == "giftcard") {
-            $min_amount = PHP_INT_MAX;
-            $product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($product->getId());
-            if ($product->getData("open_amount_min") != null && $product->getData("allow_open_amount")) {
-                $min_amount = $product->getData("open_amount_min");
-            }
-            foreach ($product->getData("giftcard_amounts") as $amount) {
-                if ($min_amount > $amount["value"]) {
-                    $min_amount = $amount["value"];
+                asort($prices);
+                $price =  array_shift($prices);
+            } elseif ($product->getData("type_id") == "giftcard") {
+                $min_amount = PHP_INT_MAX;
+                $product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($product->getId());
+                if ($product->getData("open_amount_min") != null && $product->getData("allow_open_amount")) {
+                    $min_amount = $product->getData("open_amount_min");
                 }
-            }
-            $price =  $min_amount;
-        } else {
-            try {
-                $price = $product->getFinalPrice();
-            } catch (\Exception $e) {
-                $price = 0;
+                foreach ($product->getData("giftcard_amounts") as $amount) {
+                    if ($min_amount > $amount["value"]) {
+                        $min_amount = $amount["value"];
+                    }
+                }
+                $price =  $min_amount;
+            } else {
+                try {
+                    $price = $product->getFinalPrice();
+                } catch (\Exception $e) {
+                    $price = 0;
+                }
             }
         }
        
@@ -119,6 +147,7 @@ class Export extends Data
             ->addStoreFilter($storeId)
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
             ->addAttributeToSelect($customAttributes)
+            ->addPriceData()
             ->joinTable(
                 $this->_resource->getTableName('cataloginventory_stock_item'),
                 'product_id=entity_id',

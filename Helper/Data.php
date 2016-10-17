@@ -24,6 +24,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_ORDERS_FILENAME = 'celexport/export_settings/datahistoryname';
     const CONFIG_EXPORT_CHUNK_SIZE = 'celexport/advanced/export_chunk_size';
     const CONFIG_EXPORT_PROCESS_LIMIT = 'celexport/advanced/export_process_limit';
+    const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
     const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
     const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
     protected $_urlBuilder;
@@ -148,6 +149,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getExportProcessLimit()
     {
         return (int)$this->scopeConfig->getValue(self::CONFIG_EXPORT_PROCESS_LIMIT);
+    }
+    
+    public function useIndexedPrices()
+    {
+        return (int)$this->scopeConfig->getValue(self::CONFIG_EXPORT_INDEXED_PRICES);
     }
     
     public function logProfiler($msg, $process = null)
