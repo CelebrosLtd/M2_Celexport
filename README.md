@@ -24,3 +24,4 @@ Celebros Export Products
 
 1.2.0 - enable/disable custom attributes has been added to plugin settings in admin panel
 1.2.1 - ability to use indexed prices added to increase export speed
+1.2.2 - trouble with category names for magento 2.1 fixed

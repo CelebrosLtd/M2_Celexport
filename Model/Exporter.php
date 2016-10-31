@@ -572,16 +572,9 @@ class Exporter
         
         /*----- category_lookup.txt -----*/
         $table = $this->_resource->getTableName("catalog_category_entity_varchar");
-        $idName = $this->getProductEntityIdName("catalog_category_entity_varchar");
         $this->logProfiler("START {$table}");
-        $name_attribute_id = $this->get_category_name_attribute_id();
-        $categories = implode(',', $this->_getAllCategoriesForStore());
-        $query = $this->_read->select()->from(
-            $table,
-            array($idName, 'value')
-        )->where('attribute_id = ?', $name_attribute_id)
-        ->where("`{$idName}` IN ({$categories})");
-        $this->export_table($query, "category_lookup", array($idName));
+        $categories = $this->_getAllCategoriesForStore($this->getProductEntityIdName($table));
+        $this->exportLookupCategories("category_lookup", $categories);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
@@ -695,6 +688,29 @@ class Exporter
             }
         }
         
+        $this->write_to_file($str, $fh);
+        fclose($fh);
+    }
+    
+    protected function exportLookupCategories($filename, $categoriesIds = array())
+    {
+        $categories = $this->_objectManager->create('Magento\Catalog\Model\Category')
+            ->getCollection()
+            ->addAttributeToSelect(['entity_id','name'])
+            ->addFieldToFilter('row_id', ['in' => $categoriesIds]);
+
+        $fh = $this->create_file($filename);
+        if (!$fh) {
+            $this->comments_style('error', 'Could not create the file ' . $filename . ' path', 'problem with file');
+            $this->logProfiler('Could not create the file ' . $filename . ' path');
+            return;
+        }
+
+        $str = "^entity_id^" . $this->_fDel . "^value^\r\n";
+        foreach ($categories as $category) {
+            $str .= "^" . $category->getEntityId() . "^" . $this->_fDel . "^" . $category->getName() . "^" . "\r\n";
+        }
+
         $this->write_to_file($str, $fh);
         fclose($fh);
     }
@@ -959,10 +975,10 @@ class Exporter
         return $this->_resource->getConnection('read')->fetchOne($sql);
     }
     
-    protected function _getAllCategoriesForStore()
+    protected function _getAllCategoriesForStore($field = 'entity_id')
     {
         $table = $this->_resource->getTableName("catalog_category_entity");
-        $sql2 = $this->_read->select()->from($table, array('entity_id', 'path'));
+        $sql2 = $this->_read->select()->from($table, array($field, 'path'));
         
         $results = $this->_read->fetchPairs($sql2);
         $rootCategoryId = $this->_fStore->getRootCategoryId();
@@ -977,7 +993,7 @@ class Exporter
                 $categories[] = $entity_id;
             }
         }
-     
+        
         return $categories;
     }
     
