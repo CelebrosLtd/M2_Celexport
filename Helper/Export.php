@@ -140,7 +140,7 @@ class Export extends Data
         $this->_storeId = $storeId;
         $this->_objectManager = $objectManager;
         $str = null;
-        $this->setCurrentStore(0);
+        $this->setCurrentStore($this->_storeId);
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
             ->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($storeId)
@@ -154,9 +154,8 @@ class Export extends Data
                 array('manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'),
                 null,
                 'left'
-            )->load();
+            );
         
-        $this->setCurrentStore($this->_storeId);
         foreach ($collection as $product) {
             $values = array(
                 "id"                          => $product->getEntityId(),
@@ -168,7 +167,7 @@ class Export extends Data
                 "is_in_stock"                 => $product->getIsInStock() ? "1" : "0",
                 "qty"                         => (int)$product->getQty(),
                 "min_qty"                     => (int)$product->getMinSaleQty(),
-                "link"                        => $product->getProductUrl()
+                "link"                        => $product->getUrlModel()->getUrl($product)
             );
 
             $imageTypes = $this->getImageTypes($this->_objectManager);         
@@ -196,6 +195,7 @@ class Export extends Data
             $str .= "^" . implode("^" . $fDel . "^", $values) . "^" . "\r\n";
         }
         
+        $this->setCurrentStore(0);
         return $str;
     }
     
