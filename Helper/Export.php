@@ -41,10 +41,14 @@ class Export extends Data
         $url = null;
         try {
             if ($type && $type != 'original' && isset($this->images[$type])) {
-                $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
-                    ->setImageFile($product->getData($type))
-                    ->resize($this->images[$type]['w'], $this->images[$type]['h'])
-                    ->getUrl();
+                if ($product->getData($type) != 'no_selection') {
+                    $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
+                        ->setImageFile($product->getData($type))
+                        ->resize($this->images[$type]['w'], $this->images[$type]['h'])
+                        ->getUrl();
+                } else {
+                    $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->getDefaultPlaceholderUrl($type);
+                }
             } else {
                 $url = (string)$product->getMediaConfig()->getMediaUrl($product->getImage());
             }
@@ -57,7 +61,7 @@ class Export extends Data
             //$this->logProfiler('Warning: '. $type . ' Error: Product ID: '. $product->getEntityId() . ', image url: ' . $url, NULL);
             return null;
         }
-     
+        
         return $url;
     }
     
