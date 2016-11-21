@@ -23,3 +23,5 @@ Celebros Export Products
 1.2.3 - technical fixes
 
 1.2.4 - placeholder url fixed
+
+1.2.5 - issue with row_id for community edition fixed

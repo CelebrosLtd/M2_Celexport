@@ -70,8 +70,8 @@ class Exporter
     public function getProductEntityIdName($tableName)
     {
         $entityIds = [
-            'entity_id',
-            'row_id'
+            'row_id',
+            'entity_id'
         ];
         $table = $this->_resource->getTableName($tableName);
         foreach ($entityIds as $entityId) {
@@ -457,7 +457,7 @@ class Exporter
       
         /*----- catalog_product_entity_varchar.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_varchar");
-        $idName = $this->getProductEntityIdName("catalog_product_entity_varchar");
+        $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
         $sql = $this->_read->select()->from(
             $table,
@@ -470,7 +470,7 @@ class Exporter
         
         /*----- catalog_product_entity_int.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_int");
-        $idName = $this->getProductEntityIdName("catalog_product_entity_int");
+        $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -483,7 +483,7 @@ class Exporter
         
         /*----- catalog_product_entity_text.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_text");
-        $idName = $this->getProductEntityIdName("catalog_product_entity_text");
+        $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -496,7 +496,7 @@ class Exporter
         
         /*----- catalog_product_entity_decimal.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_decimal");
-        $idName = $this->getProductEntityIdName("catalog_product_entity_decimal");
+        $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -509,7 +509,7 @@ class Exporter
         
         /*----- catalog_product_entity_datetime.txt -----*/
         $table = $this->_resource->getTableName("catalog_product_entity_datetime");
-        $idName = $this->getProductEntityIdName("catalog_product_entity_datetime");
+        $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
             $table,
@@ -694,10 +694,12 @@ class Exporter
     
     protected function exportLookupCategories($filename, $categoriesIds = array())
     {
+        $table = $this->_resource->getTableName("catalog_category_entity");
+        $idName = $this->getProductEntityIdName($table);
         $categories = $this->_objectManager->create('Magento\Catalog\Model\Category')
             ->getCollection()
             ->addAttributeToSelect(['entity_id','name'])
-            ->addFieldToFilter('row_id', ['in' => $categoriesIds]);
+            ->addFieldToFilter($idName, ['in' => $categoriesIds]);
 
         $fh = $this->create_file($filename);
         if (!$fh) {
