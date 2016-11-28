@@ -147,11 +147,12 @@ class Export extends Data
         $this->setCurrentStore($this->_storeId);
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
             ->addFieldToFilter('entity_id', array('in' => $ids))
-            ->setStoreId($storeId)
-            ->addStoreFilter($storeId)
+            ->setStoreId($this->_storeId)
+            ->addStoreFilter($this->_storeId)
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
             ->addAttributeToSelect($customAttributes)
             ->addPriceData()
+            ->addUrlRewrite()
             ->joinTable(
                 $this->_resource->getTableName('cataloginventory_stock_item'),
                 'product_id=entity_id',
@@ -161,6 +162,12 @@ class Export extends Data
             );
         
         foreach ($collection as $product) {
+            $routeParams = [
+                '_direct' => $product->getRequestPath(),
+                '_query' => [],
+                '_nosid' => true
+            ];
+            
             $values = array(
                 "id"                          => $product->getEntityId(),
                 "price"                       => $this->getCalculatedPrice($product),
@@ -171,7 +178,7 @@ class Export extends Data
                 "is_in_stock"                 => $product->getIsInStock() ? "1" : "0",
                 "qty"                         => (int)$product->getQty(),
                 "min_qty"                     => (int)$product->getMinSaleQty(),
-                "link"                        => $product->getUrlModel()->getUrl($product)
+                "link"                        => $this->_objectManager->create('Magento\Framework\Url')->setScope($this->_storeId)->getUrl('', $routeParams)
             );
 
             $imageTypes = $this->getImageTypes($this->_objectManager);         
