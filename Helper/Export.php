@@ -150,9 +150,13 @@ class Export extends Data
             ->setStoreId($this->_storeId)
             ->addStoreFilter($this->_storeId)
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
-            ->addAttributeToSelect($customAttributes)
-            ->addPriceData()
-            ->addUrlRewrite()
+            ->addAttributeToSelect($customAttributes);
+
+        if ($this->useIndexedPrices()) {    
+            $collection->addPriceData();
+        }
+        
+        $collection->addUrlRewrite()
             ->joinTable(
                 $this->_resource->getTableName('cataloginventory_stock_item'),
                 'product_id=entity_id',
