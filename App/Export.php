@@ -79,16 +79,8 @@ class Export implements \Magento\Framework\AppInterface
             }
             
             $item = $this->_cache->getCollection()->addFieldToFilter('name', 'export_chunk_' . $this->_processId . '_' . $this->_chunkId)->getLastItem();
-            $rows = json_decode($item->getContent());
             
-            $item->delete();
-            $hasData = count($rows);
-            
-            $str = null;
-            $ids = array();
-            foreach ($rows as $row) {
-                $ids[] = $row->entity_id;
-            }
+            $ids = json_decode($item->getContent()); 
             
             //Prepare custom attributes list.
             $customAttributes = json_decode($this->_cache->getCollection()

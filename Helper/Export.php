@@ -148,7 +148,7 @@ class Export extends Data
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
             ->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($this->_storeId)
-            ->addStoreFilter($this->_storeId)
+            /*->addStoreFilter($this->_storeId)*/
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
             ->addAttributeToSelect($customAttributes);
 

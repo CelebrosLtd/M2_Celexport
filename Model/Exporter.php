@@ -32,10 +32,14 @@ class Exporter
     protected $_product_entity_type_id = null;
     protected $_category_entity_type_id = null;
     protected $_objectManager;
+    protected $categoryless_prod_file_name = "categoryless_products";
     protected $prod_file_name = "source_products";
     protected $bExportProductLink = true;
     protected $_dir;
     protected $_shell;
+    protected $_productIds = [];
+    protected $_categorylessIds = [];
+
     public $helper;
     
     public function __construct(
@@ -401,6 +405,18 @@ class Exporter
     
     protected function export_tables($store)
     {
+        $rowEntityMap = [];
+        $relations = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $relations->setStoreId($this->_fStore_id)
+            ->addStoreFilter($this->_fStore_id);
+        foreach ($relations as $item) {
+            if ($item->getRowId()) {
+                $rowEntityMap[$item->getRowId()] = $item->getEntityId();
+            }
+        }
+        
+        $this->_rowEntityMap = $rowEntityMap;
+        
         /*----- catalog_eav_attribute.txt -----*/
         $table = $this->_resource->getTableName("catalog_eav_attribute");
         $query = $this->_read->select()->from(
@@ -587,25 +603,78 @@ class Exporter
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_super_link.txt -----*/
+        
+        $table = $this->_resource->getTableName("catalog_category_entity");
+        $idName = $this->getProductEntityIdName($table);
+        
         $table = $this->_resource->getTableName("catalog_product_super_link");
-        $this->logProfiler("START {$table}");
-        $query = $this->_read->select()->from(
-            $table,
-            array('product_id', 'parent_id')
-        );
-        $this->export_table($query, "catalog_product_super_link");
+        $relations = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $relations->setStoreId($this->_fStore_id)
+            ->addStoreFilter($this->_fStore_id)
+            ->addFieldToFilter('type_id', array('in' => array('simple')))
+            ->joinTable(
+                $this->_resource->getTableName('catalog_product_super_link'),
+                "product_id = {$idName}",
+                array('parent_id'),
+                null,
+                'left'
+            );
+        $fields = ['product_id', 'parent_id'];
+        $str = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+        foreach ($relations->getData() as $relation) {
+            if ($relation['parent_id']) {
+                $fields = [$relation['entity_id'], $relation['parent_id']];
+                $str .= "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+            }
+        }
+
+        $filename = 'catalog_product_super_link';
+        $fh = $this->create_file($filename);
+        if (!$fh) {
+            $this->comments_style('error', 'Could not create the file ' . $filename . ' path', 'problem with file');
+            $this->logProfiler('Could not create the file ' . $filename . ' path');
+            return;
+        }
+        
+        $this->write_to_file($str, $fh);
+        fclose($fh);
+        
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_relation.txt -----*/
+        
         $table = $this->_resource->getTableName("catalog_product_relation");
-        $this->logProfiler("START {$table}");
-        $query = $this->_read->select()->from(
-            $table,
-            array('parent_id', 'child_id')
-        );
-        $this->export_table($query, "catalog_product_relation");
+        $relations = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $relations->setStoreId($this->_fStore_id)
+            ->addStoreFilter($this->_fStore_id)
+            ->addFieldToFilter('type_id', array('in' => array('configurable', 'bundle', 'grouped')))
+            ->joinTable(
+                $this->_resource->getTableName('catalog_product_relation'),
+                "parent_id = {$idName}",
+                array('child_id'),
+                null,
+                'left'
+            );
+        $fields = ['parent_id', 'child_id'];
+        $str = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+        foreach ($relations->getData() as $relation) {
+            $fields = [$relation['entity_id'], $relation['child_id']];
+            $str .= "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+        }
+
+        $filename = 'catalog_product_relation';
+        $fh = $this->create_file($filename);
+        if (!$fh) {
+            $this->comments_style('error', 'Could not create the file ' . $filename . ' path', 'problem with file');
+            $this->logProfiler('Could not create the file ' . $filename . ' path');
+            return;
+        }
+        
+        $this->write_to_file($str, $fh);
+        fclose($fh);
+
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('------------------------------------');
@@ -809,11 +878,18 @@ class Exporter
         
         $query = $sql->query();
         $rowCount = 0;
-        $processedRows = array();
-        
+        $processedRows = array();        
         while ($row = $query->fetch()) {
             //$this->logProfiler("Block read start ({$this->_limit} products");
             //$this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
+
+if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
+    $tmp = ['entity_id' => $this->_rowEntityMap[$row['row_id']]];
+    unset($row['row_id']);
+    $row = array_merge($tmp, $row);
+}          
+            
+            
             
             //remember all the rows we're processing now, so we won't go over them again when we iterate over the default store.
             if (isset($fields)) {
@@ -821,10 +897,10 @@ class Exporter
                 foreach ($fields as $field) {
                     $concatenatedRow .= $row[$field] . '-';
                 }
-                
+               
                 $processedRows[] = substr($concatenatedRow, 0, -1);
             }
-            
+
             $str .= "^" . implode("^" . $this->_fDel . "^", $row) . "^" . "\r\n";
             $rowCount++;
             
@@ -1211,43 +1287,41 @@ class Exporter
         }
     }
     
-    
+    protected function prepareStoreProductIds($store)
+    {
+        $rootCategoryId = $store->getRootCategoryId();
+        $productIds = [];
+        $categorylessIds = [];
+        $products = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
+            ->setStoreId($store->getStoreId())
+            ->addStoreFilter($store->getStoreId())
+            ->addCategoryIds();
+
+        foreach ($products as $prod) {
+            if (!empty($prod->getCategoryIds())) {
+                $productIds[] = $prod->getEntityId();
+            } else {
+                $categorylessIds[] = $prod->getEntityId();
+            }
+        }
+        
+        $this->_productIds = $productIds;
+        $this->_categorylessIds = $categorylessIds;
+    }
     
     protected function export_store_products($store)
     {
-        $table = $this->_resource->getTableName("catalog_product_entity");
-        $categoryProductsTable = $this->_resource->getTableName("catalog_category_product");
-        $catalogProductWebsite = $this->_resource->getTableName("catalog_product_website");
-        $rootCategoryId = $store->getRootCategoryId();
-        $sql = "SELECT DISTINCT(`{$table}`.`entity_id`), type_id, sku FROM {$table}
-            LEFT JOIN (`{$categoryProductsTable}`) ON (`{$categoryProductsTable}`.`category_id` IN ({$this->_categoriesForStore}))
-            LEFT JOIN (`{$catalogProductWebsite}`) ON ({$table}.`entity_id` = `{$catalogProductWebsite}`.`product_id`)
-            WHERE {$table}.`entity_id` = `{$categoryProductsTable}`.`product_id`
-            AND `{$catalogProductWebsite}`.`website_id` =" . $store->getWebsiteId();
-            
-        if (!$this->helper->getConfig('celexport/export_settings/rootcat_products_export', $store)) {
-            $sql .= " AND `{$categoryProductsTable}`.`category_id` != {$rootCategoryId}";
-        }
-          
-        $this->export_products($sql, $this->prod_file_name, $store);
+        $this->prepareStoreProductIds($store);       
+        $this->export_products($this->_productIds, $this->prod_file_name, $store);
     }
     
     protected function export_categoryless_products($store)
     {
-        $table = $this->_resource->getTableName("catalog_product_entity");
-        $categoryProductsTable = $this->_resource->getTableName("catalog_category_product");
-        $catalogProductWebsite = $this->_resource->getTableName("catalog_product_website");
-        $rootCategoryId = $this->_fStore->getRootCategoryId();
-        $sql = "SELECT DISTINCT(`{$table}`.`entity_id`), type_id, sku FROM {$table}
-            LEFT JOIN (`{$categoryProductsTable}`) ON ({$table}.`entity_id` = `{$categoryProductsTable}`.`product_id`)
-            LEFT JOIN (`{$catalogProductWebsite}`) ON ({$table}.`entity_id` = `{$catalogProductWebsite}`.`product_id`)
-            WHERE (`{$categoryProductsTable}`.`product_id` IS NULL OR `{$categoryProductsTable}`.`category_id` NOT IN ({$this->_categoriesForStore}))
-            AND `{$catalogProductWebsite}`.`website_id` = " . $store->getWebsiteId();
-            
-        $this->export_products($sql, 'categoryless_products', $store);
+        $this->prepareStoreProductIds($store);
+        $this->export_products($this->_categorylessIds, $this->categoryless_prod_file_name, $store);
     }
     
-    protected function export_products($sql, $fileName, $store)
+    protected function export_products($productIds, $fileName, $store)
     {
         $this->comments_style('info', "Begining products export", 'info');
         $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
@@ -1301,22 +1375,15 @@ class Exporter
         $header = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
         $this->write_to_file($header, $fh);
          
-        // *********************************
-        $stm = $this->_resource->getConnection('read')->query($sql . " LIMIT 0, 100000000");
-        
-        $str = '';
-        $rows = $stm->fetchAll();
-        $chunks = array_chunk($rows, $this->helper->getExportChunkSize());
-        
+        $chunksIds = array_chunk($productIds, $this->helper->getExportChunkSize());
         $pids = array();
         $finished = array();
         $process_limit = $this->helper->getExportProcessLimit();
         $count = 0;
         
-        if (!$this->helper->getConfig('celexport/advanced/single_process')) { //print_r($chunks);die;
-            //$_fPath = Mage::helper('celexport')->getExportPath($this->_exportProcessId) . '/' . $this->_fStore->getWebsite()->getCode() . '/' . $this->_fStore->getCode();
+        if (!$this->helper->getConfig('celexport/advanced/single_process')) {
             /* export with parallel processes */
-            foreach ($chunks as $chunk) {
+            foreach ($chunksIds as $ids) {
                 //Using a random number to identify data chunks in the db and the processes that process them.
                 //This is useful in case several exports (for several store views, from different cron jobs)
                 // are running in parallel. Had the identifiers been incremental, they'd be the same in each
@@ -1340,7 +1407,7 @@ class Exporter
                     } while ($state);
                 }
                 
-                $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_chunk_' . $this->_exportProcessId . '_' . $i)->setContent(json_encode($chunk))->save();
+                $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_chunk_' . $this->_exportProcessId . '_' . $i)->setContent(json_encode($ids))->save();
                 $pids[$i] = (int)shell_exec('nohup php ' . $this->_dir->getPath('app') . '/code/Celebros/Celexport/Shell/Export.php ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_dir->getPath('app') . '/bootstrap.php ' . $this->_exportProcessId . ' > /dev/null & echo $!');
                 
                 if (!$pids[$i]) {
@@ -1407,11 +1474,11 @@ class Exporter
                 ->getContent());
             $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
             
-            foreach ($chunks as $rows) {
-                $ids = array();
+            foreach ($chunksIds as $ids) {
+                /*$ids = array();
                 foreach ($rows as $row) {
                     $ids[] = $row['entity_id'];
-                }
+                }*/
                 
                 $str = $exportHelper->getProductsData($ids, $customAttributes, $store->getStoreId(), $this->_objectManager);
                 fwrite($fh, $str);
