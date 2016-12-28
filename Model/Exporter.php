@@ -1384,17 +1384,10 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
         if (!$this->helper->getConfig('celexport/advanced/single_process')) {
             /* export with parallel processes */
             foreach ($chunksIds as $ids) {
-                //Using a random number to identify data chunks in the db and the processes that process them.
-                //This is useful in case several exports (for several store views, from different cron jobs)
-                // are running in parallel. Had the identifiers been incremental, they'd be the same in each
-                // of these different exports.
                 $count += 1;
-                $i = $this->_fStore_id * 1000 + $count; //mt_rand();
+                $i = $this->_fStore_id * 1000 + $count;
                 if (count($pids) >= $process_limit) {
-                    //$counter = 10;
                     do {
-                        //$counter--;
-                        //if ($counter == 0) break;
                         sleep(1);
                         $state = true;
                         foreach ($pids as $key => $pid) {
@@ -1475,11 +1468,6 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
             $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
             
             foreach ($chunksIds as $ids) {
-                /*$ids = array();
-                foreach ($rows as $row) {
-                    $ids[] = $row['entity_id'];
-                }*/
-                
                 $str = $exportHelper->getProductsData($ids, $customAttributes, $store->getStoreId(), $this->_objectManager);
                 fwrite($fh, $str);
             }

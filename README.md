@@ -28,4 +28,6 @@ Celebros Export Products
 
 1.2.6 - issue with product url for multiwebsite fixed
 
-1.2.7 - technical fix
+1.2.7 - 1.2.8 - technical fix
+
+1.2.9 - issue with 'out of stock' products for multiprocess export fixed

@@ -145,8 +145,9 @@ class Export extends Data
         $this->_objectManager = $objectManager;
         $str = null;
         $this->setCurrentStore($this->_storeId);
-        $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
-            ->addFieldToFilter('entity_id', array('in' => $ids))
+        $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $collection->setFlag('has_stock_status_filter', true);
+        $collection->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($this->_storeId)
             /*->addStoreFilter($this->_storeId)*/
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
