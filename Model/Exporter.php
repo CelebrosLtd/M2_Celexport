@@ -127,16 +127,7 @@ class Exporter
         $this->_fType = $this->helper->getConfig('celexport/export_settings/type', $store);
         $this->_fPath = $this->helper->getExportPath($this->_exportProcessId) . '/' . $store->getWebsite()->getCode() . '/' . $store->getCode();
         
-        $currentEnvStamp = $this->helper->getCurrentEnvStamp();
-        
-        /*if ($currentEnvStamp == $this->helper->getConfig('celexport/ftp_prod/env_stamp')) {*/
-            $ftppath = 'ftp_prod';
-        /*} elseif ($currentEnvStamp == $this->helper->getConfig('celexport/ftp_dev/env_stamp')) {
-            $ftppath = 'ftp_dev';
-        } else {
-            $ftppath = NULL;
-        }*/
-        
+        $ftppath = 'ftp_prod';
         $this->_fFTPHost = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_host', $store) : null;
         $this->_fFTPPort = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_port', $store) : null;
         $this->_fFTPUser = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_user', $store) : null;
@@ -1137,9 +1128,13 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
     
     public function ftpfile($zipFilePath, $zipUpload = true)
     {
+        if ($this->helper->getConfiguratedEnvStamp() != $this->helper->getCurrentEnvStamp()) {
+            $this->comments_style('error', 'Env stamp is incorrect - ftp upload is not available', 'Empty_host');
+            return false;
+        }
+        
         if (!file_exists($zipFilePath)) {
             $this->comments_style('error', 'No ' . $zipFilePath . ' file found', 'No_zip_file_found');
-            
             return false;
         }
         

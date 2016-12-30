@@ -33,3 +33,5 @@ Celebros Export Products
 1.2.9 - issue with 'out of stock' products for multiprocess export fixed
 
 1.2.10 - tech fix
+
+1.3.0 - env stamp added for ftp upload

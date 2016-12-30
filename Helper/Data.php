@@ -25,6 +25,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_CHUNK_SIZE = 'celexport/advanced/export_chunk_size';
     const CONFIG_EXPORT_PROCESS_LIMIT = 'celexport/advanced/export_process_limit';
     const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
+    const CONFIG_EXPORT_CONF_ENV_STAMP = 'celexport/ftp_prod/env_stamp';
     const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
     const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
     protected $_urlBuilder;
@@ -96,7 +97,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     
     public function getCurrentEnvStamp()
     {
-        return base64_encode($this->_urlBuilder->getBaseUrl(array('_type' => \Magento\Framework\UrlInterface::URL_TYPE_WEB)));
+        return sha1($this->_urlBuilder->getBaseUrl(array('_type' => \Magento\Framework\UrlInterface::URL_TYPE_WEB)));
+    }
+    
+    public function getConfiguratedEnvStamp()
+    {
+        return $this->scopeConfig->getValue(self::CONFIG_EXPORT_CONF_ENV_STAMP, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
     
     public function getExportLifetime()

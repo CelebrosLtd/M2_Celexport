@@ -123,12 +123,14 @@
                 </field>
             </group>  
             <group id="ftp_prod" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="1">
-                <!-- separated ftp <label>Prod FTP Settings</label>-->
                 <label>FTP Settings</label>
                 <hide_in_single_store_mode>0</hide_in_single_store_mode>
-                <!-- separated ftp <field id="env_stamp" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>Env Stamp</label>
-                </field>-->
+                <field id="current_env_stamp" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <frontend_model>Celebros\Celexport\Block\System\Config\Form\Field\EnvStamp</frontend_model>
+                </field>
+                <field id="env_stamp" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Configurated Env Stamp</label>
+                </field>
                 <field id="ftp_host" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="1">
                     <label>FTP Host</label>
                 </field>
@@ -146,29 +148,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>    
-            <!-- separated ftp <group id="ftp_dev" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="1">
-                <label>Dev FTP Settings</label>
-                <hide_in_single_store_mode>0</hide_in_single_store_mode>
-                <field id="env_stamp" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>Env Stamp</label>
-                </field>
-                <field id="ftp_host" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>FTP Host</label>
-                </field>
-                <field id="ftp_port" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>FTP Port</label>
-                </field>
-                <field id="ftp_user" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>FTP User</label>
-                </field>
-                <field id="ftp_password" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>FTP Password</label>
-                </field>
-                <field id="passive" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>Passive</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-            </group>-->
             <group id="advanced" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Advanced Settings</label>
                 <hide_in_single_store_mode>0</hide_in_single_store_mode>
