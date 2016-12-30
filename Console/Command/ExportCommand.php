@@ -7,6 +7,28 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ExportCommand extends Command
 {
+    /**
+     * @var \Celebros\Celexport\Model\Exporter
+     */
+    protected $exporter;
+    
+    /**
+     * @var \Magento\Framework\App\ObjectManager
+     */
+    protected $_objectManager;
+    
+    /**
+     * @param \Celebros\Celexport\Model\Exporter $exporter
+     */
+    public function __construct(
+        \Celebros\Celexport\Model\Exporter $exporter,
+        \Magento\Framework\ObjectManagerInterface $objectManager
+    ) {
+        $this->exporter = $exporter;
+        $this->_objectManager = $objectManager;
+        parent::__construct();
+    }
+    
     protected function configure()
     {
         $this->setName('celebros:export:export')
@@ -15,6 +37,7 @@ class ExportCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        print_r('asdfasdfasdf');
+        $this->exporter->export_celebros($this->_objectManager, false);
+        return $this;
     }
 }

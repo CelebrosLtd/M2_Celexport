@@ -406,10 +406,10 @@ class Exporter
     protected function export_tables($store)
     {
         $rowEntityMap = [];
-        $relations = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
-        $relations->setStoreId($this->_fStore_id)
+        $items = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $items->setStoreId($this->_fStore_id)
             ->addStoreFilter($this->_fStore_id);
-        foreach ($relations as $item) {
+        foreach ($items as $item) {
             if ($item->getRowId()) {
                 $rowEntityMap[$item->getRowId()] = $item->getEntityId();
             }
@@ -608,8 +608,8 @@ class Exporter
         $idName = $this->getProductEntityIdName($table);
         
         $table = $this->_resource->getTableName("catalog_product_super_link");
-        $relations = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
-        $relations->setStoreId($this->_fStore_id)
+        $links = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $links->setStoreId($this->_fStore_id)
             ->addStoreFilter($this->_fStore_id)
             ->addFieldToFilter('type_id', array('in' => array('simple')))
             ->joinTable(
@@ -621,9 +621,9 @@ class Exporter
             );
         $fields = ['product_id', 'parent_id'];
         $str = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
-        foreach ($relations->getData() as $relation) {
-            if ($relation['parent_id']) {
-                $fields = [$relation['entity_id'], $relation['parent_id']];
+        foreach ($links->getData() as $link) {
+            if ($link['parent_id']) {
+                $fields = [$link['entity_id'], (isset($this->_rowEntityMap[$link['parent_id']]) ? $this->_rowEntityMap[$link['parent_id']] : $link['parent_id'])];
                 $str .= "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
             }
         }
@@ -660,7 +660,7 @@ class Exporter
         $fields = ['parent_id', 'child_id'];
         $str = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
         foreach ($relations->getData() as $relation) {
-            $fields = [$relation['entity_id'], $relation['child_id']];
+            $fields = [$relation['entity_id'], (isset($this->_rowEntityMap[$relation['child_id']]) ? $this->_rowEntityMap[$relation['child_id']] : $relation['child_id'])];
             $str .= "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
         }
 
@@ -1400,6 +1400,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
                     } while ($state);
                 }
                 
+                $this->logProfiler('Exported Products: ' . implode(',', $ids));
                 $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_chunk_' . $this->_exportProcessId . '_' . $i)->setContent(json_encode($ids))->save();
                 $pids[$i] = (int)shell_exec('nohup php ' . $this->_dir->getPath('app') . '/code/Celebros/Celexport/Shell/Export.php ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_dir->getPath('app') . '/bootstrap.php ' . $this->_exportProcessId . ' > /dev/null & echo $!');
                 
@@ -1468,6 +1469,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
             $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
             
             foreach ($chunksIds as $ids) {
+                $this->logProfiler('Exported Products: ' . implode(',', $ids));
                 $str = $exportHelper->getProductsData($ids, $customAttributes, $store->getStoreId(), $this->_objectManager);
                 fwrite($fh, $str);
             }

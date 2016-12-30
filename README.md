@@ -31,3 +31,5 @@ Celebros Export Products
 1.2.7 - 1.2.8 - technical fix
 
 1.2.9 - issue with 'out of stock' products for multiprocess export fixed
+
+1.2.10 - tech fix
