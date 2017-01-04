@@ -394,20 +394,33 @@ class Exporter
         }
     }
     
+    public function getEntityIdByRowId($row_id)
+    {
+        return (isset($this->_rowEntityMap[$row_id]) ? $this->_rowEntityMap[$row_id] : $row_id);
+    }
+    
+    public function arrayToString($fields)
+    {
+        return "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+    }
+    
     protected function export_tables($store)
     {
         $rowEntityMap = [];
-        $items = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
-        $items->setStoreId($this->_fStore_id)
-            ->addStoreFilter($this->_fStore_id);
-        foreach ($items as $item) {
-            if ($item->getRowId()) {
-                $rowEntityMap[$item->getRowId()] = $item->getEntityId();
-            }
+        $table = $this->_resource->getTableName("catalog_product_entity");
+        $query = $this->_read->select();
+        $query->from(
+            $table,
+            array('entity_id', 'row_id')
+        )->group('row_id'); 
+        
+        $rows = $query->query();
+        while ($row = $rows->fetch()) {
+            $rowEntityMap[$row['row_id']] = $row['entity_id'];
         }
         
         $this->_rowEntityMap = $rowEntityMap;
-        
+
         /*----- catalog_eav_attribute.txt -----*/
         $table = $this->_resource->getTableName("catalog_eav_attribute");
         $query = $this->_read->select()->from(
@@ -597,26 +610,21 @@ class Exporter
         
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
-        
+
         $table = $this->_resource->getTableName("catalog_product_super_link");
-        $links = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
-        $links->setStoreId($this->_fStore_id)
-            ->addStoreFilter($this->_fStore_id)
-            ->addFieldToFilter('type_id', array('in' => array('simple')))
-            ->joinTable(
-                $this->_resource->getTableName('catalog_product_super_link'),
-                "product_id = {$idName}",
-                array('parent_id'),
-                null,
-                'left'
-            );
+        $this->logProfiler("START {$table}");        
         $fields = ['product_id', 'parent_id'];
-        $str = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
-        foreach ($links->getData() as $link) {
-            if ($link['parent_id']) {
-                $fields = [$link['entity_id'], (isset($this->_rowEntityMap[$link['parent_id']]) ? $this->_rowEntityMap[$link['parent_id']] : $link['parent_id'])];
-                $str .= "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
-            }
+        $str = $this->arrayToString($fields);
+        $query = $this->_read->select();
+        $query->from(
+            $table,
+            $fields
+        ); 
+
+        $rows = $query->query();
+        while ($row = $rows->fetch()) {
+            $fields = [$row['product_id'], $this->getEntityIdByRowId($row['parent_id'])];
+            $str .= $this->arrayToString($fields);
         }
 
         $filename = 'catalog_product_super_link';
@@ -637,22 +645,19 @@ class Exporter
         /*----- catalog_product_relation.txt -----*/
         
         $table = $this->_resource->getTableName("catalog_product_relation");
-        $relations = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
-        $relations->setStoreId($this->_fStore_id)
-            ->addStoreFilter($this->_fStore_id)
-            ->addFieldToFilter('type_id', array('in' => array('configurable', 'bundle', 'grouped')))
-            ->joinTable(
-                $this->_resource->getTableName('catalog_product_relation'),
-                "parent_id = {$idName}",
-                array('child_id'),
-                null,
-                'left'
-            );
+        $this->logProfiler("START {$table}"); 
         $fields = ['parent_id', 'child_id'];
-        $str = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
-        foreach ($relations->getData() as $relation) {
-            $fields = [$relation['entity_id'], (isset($this->_rowEntityMap[$relation['child_id']]) ? $this->_rowEntityMap[$relation['child_id']] : $relation['child_id'])];
-            $str .= "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+        $str = $this->arrayToString($fields);
+        $query = $this->_read->select();
+        $query->from(
+            $table,
+            $fields
+        ); 
+
+        $rows = $query->query();
+        while ($row = $rows->fetch()) {
+            $fields = [$this->getEntityIdByRowId($row['parent_id']), $row['child_id']];
+            $str .= $this->arrayToString($fields);
         }
 
         $filename = 'catalog_product_relation';

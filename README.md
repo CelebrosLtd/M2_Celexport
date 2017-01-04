@@ -35,3 +35,5 @@ Celebros Export Products
 1.2.10 - tech fix
 
 1.3.0 - env stamp added for ftp upload
+
+1.3.1 - tech fix
