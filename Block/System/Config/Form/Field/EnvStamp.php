@@ -30,7 +30,7 @@ class EnvStamp extends \Magento\Config\Block\System\Config\Form\Field
     public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
         $id = $element->getHtmlId();
-        $notice = ($this->getEnvStamp() != $this->helper->getConfiguratedEnvStamp()) ? '<p class="note" style="color:red;">' . __('configurated env stamp is incorrect - ftp upload in disabled') . '</p>' : '';
+        $notice = ($this->getEnvStamp() != $this->helper->getConfiguratedEnvStamp()) ? '<p class="note" style="color:red;">' . __('configured env stamp is incorrect - ftp upload is disabled') . '</p>' : '';
         $html = '<tr id="row_' . $id . '">';
         $html .= '<td class="label">' . __('Current Env Stamp') . '</td><td class="value">' . $this->getEnvStamp() . $notice . '</td><td class="scope-label"></td>';
         $html .= '</tr>';

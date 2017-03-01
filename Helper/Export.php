@@ -69,9 +69,6 @@ class Export extends Data
     {
         $type = $product->getTypeId();
         switch ($type) {
-            case 'configurable':
-                $price = $product->getMinPrice();
-                break;
             case 'grouped':
                 $price = $product->getMinPrice();
                 break;

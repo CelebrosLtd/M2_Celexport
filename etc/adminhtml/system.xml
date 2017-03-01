@@ -129,7 +129,7 @@
                     <frontend_model>Celebros\Celexport\Block\System\Config\Form\Field\EnvStamp</frontend_model>
                 </field>
                 <field id="env_stamp" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Configurated Env Stamp</label>
+                    <label>Configured Env Stamp</label>
                 </field>
                 <field id="ftp_host" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="1">
                     <label>FTP Host</label>
