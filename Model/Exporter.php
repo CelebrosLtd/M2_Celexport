@@ -1133,7 +1133,10 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
     
     public function ftpfile($zipFilePath, $zipUpload = true)
     {
-        if ($this->helper->getConfiguratedEnvStamp() != $this->helper->getCurrentEnvStamp()) {
+        $this->helper->setCurrentStore(0);
+            $currenEnvStamp = $this->helper->getCurrentEnvStamp();
+        $this->helper->setCurrentStore($this->_fStore_id);
+        if ($this->helper->getConfiguratedEnvStamp() != $currenEnvStamp) {
             $this->comments_style('error', 'Env stamp is incorrect - ftp upload is not available', 'Empty_host');
             return false;
         }
