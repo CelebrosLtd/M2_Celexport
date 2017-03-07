@@ -39,6 +39,7 @@ class Exporter
     protected $_shell;
     protected $_productIds = [];
     protected $_categorylessIds = [];
+    protected $_ftpUpload = false;
 
     public $helper;
     
@@ -101,6 +102,10 @@ class Exporter
         $this->comments_style('icon', 'Memory Limit: ' . ini_get('memory_limit'), 'icon');
         $this->comments_style('icon', 'Max Execution Time: ' . ini_get('max_execution_time'), 'icon');
         $this->comments_style('warning', 'Warning: Please don\'t close window during importing/exporting data', 'warning');
+        
+        if ($this->helper->getConfiguratedEnvStamp() == $this->helper->getCurrentEnvStamp()) {
+            $this->_ftpUpload = true;
+        }
         
         $this->cleanExportDirectory();
         $this->export_orders($objectManager->create('Magento\Sales\Model\Order\Item'));
@@ -1133,10 +1138,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
     
     public function ftpfile($zipFilePath, $zipUpload = true)
     {
-        $this->helper->setCurrentStore(0);
-            $currenEnvStamp = $this->helper->getCurrentEnvStamp();
-        $this->helper->setCurrentStore($this->_fStore_id);
-        if ($this->helper->getConfiguratedEnvStamp() != $currenEnvStamp) {
+        if (!$this->_ftpUpload) {
             $this->comments_style('error', 'Env stamp is incorrect - ftp upload is not available', 'Empty_host');
             return false;
         }
