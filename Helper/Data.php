@@ -28,6 +28,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_CONF_ENV_STAMP = 'celexport/ftp_prod/env_stamp';
     const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
     const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
+    const CONFIG_UNSECURE_BASE_URL = 'web/unsecure/base_url';
     protected $_urlBuilder;
     public $_cssMin;
     public $_jsMin;
@@ -97,7 +98,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     
     public function getCurrentEnvStamp()
     {
-        return sha1($this->_urlBuilder->getBaseUrl(array('_type' => \Magento\Framework\UrlInterface::URL_TYPE_WEB)));
+        return sha1($this->scopeConfig->getValue(self::CONFIG_UNSECURE_BASE_URL, 'default', 0));
     }
     
     public function getConfiguratedEnvStamp()
