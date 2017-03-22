@@ -115,6 +115,8 @@ class Exporter
         
         $this->comments_style('info', 'Finished profile execution within ' . round($export_end - $export_start, 3) . ' sec.', 'finish');
         $this->comments_style('finish', 0, 0);
+        
+        return $this->helper->getBodyForResponse();
     }
     
     public function export_config($store)
@@ -271,7 +273,6 @@ class Exporter
         $out = false;
         if (!file_exists($filePath)) {
             $this->comments_style('error', 'No ' . $filePath . ' file found', 'No_txt_file_found');
-            exit();
             return false;
         }
         
@@ -279,7 +280,7 @@ class Exporter
             $zip = new \ZipArchive();
         } catch (\Exception $e) {
             $this->comments_style('error', 'ZipArchive is not installed', 'ZipArchive is not installed');
-            exit();
+            return false;
         }
         
         if ($zip->open($zipFilePath, \ZipArchive::CREATE) == true) {
@@ -1114,7 +1115,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
             $zip = new \ZipArchive();
         } catch (\Exception $e) {
             $this->comments_style('error', 'ZipArchive is not installed', 'ZipArchive is not installed');
-            exit();
+            return $out;
         }
         
         if ($zip->open($zipPath, \ZipArchive::CREATE) == true) {
@@ -1451,7 +1452,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
                 } else {
                     $this->comments_style('error', 'Exception from process: ' . $status, 'problem with process');
                     $this->ftpfile(null, false);
-                    die;
+                    return;
                 }
                 
                 $item->delete();

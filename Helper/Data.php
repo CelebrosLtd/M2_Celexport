@@ -32,11 +32,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $_urlBuilder;
     public $_cssMin;
     public $_jsMin;
+    protected $_response;
     protected $_stores;
     protected $_dir;
     protected $_assetRepo;
     protected $_resource;
     protected $dirWrite;
+    protected $_body = null;
     
     /**
      * @param \Magento\Framework\App\Helper\Context $context,
@@ -52,6 +54,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
         \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
+        \Magento\Framework\App\ResponseInterface $response,
         \Magento\Store\Model\StoreManager $stores,
         \Magento\Framework\View\Asset\Repository $assetRepo,
         \Magento\Framework\Filesystem\DirectoryList $dir,
@@ -61,6 +64,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_urlBuilder = $context->getUrlBuilder();
         $this->_cssMin = $cssMin;
         $this->_jsMin = $jsMin;
+        $this->_response = $response;
         $this->_stores = $stores;
         $this->_dir = $dir;
         $this->_assetRepo = $assetRepo;
@@ -192,7 +196,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         switch ($kind) {
             case 'header':
-                echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+                $this->_body .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
                 <html><head><style type="text/css">
                 ul { list-style-type:none; padding:0; margin:0; }
                 li { margin-left:0; border:1px solid #ccc; margin:2px; padding:2px 2px 2px 2px; font:normal 12px sans-serif;  }
@@ -201,27 +205,32 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 <body><ul>';
                 break;
             case 'icon':
-                echo '<li style="background-color: rgb(128, 128, 128); color:rgb(255,255,255);">
+                $this->_body .= '<li style="background-color: rgb(128, 128, 128); color:rgb(255,255,255);">
                 <img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'info':
-                echo '<li><img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->_body .= '<li><img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'warning':
-                echo '<li style="background-color: rgb(255, 255, 128);"><img style="margin-right: 5px;" src="' . $this->getIconUrl('fam_bullet_error.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->_body .= '<li style="background-color: rgb(255, 255, 128);"><img style="margin-right: 5px;" src="' . $this->getIconUrl('fam_bullet_error.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'success':
-                echo '<li style="background-color: rgb(128, 255, 128);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->_body .= '<li style="background-color: rgb(128, 255, 128);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'section':
-                echo '<li style="background-color: rgb(100, 149, 237);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->_body .= '<li style="background-color: rgb(100, 149, 237);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'error':
-                echo '<li style="background-color: rgb(255, 187, 187);"><img src="' . $this->getIconUrl('error_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->_body .= '<li style="background-color: rgb(255, 187, 187);"><img src="' . $this->getIconUrl('error_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             default:
-                echo '</ul></body></html>';
+                $this->_body .= '</ul></body></html>';
         }
+    }
+    
+    public function getBodyForResponse()
+    {
+        return $this->_body;
     }
     
     public function getIconUrl($file)

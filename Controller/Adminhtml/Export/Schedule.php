@@ -50,7 +50,7 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
     public function execute()
     {
         if (!$this->_isAllowed()) {
-            echo $this->__('Access Denied');
+            $this->getResponse()->setBody($this->__('Access Denied'));
             return;
         }
         
@@ -86,9 +86,9 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                         ->setStatus('pending')
                         ->save();
                         
-                        echo "{$jobCode} cron job is scheduled at $timescheduled <br/>";
+                        $body = "{$jobCode} cron job is scheduled at $timescheduled <br/>";
                     } else {
-                        echo "{$jobCode} cron job are already exist at $timescheduled <br/>";
+                        $body = "{$jobCode} cron job are already exist at $timescheduled <br/>";
                     }
                 } catch (\Exception $e) {
                     throw new \Exception(__('Unable to schedule Cron'));
@@ -97,6 +97,8 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                 $i++;
             }
         }
+        
+        $this->getResponse()->setBody($body);
     }
     
     /**

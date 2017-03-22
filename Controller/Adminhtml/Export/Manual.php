@@ -29,8 +29,7 @@ class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
         $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
         
         $isWebRun = $this->getRequest()->getParam('webadmin');
-        $model->export_celebros($this->_objectManager, $isWebRun);
-        die;
+        $this->getResponse()->setBody($model->export_celebros($this->_objectManager, $isWebRun));
     }
     
     /**

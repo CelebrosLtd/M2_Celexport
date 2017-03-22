@@ -75,7 +75,7 @@ class Export implements \Magento\Framework\AppInterface
             $fh = fopen($filePath, 'ab');
             if (!$fh) {
                 $this->helper->logProfiler('Cannot create file from separate process.', (int)$_SERVER['argv'][4]);
-                exit;
+                return;
             }
             
             $item = $this->_cache->getCollection()->addFieldToFilter('name', 'export_chunk_' . $this->_processId . '_' . $this->_chunkId)->getLastItem();
@@ -98,7 +98,6 @@ class Export implements \Magento\Framework\AppInterface
         $this->_cache->setName('process_' . $this->_processId . '_' . $this->_chunkId)
             ->setContent($process_error)
             ->save();
-        die;
     }
     
     public function catchException(Bootstrap $bootstrap, \Exception $exception)
