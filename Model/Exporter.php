@@ -413,16 +413,29 @@ class Exporter
     protected function export_tables($store)
     {
         $rowEntityMap = [];
+        $entityName = $this->getProductEntityIdName("catalog_product_entity");
         $table = $this->_resource->getTableName("catalog_product_entity");
         $query = $this->_read->select();
-        $query->from(
-            $table,
-            array('entity_id', 'row_id')
-        )->group('row_id'); 
-        
-        $rows = $query->query();
-        while ($row = $rows->fetch()) {
-            $rowEntityMap[$row['row_id']] = $row['entity_id'];
+        if ($entityName == 'row_id') {
+            $query->from(
+                $table,
+                array('entity_id', 'row_id')
+            )->group('row_id'); 
+            
+            $rows = $query->query();
+            while ($row = $rows->fetch()) {
+                $rowEntityMap[$row['row_id']] = $row['entity_id'];
+            }
+        } else {
+            $query->from(
+                $table,
+                array('entity_id')
+            )->group('entity_id'); 
+            
+            $rows = $query->query();
+            while ($row = $rows->fetch()) {
+                $rowEntityMap[$row['entity_id']] = $row['entity_id'];
+            }    
         }
         
         $this->_rowEntityMap = $rowEntityMap;

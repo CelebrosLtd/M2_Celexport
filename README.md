@@ -37,3 +37,5 @@ Celebros Export Products
 1.3.0 - env stamp added for ftp upload
 
 1.3.1 - 1.3.8 - tech fixes
+
+1.3.9 - issue with row_id fixed for CE
