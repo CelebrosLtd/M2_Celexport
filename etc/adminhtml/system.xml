@@ -114,7 +114,7 @@
                     </depends>
                 </field>
                 <field id="get_url_default" translate="label" type="select" sortOrder="260" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>Use Default 'getUrl' Method</label>
+                    <label>Use Default 'getProductUrl' Method</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="export_enabled">1</field>

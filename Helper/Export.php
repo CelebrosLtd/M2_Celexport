@@ -180,7 +180,7 @@ class Export extends Data
                 "is_in_stock"                 => $product->getIsInStock() ? "1" : "0",
                 "qty"                         => (int)$product->getQty(),
                 "min_qty"                     => (int)$product->getMinSaleQty(),
-                "link"                        => $this->useDefaultGetUrl() ? $product->getUrl() : $this->_objectManager->create('Magento\Framework\Url')->setScope($this->_storeId)->getUrl('', $routeParams)
+                "link"                        => $this->useDefaultGetUrl() ? $product->getProductUrl() : $this->_objectManager->create('Magento\Framework\Url')->setScope($this->_storeId)->getUrl('', $routeParams)
             );
             
             $imageTypes = $this->getImageTypes($this->_objectManager);         
