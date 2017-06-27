@@ -22,6 +22,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_LIFETIME = 'celexport/export_settings/export_lifetime';
     const CONFIG_EXPORT_ORDERS = 'celexport/export_settings/export_data_history';
     const CONFIG_EXPORT_ORDERS_FILENAME = 'celexport/export_settings/datahistoryname';
+    const CONFIG_EXPORT_DEFAULT_GETURL = 'celexport/export_settings/get_url_default';
     const CONFIG_EXPORT_CHUNK_SIZE = 'celexport/advanced/export_chunk_size';
     const CONFIG_EXPORT_PROCESS_LIMIT = 'celexport/advanced/export_process_limit';
     const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
@@ -250,5 +251,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             ScopeInterface::SCOPE_STORE,
             $store
         );
+    }
+    
+    public function useDefaultGetUrl($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::CONFIG_EXPORT_DEFAULT_GETURL,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        ); 
     }
 }

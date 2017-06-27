@@ -29,6 +29,7 @@
                 <rootcat_products_export>0</rootcat_products_export>
                 <custom_attributes>1</custom_attributes>
                 <indexed_prices>1</indexed_prices>
+                <get_url_default>0</get_url_default>
             </export_settings>
             <image_settings>
                 <image_types>image,thumbnail</image_types>

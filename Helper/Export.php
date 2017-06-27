@@ -149,7 +149,7 @@ class Export extends Data
             /*->addStoreFilter($this->_storeId)*/
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
             ->addAttributeToSelect($customAttributes);
-
+        
         if ($this->useIndexedPrices()) {    
             $collection->addPriceData();
         }
@@ -180,9 +180,9 @@ class Export extends Data
                 "is_in_stock"                 => $product->getIsInStock() ? "1" : "0",
                 "qty"                         => (int)$product->getQty(),
                 "min_qty"                     => (int)$product->getMinSaleQty(),
-                "link"                        => $this->_objectManager->create('Magento\Framework\Url')->setScope($this->_storeId)->getUrl('', $routeParams)
+                "link"                        => $this->useDefaultGetUrl() ? $product->getUrl() : $this->_objectManager->create('Magento\Framework\Url')->setScope($this->_storeId)->getUrl('', $routeParams)
             );
-
+            
             $imageTypes = $this->getImageTypes($this->_objectManager);         
             foreach ($imageTypes as $imgType) {
                 $values[(string)$imgType['label']] = $this->getProductImage($product, $imgType['value']);              

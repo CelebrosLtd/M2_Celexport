@@ -39,3 +39,6 @@ Celebros Export Products
 1.3.1 - 1.3.8 - tech fixes
 
 1.3.9 - issue with row_id fixed for CE
+
+1.3.10 - tech fix
+
