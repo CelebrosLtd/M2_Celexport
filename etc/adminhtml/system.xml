@@ -113,13 +113,6 @@
                         <field id="export_enabled">1</field>
                     </depends>
                 </field>
-                <field id="get_url_default" translate="label" type="select" sortOrder="260" showInDefault="1" showInWebsite="0" showInStore="1">
-                    <label>Use Default 'getProductUrl' Method</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="export_enabled">1</field>
-                    </depends>
-                </field>
             </group>
             <group id="image_settings" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>Export Images</label>

@@ -136,17 +136,39 @@ class Export extends Data
         return number_format($price, 2, ".", "");
     }
     
+    private function getUrlInstance($storeId)
+    {
+        return $this->_objectManager->create('Magento\Framework\Url')->setScope($storeId);
+    }
+    
+    public function getProductUrl($product, $storeId, $urlBuilder)
+    {
+        if ($product->isVisibleInSiteVisibility()) {
+            $routeParams = [
+                '_direct' => $product->getRequestPath(),
+                '_query' => [],
+                '_nosid' => true,
+                '_seo_product_id' => 1
+            ];
+            
+            return $urlBuilder->getUrl('', $routeParams);
+        }
+        
+        return false;
+    }
+    
     public function getProductsData($ids, $customAttributes, $storeId, $objectManager)
     {
         $this->_storeId = $storeId;
         $this->_objectManager = $objectManager;
         $str = null;
         $this->setCurrentStore($this->_storeId);
+        $urlBuilder = $this->getUrlInstance($this->_storeId);
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
         $collection->setFlag('has_stock_status_filter', true);
         $collection->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($this->_storeId)
-            /*->addStoreFilter($this->_storeId)*/
+            ->addAttributeToSelect('visibility')
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
             ->addAttributeToSelect($customAttributes);
         
@@ -180,7 +202,7 @@ class Export extends Data
                 "is_in_stock"                 => $product->getIsInStock() ? "1" : "0",
                 "qty"                         => (int)$product->getQty(),
                 "min_qty"                     => (int)$product->getMinSaleQty(),
-                "link"                        => $this->useDefaultGetUrl() ? $product->getProductUrl() : $this->_objectManager->create('Magento\Framework\Url')->setScope($this->_storeId)->getUrl('', $routeParams)
+                "link"                        => $this->getProductUrl($product, $this->_storeId, $urlBuilder)
             );
             
             $imageTypes = $this->getImageTypes($this->_objectManager);         
