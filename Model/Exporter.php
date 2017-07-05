@@ -325,6 +325,9 @@ class Exporter
             $this->logProfiler('===============');
             $this->logProfiler('Starting Export');
             $this->logProfiler('===============');
+            $this->logProfiler('memory_limit: ' . ini_get('memory_limit'));
+            $this->logProfiler('max_execution_time: ' . ini_get('max_execution_time'));
+            $this->logProfiler('===============');
             $this->logProfiler("Store code: {$this->_fStore_id}, name: {$store->getName()}");
             $this->logProfiler("Zip file name: {$this->_fileNameZip}");
             $this->logProfiler('Mem usage: ' . memory_get_usage(true));
