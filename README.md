@@ -42,3 +42,4 @@ Celebros Export Products
 
 1.3.10 - 1.3.11 - tech fix
 
+1.3.12 - tables export optimization
