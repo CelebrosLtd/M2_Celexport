@@ -15,7 +15,7 @@ namespace Celebros\Celexport\Model;
 
 class Exporter
 {
-    const ATTR_TABLE_PRODUCT_LIMIT = 4000;
+    const ATTR_TABLE_PRODUCT_LIMIT = 1000;
     
     protected $_config;
     protected $_conn;
@@ -1066,7 +1066,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
                     ->getColumnValues($entityIdName);
                 $this->_attrProductIdsChunks[] = $productIds;
                 $page++;
-            } while (count($productIds) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 150);
+            } while (count($productIds) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
         }
 
         foreach ($this->_attrProductIdsChunks as $ids) {       
@@ -1372,18 +1372,26 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
         $rootCategoryId = $store->getRootCategoryId();
         $productIds = [];
         $categorylessIds = [];
-        $products = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
-            ->setStoreId($store->getStoreId())
-            ->addStoreFilter($store->getStoreId())
-            ->addCategoryIds();
-
-        foreach ($products as $prod) {
-            if (!empty($prod->getCategoryIds())) {
-                $productIds[] = $prod->getEntityId();
-            } else {
-                $categorylessIds[] = $prod->getEntityId();
+        
+        $page = 1;
+        $chunksIds = [];
+        do {
+            $products = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
+                ->setStoreId($store->getStoreId())
+                ->addStoreFilter($store->getStoreId())
+                ->addCategoryIds()
+                ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT);
+                
+            foreach ($products as $prod) {
+                if (!empty($prod->getCategoryIds())) {
+                    $productIds[] = $prod->getEntityId();
+                } else {
+                    $categorylessIds[] = $prod->getEntityId();
+                }
             }
-        }
+
+            $page++;            
+        } while (count($products) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);        
         
         $this->_productIds = $productIds;
         $this->_categorylessIds = $categorylessIds;
