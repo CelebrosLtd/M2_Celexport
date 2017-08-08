@@ -169,7 +169,7 @@ class Export extends Data
         $collection->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($this->_storeId)
             ->addAttributeToSelect('visibility')
-            ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type', 'is_salable'))
+            ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type'))
             ->addAttributeToSelect($customAttributes);
         
         if ($this->useIndexedPrices()) {    
@@ -197,13 +197,30 @@ class Export extends Data
                 "price"                       => $this->getCalculatedPrice($product),
                 "type_id"                     => $product->getTypeId(),
                 "product_sku"                 => $product->getSku(),
-                "is_salable"                  => $product->isSaleable() ? "1" : "0",
-                "manage_stock"                => $product->getManageStock() ? "1" : "0",
-                "is_in_stock"                 => $product->getIsInStock() ? "1" : "0",
-                "qty"                         => (int)$product->getQty(),
-                "min_qty"                     => (int)$product->getMinSaleQty(),
                 "link"                        => $this->getProductUrl($product, $this->_storeId, $urlBuilder)
             );
+            
+            $prodParams = $this->getProdParams($this->_objectManager);
+            foreach ($prodParams as $prodParam) { 
+                switch ($prodParam['value']) {
+                    case 'is_saleable':
+                        $values['is_salable'] = $product->isSaleable() ? "1" : "0";
+                        break;
+                    case 'manage_stock':
+                        $values['manage_stock'] = $product->getManageStock() ? "1" : "0";
+                        break;
+                    case 'is_in_stock':
+                        $values['is_in_stock'] = $product->getIsInStock() ? "1" : "0";
+                        break;
+                    case 'qty':
+                        $values['qty'] = (int)$product->getQty();
+                        break;
+                    case 'min_qty':
+                        $values['min_qty'] = (int)$product->getMinSaleQty();
+                        break;
+                    default:
+                }                
+            }
             
             $imageTypes = $this->getImageTypes($this->_objectManager);         
             foreach ($imageTypes as $imgType) {
@@ -245,6 +262,19 @@ class Export extends Data
         }
         
         return $imageTypes;
+    }
+    
+    public function getProdParams($objectManager)
+    {
+        $avParams = $this->getConfig('celexport/export_settings/product_parameters');
+        $prodParams = $objectManager->create('Celebros\Celexport\Model\Config\Source\Prodparams')->toOptionArray();
+        foreach ($prodParams as $key => $prodParam) {
+            if (!in_array($prodParam['value'], explode(',', $avParams))) {
+                unset($prodParams[$key]);
+            }
+        }
+        
+        return $prodParams;
     }
     
     public function getMemoryLimit()

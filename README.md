@@ -43,3 +43,5 @@ Celebros Export Products
 1.3.10 - 1.3.11 - tech fix
 
 1.3.12 - 1.3.13 - tables export optimization
+
+1.3.14 - enable/disable product columns added to adminpanel

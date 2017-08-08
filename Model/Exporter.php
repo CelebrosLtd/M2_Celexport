@@ -1418,10 +1418,15 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
         $this->logProfiler("START export products");
         $startTime = time();
         
-        $fields = array('mag_id', 'price', 'type_id', 'sku', 'is_saleable', 'manage_stock', 'is_in_stock', 'qty', 'min_qty');
+        $fields = array('mag_id', 'price', 'type_id', 'sku');
         
         if ($this->bExportProductLink) {
             $fields[] = 'link';
+        }
+        
+        $prodParams = $this->helper->getProdParams($this->_objectManager);
+        foreach ($prodParams as $prodParam) {
+            $fields[] = (string)$prodParam['label'];
         }
         
         $imageTypes = $this->helper->getImageTypes($this->_objectManager);

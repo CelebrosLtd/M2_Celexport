@@ -26,6 +26,7 @@
                 <path>/var/celebros/export</path>
                 <global_export>0</global_export>
                 <extra_tables></extra_tables>
+                <product_parameters>manage_stock,is_in_stock,qty,min_qty</product_parameters>
                 <rootcat_products_export>0</rootcat_products_export>
                 <custom_attributes>1</custom_attributes>
                 <indexed_prices>1</indexed_prices>

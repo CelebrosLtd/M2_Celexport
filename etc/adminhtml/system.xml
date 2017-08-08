@@ -92,6 +92,10 @@
                         <field id="export_enabled">1</field>
                     </depends>
                 </field>
+                <field id="product_parameters" translate="label" type="multiselect" sortOrder="225" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Product Parameters</label>
+                    <source_model>Celebros\Celexport\Model\Config\Source\Prodparams</source_model>
+                </field>
                 <field id="rootcat_products_export" translate="label" type="select" sortOrder="230" showInDefault="1" showInWebsite="0" showInStore="1">
                     <label>Export Products From Root Only</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
