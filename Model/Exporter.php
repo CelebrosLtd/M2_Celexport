@@ -1405,7 +1405,7 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
     
     protected function export_categoryless_products($store)
     {
-        $this->prepareStoreProductIds($store);
+        /*$this->prepareStoreProductIds($store);*/
         $this->export_products($this->_categorylessIds, $this->categoryless_prod_file_name, $store);
     }
     

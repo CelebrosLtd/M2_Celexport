@@ -169,8 +169,11 @@ class Export extends Data
         $collection->addFieldToFilter('entity_id', array('in' => $ids))
             ->setStoreId($this->_storeId)
             ->addAttributeToSelect('visibility')
-            ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type'))
-            ->addAttributeToSelect($customAttributes);
+            ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type'));
+        
+        if (is_array($customAttributes) && !empty($customAttributes)) {
+            $collection->addAttributeToSelect($customAttributes);
+        }   
         
         if ($this->useIndexedPrices()) {    
             $collection->addPriceData();
@@ -228,8 +231,10 @@ class Export extends Data
             }
             
             //Process custom attributes.
-            foreach ($customAttributes as $customAttribute) {
-                $values[$customAttribute] = ($product->getData($customAttribute) == "") ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
+            if (is_array($customAttributes) && !empty($customAttributes)) {
+                foreach ($customAttributes as $customAttribute) {
+                    $values[$customAttribute] = ($product->getData($customAttribute) == "") ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
+                }
             }
             
             //Dispatching an event so that custom modules would be able to extend the functionality of the export,
