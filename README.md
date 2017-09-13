@@ -46,4 +46,4 @@ Celebros Export Products
 
 1.3.14 - enable/disable product columns added to adminpanel
 
-1.3.15 - tech fix
+1.3.15 - 1.3.16 - tech fix

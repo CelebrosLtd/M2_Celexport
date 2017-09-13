@@ -1057,19 +1057,21 @@ if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
         
         $page = 1;
         $chunksIds = [];
-        if (!count($this->_attrProductIdsChunks)) {
+
+        if (null == isset($this->_attrProductIdsChunks[$this->_fStore_id])) {
+            $this->_attrProductIdsChunks[$this->_fStore_id] = [];
             do {
                 $productIds = $this->_objectManager->create('Magento\Catalog\Model\Product')
                     ->getCollection()
                     ->addStoreFilter($this->_fStore_id)
                     ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT)
                     ->getColumnValues($entityIdName);
-                $this->_attrProductIdsChunks[] = $productIds;
+                $this->_attrProductIdsChunks[$this->_fStore_id][] = $productIds;
                 $page++;
             } while (count($productIds) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
         }
 
-        foreach ($this->_attrProductIdsChunks as $ids) {       
+        foreach ($this->_attrProductIdsChunks[$this->_fStore_id] as $ids) {       
             $sql = clone($originalSql);
             $table = $sql->getPart('from');
             $table = array_shift($table);
