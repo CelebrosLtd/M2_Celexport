@@ -16,6 +16,7 @@ namespace Celebros\Celexport\Model;
 class Exporter
 {
     const ATTR_TABLE_PRODUCT_LIMIT = 1000;
+    const ORDER_COLLETION_PAGE_LIMIT = 500;
     
     protected $_config;
     protected $_conn;
@@ -172,15 +173,21 @@ class Exporter
             $glue = $enclosed . $delimeter . $enclosed;
             $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
             
-            foreach ($orderItems->getCollection() as $item) {
-                $record["OrderID"] = $item->getOrderId();
-                $record["ProductID"] = $item->getProductId();
-                $created_at_time = strtotime($item->getCreatedAt());
-                $record["Date"] = date("Y-m-d", $created_at_time);
-                $record["Count"] = (int)$item->getQtyOrdered();
-                $record["Sum"] = $item->getRowTotal();
-                $strResult .= $enclosed . implode($glue, $record) . $enclosed . $newLine;
-            }
+            $page = 1;
+            do {
+                $orders = $orderItems->getCollection()->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
+                foreach ($orders as $item) {
+                    $record["OrderID"] = $item->getOrderId();
+                    $record["ProductID"] = $item->getProductId();
+                    $created_at_time = strtotime($item->getCreatedAt());
+                    $record["Date"] = date("Y-m-d", $created_at_time);
+                    $record["Count"] = (int)$item->getQtyOrdered();
+                    $record["Sum"] = $item->getRowTotal();
+                    $strResult .= $enclosed . implode($glue, $record) . $enclosed . $newLine;
+                }
+
+                $page++;            
+            } while (count($orders) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 1000);
             
             //Create, flush, zip and ftp the orders file
             $zipFileName = $this->helper->getDataHistoryFileName($store);
