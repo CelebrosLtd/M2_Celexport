@@ -169,7 +169,7 @@ class Exporter
                 continue;
             }
                 
-            $header = array("OrderID", "ProductID", "Date", "Count", "Sum");
+            $header = array("OrderID", "ProductSKU", "ProductID", "Date", "Count", "Sum");
             $glue = $enclosed . $delimeter . $enclosed;
             $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
             
@@ -178,6 +178,7 @@ class Exporter
                 $orders = $orderItems->getCollection()->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
                 foreach ($orders as $item) {
                     $record["OrderID"] = $item->getOrderId();
+                    $record["ProductSKU"] = $item->getSku();
                     $record["ProductID"] = $item->getProductId();
                     $created_at_time = strtotime($item->getCreatedAt());
                     $record["Date"] = date("Y-m-d", $created_at_time);
@@ -187,7 +188,7 @@ class Exporter
                 }
 
                 $page++;            
-            } while (count($orders) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 1000);
+            } while (count($orders) == self::ORDER_COLLETION_PAGE_LIMIT && $page < 5000);
             
             //Create, flush, zip and ftp the orders file
             $zipFileName = $this->helper->getDataHistoryFileName($store);

@@ -49,3 +49,5 @@ Celebros Export Products
 1.3.15 - 1.3.16 - tech fix
 
 1.3.17 - Data History export optimization
+
+1.3.18 - tech fix
