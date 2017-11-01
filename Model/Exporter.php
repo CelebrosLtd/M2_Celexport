@@ -640,12 +640,13 @@ class Exporter
         /*----- catalog_category_entity.txt -----*/
         $this->getTimeOffset(microtime());
         $table = $this->_resource->getTableName("catalog_category_entity");
+        $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
         $categories = implode(',', $this->_getAllCategoriesForStore());
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'parent_id', 'path')
-        )->where("`entity_id` IN ({$categories})");
+            array($idName, 'parent_id', 'path')
+        )->where("`" . $idName . "` IN ({$categories})");
         $this->export_table($query, "catalog_category_entity");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
@@ -810,6 +811,8 @@ class Exporter
     
     protected function exportDisabledCategories($filename)
     {
+        $table = $this->_resource->getTableName("catalog_category_entity");
+        $idName = $this->getProductEntityIdName($table);
         $categories = $this->_objectManager->create('Magento\Catalog\Model\Category')
             ->getCollection()->addAttributeToSelect('is_active')
             ->setProductStoreId($this->_fStore_id);
@@ -821,11 +824,11 @@ class Exporter
             return;
         }
         
-        $str = "^entity_id^\r\n";
+        $str = "^" . $idName . "^\r\n";
         
         foreach ($categories as $category) {
             if (!$category->getIsActive()) {
-                $str .= "^" . $category->getEntityId() . "^" . "\r\n";
+                $str .= "^" . $category->getData($idName) . "^" . "\r\n";
             }
         }
         
@@ -849,9 +852,9 @@ class Exporter
             return;
         }
 
-        $str = "^entity_id^" . $this->_fDel . "^value^\r\n";
+        $str = "^" . $idName ."^" . $this->_fDel . "^value^\r\n";
         foreach ($categories as $category) {
-            $str .= "^" . $category->getEntityId() . "^" . $this->_fDel . "^" . $category->getName() . "^" . "\r\n";
+            $str .= "^" . $category->getData($idName) . "^" . $this->_fDel . "^" . $category->getName() . "^" . "\r\n";
         }
 
         $this->write_to_file($str, $fh);
