@@ -487,16 +487,17 @@ class Exporter
         $this->getTimeOffset(microtime());
         $table = $this->_resource->getTableName("catalog_product_entity");
         $this->logProfiler("START {$table}");
+        $entityName = $this->getProductEntityIdName("catalog_product_entity");
         $categories = implode(',', $this->_getAllCategoriesForStore());
         $categoryProductsTable = $this->_resource->getTableName("catalog_category_product");
         $query = $this->_read->select()->from(
             $table,
-            array('entity_id', 'type_id', 'sku')
+            array($entityName, 'type_id', 'sku')
         )->joinLeft(
             $categoryProductsTable,
-            "`{$table}`.`entity_id` = `{$categoryProductsTable}`.`product_id`",
+            "`{$table}`.`{$entityName}` = `{$categoryProductsTable}`.`product_id`",
             array()
-        )->group('entity_id');
+        )->group($entityName);
         $this->export_table($query, "catalog_product_entity");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
@@ -958,13 +959,11 @@ class Exporter
             //$this->logProfiler("Block read start ({$this->_limit} products");
             //$this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
 
-if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
-    $tmp = ['entity_id' => $this->_rowEntityMap[$row['row_id']]];
-    unset($row['row_id']);
-    $row = array_merge($tmp, $row);
-}          
-            
-            
+            if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
+                $tmp = ['entity_id' => $this->_rowEntityMap[$row['row_id']]];
+                unset($row['row_id']);
+                $row = array_merge($tmp, $row);
+            }          
             
             //remember all the rows we're processing now, so we won't go over them again when we iterate over the default store.
             if (isset($fields)) {

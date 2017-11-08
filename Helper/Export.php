@@ -196,7 +196,7 @@ class Export extends Data
             ];
             
             $values = array(
-                "id"                          => $product->getEntityId(),
+                "id"                          => $product->getRowId() ? : $product->getEntityId(),
                 "price"                       => $this->getCalculatedPrice($product),
                 "type_id"                     => $product->getTypeId(),
                 "product_sku"                 => $product->getSku(),
