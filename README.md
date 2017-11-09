@@ -51,3 +51,5 @@ Celebros Export Products
 1.3.17 - Data History export optimization
 
 1.3.18 - 1.3.21 - tech fix
+    
+1.3.22 - order age added for history data export

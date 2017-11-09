@@ -17,6 +17,7 @@ class Exporter
 {
     const ATTR_TABLE_PRODUCT_LIMIT = 1000;
     const ORDER_COLLETION_PAGE_LIMIT = 500;
+    const ORDERS_AGE = 120; /* days */
     
     protected $_config;
     protected $_conn;
@@ -172,10 +173,13 @@ class Exporter
             $header = array("OrderID", "ProductSKU", "ProductID", "Date", "Count", "Sum");
             $glue = $enclosed . $delimeter . $enclosed;
             $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
-            
+            $strT = time() - 60 * 60 * self::ORDERS_AGE * 24;
+            $timeEdge = (new \DateTime(date("Y-m-d", $strT)))->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);            
             $page = 1;
             do {
-                $orders = $orderItems->getCollection()->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
+                $orders = $orderItems->getCollection()
+                    ->addFieldToFilter('created_at', ['gteq' => $timeEdge])
+                    ->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
                 foreach ($orders as $item) {
                     $record["OrderID"] = $item->getOrderId();
                     $record["ProductSKU"] = $item->getSku();
@@ -186,7 +190,6 @@ class Exporter
                     $record["Sum"] = $item->getRowTotal();
                     $strResult .= $enclosed . implode($glue, $record) . $enclosed . $newLine;
                 }
-
                 $page++;            
             } while (count($orders) == self::ORDER_COLLETION_PAGE_LIMIT && $page < 5000);
             
