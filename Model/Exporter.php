@@ -961,12 +961,12 @@ class Exporter
         while ($row = $query->fetch()) {
             //$this->logProfiler("Block read start ({$this->_limit} products");
             //$this->logProfiler('Mem usage: ' . memory_get_usage(TRUE));
-
-            if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
+            
+            /*if (isset($row['row_id']) && isset($this->_rowEntityMap[$row['row_id']])) {
                 $tmp = ['entity_id' => $this->_rowEntityMap[$row['row_id']]];
                 unset($row['row_id']);
                 $row = array_merge($tmp, $row);
-            }          
+            }*/
             
             //remember all the rows we're processing now, so we won't go over them again when we iterate over the default store.
             if (isset($fields)) {
@@ -977,7 +977,7 @@ class Exporter
                
                 $processedRows[] = substr($concatenatedRow, 0, -1);
             }
-
+            
             $str .= "^" . implode("^" . $this->_fDel . "^", $row) . "^" . "\r\n";
             $rowCount++;
             
