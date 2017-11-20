@@ -423,6 +423,11 @@ class Exporter
         return (isset($this->_rowEntityMap[$row_id]) ? $this->_rowEntityMap[$row_id] : $row_id);
     }
     
+    public function getRowIdByEntityId($entity_id)
+    {
+        return (isset($this->_entityRowMap[$entity_id]) ? $this->_entityRowMap[$entity_id] : $entity_id);
+    }
+    
     public function arrayToString($fields)
     {
         return "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
@@ -457,7 +462,8 @@ class Exporter
         }
         
         $this->_rowEntityMap = $rowEntityMap;
-
+        $this->_entityRowMap = array_flip($rowEntityMap);
+        
         /*----- catalog_eav_attribute.txt -----*/
         $this->getTimeOffset(microtime());
         $table = $this->_resource->getTableName("catalog_eav_attribute");
@@ -694,7 +700,8 @@ class Exporter
 
         $rows = $query->query();
         while ($row = $rows->fetch()) {
-            $fields = [$row['product_id'], $this->getEntityIdByRowId($row['parent_id'])];
+            /*$fields = [$row['product_id'], $this->getEntityIdByRowId($row['parent_id'])];*/
+            $fields = [$this->getRowIdByEntityId($row['product_id']), $row['parent_id']];
             $str .= $this->arrayToString($fields);
         }
 
@@ -725,13 +732,14 @@ class Exporter
             $table,
             $fields
         ); 
-
+        
         $rows = $query->query();
         while ($row = $rows->fetch()) {
-            $fields = [$this->getEntityIdByRowId($row['parent_id']), $row['child_id']];
+            /*$fields = [$this->getEntityIdByRowId($row['parent_id']), $row['child_id']];*/
+            $fields = [$row['parent_id'], $this->getRowIdByEntityId($row['child_id'])];
             $str .= $this->arrayToString($fields);
         }
-
+        
         $filename = 'catalog_product_relation';
         $fh = $this->create_file($filename);
         if (!$fh) {
@@ -742,7 +750,7 @@ class Exporter
         
         $this->write_to_file($str, $fh);
         fclose($fh);
-
+        
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
