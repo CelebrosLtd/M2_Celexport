@@ -1398,6 +1398,8 @@ class Exporter
         
         $page = 1;
         $chunksIds = [];
+        $entityName = $this->getProductEntityIdName("catalog_product_entity");
+        
         do {
             $products = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
                 ->setStoreId($store->getStoreId())
@@ -1407,9 +1409,9 @@ class Exporter
                 
             foreach ($products as $prod) {
                 if (!empty($prod->getCategoryIds())) {
-                    $productIds[] = $prod->getEntityId();
+                    $productIds[] = $prod->getData($entityName);
                 } else {
-                    $categorylessIds[] = $prod->getEntityId();
+                    $categorylessIds[] = $prod->getData($entityName);
                 }
             }
 

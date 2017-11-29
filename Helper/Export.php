@@ -164,9 +164,10 @@ class Export extends Data
         $str = null;
         $this->setCurrentStore($this->_storeId);
         $urlBuilder = $this->getUrlInstance($this->_storeId);
+        $entityName = $this->_objectManager->create('Celebros\Celexport\Model\Exporter')->getProductEntityIdName("catalog_product_entity");
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
         $collection->setFlag('has_stock_status_filter', true);
-        $collection->addFieldToFilter('entity_id', array('in' => $ids))
+        $collection->addFieldToFilter($entityName, array('in' => $ids))
             ->setStoreId($this->_storeId)
             ->addAttributeToSelect('visibility')
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type'));
