@@ -179,6 +179,7 @@ class Exporter
             do {
                 $orders = $orderItems->getCollection()
                     ->addFieldToFilter('created_at', ['gteq' => $timeEdge])
+                    ->addOrder('order_id', 'ASC')
                     ->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
                 foreach ($orders as $item) {
                     $record["OrderID"] = $item->getOrderId();
@@ -1085,6 +1086,7 @@ class Exporter
                 $productIds = $this->_objectManager->create('Magento\Catalog\Model\Product')
                     ->getCollection()
                     ->addStoreFilter($this->_fStore_id)
+                    ->addOrder($entityIdName, "ASC")
                     ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT)
                     ->getColumnValues($entityIdName);
                 $this->_attrProductIdsChunks[$this->_fStore_id][] = $productIds;
@@ -1405,6 +1407,7 @@ class Exporter
                 ->setStoreId($store->getStoreId())
                 ->addStoreFilter($store->getStoreId())
                 ->addCategoryIds()
+                ->addOrder($entityName, "ASC")
                 ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT);
                 
             foreach ($products as $prod) {
@@ -1418,8 +1421,8 @@ class Exporter
             $page++;            
         } while (count($products) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);        
         
-        $this->_productIds = $productIds;
-        $this->_categorylessIds = $categorylessIds;
+        $this->_productIds = array_unique($productIds);
+        $this->_categorylessIds = array_unique($categorylessIds);
     }
     
     protected function export_store_products($store)
