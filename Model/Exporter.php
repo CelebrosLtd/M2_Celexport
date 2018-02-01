@@ -383,7 +383,7 @@ class Exporter
             
             $this->logProfiler('Creating ZIP file');
             $this->logProfiler('-----------------');
-            
+          
             $zipFilePath = $this->zipLargeFiles();
             
             $this->comments_style('icon', 'Checking FTP upload', 'icon');
@@ -429,6 +429,11 @@ class Exporter
         return (isset($this->_entityRowMap[$entity_id]) ? $this->_entityRowMap[$entity_id] : $entity_id);
     }
     
+    public function getCategoryRowIdByEntityId($entity_id)
+    {
+        return (isset($this->_categoryEntityRowMap[$entity_id]) ? $this->_categoryEntityRowMap[$entity_id] : $entity_id);
+    }
+    
     public function arrayToString($fields)
     {
         return "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
@@ -464,6 +469,34 @@ class Exporter
         
         $this->_rowEntityMap = $rowEntityMap;
         $this->_entityRowMap = array_flip($rowEntityMap);
+        
+        $rowEntityMap = [];
+        $table = $this->_resource->getTableName("catalog_category_entity");
+        $query = $this->_read->select();
+        if ($entityName == 'row_id') {
+            $query->from(
+                $table,
+                array('entity_id', 'row_id')
+            )->group('row_id'); 
+            
+            $rows = $query->query();
+            while ($row = $rows->fetch()) {
+                $rowEntityMap[$row['row_id']] = $row['entity_id'];
+            }
+        } else {
+            $query->from(
+                $table,
+                array('entity_id')
+            )->group('entity_id'); 
+            
+            $rows = $query->query();
+            while ($row = $rows->fetch()) {
+                $rowEntityMap[$row['entity_id']] = $row['entity_id'];
+            }    
+        }
+        
+        $this->_categoryRowEntityMap = $rowEntityMap;
+        $this->_categoryEntityRowMap = array_flip($rowEntityMap);
         
         /*----- catalog_eav_attribute.txt -----*/
         $this->getTimeOffset(microtime());
@@ -653,7 +686,7 @@ class Exporter
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
-        $categories = implode(',', $this->_getAllCategoriesForStore());
+        $categories = implode(',', $this->_getAllCategoriesForStore($idName));
         $query = $this->_read->select()->from(
             $table,
             array($idName, 'parent_id', 'path')
@@ -962,6 +995,7 @@ class Exporter
     
     protected function export_table_rows($sql, $fields, $fh)
     {
+//print_r($fields); echo '<br>';
         $str = "";
         
         $query = $sql->query();
@@ -986,7 +1020,15 @@ class Exporter
                
                 $processedRows[] = substr($concatenatedRow, 0, -1);
             }
-            
+if (isset($row['parent_id']) && $row['path']) {
+    $tmp = explode('/', $row['path']);
+    foreach ($tmp as $key => $item) {
+        $tmp[$key] = $this->getCategoryRowIdByEntityId($item);
+    }
+    
+    $row['path'] = implode('/', $tmp);
+    $row['parent_id'] = $this->getCategoryRowIdByEntityId($row['parent_id']);
+}            
             $str .= "^" . implode("^" . $this->_fDel . "^", $row) . "^" . "\r\n";
             $rowCount++;
             
