@@ -208,14 +208,45 @@ class Exporter
     {
         $dir = $this->helper->getExportPath();
         if (is_dir($dir)) {
-            $files = scandir($dir);
-            foreach ($files as $file) {
-                if (filectime($dir . '/' . $file) < strtotime('-' . $this->helper->getExportLifetime() . ' day')
-                && !in_array($file, array('.', '..'))) {
-                    shell_exec('rm -rf ' . $dir . '/' . $file);
+            try {
+                $files = scandir($dir);
+                foreach ($files as $file) {
+                    if (filectime($dir . '/' . $file) < strtotime('-' . $this->helper->getExportLifetime() . ' day')
+                    && !in_array($file, array('.', '..'))) {
+                        $this->removeDir($dir . '/' . $file);
+                    }
                 }
-            }
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+                return false;
+            }    
         }
+        
+        return true;
+    }
+    
+    public function removeDir($dir)
+    {
+        if (!file_exists($dir)) {
+            return true;
+        }
+
+        if (!is_dir($dir)) {
+            return unlink($dir);
+        }
+
+        foreach (scandir($dir) as $item) {
+            if ($item == '.' || $item == '..') {
+                continue;
+            }
+
+            if (!$this->removeDir($dir . '/' . $item)) {
+                return false;
+            }
+
+        }
+
+        return rmdir($dir);
     }
     
     public function comments_style($kind, $text, $alt)
