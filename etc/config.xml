@@ -19,6 +19,7 @@
                 <export_data_history>0</export_data_history>
                 <zipname>products.zip</zipname>
                 <datahistoryname>Data_History.zip</datahistoryname>
+                <datahistoryperiod>90</datahistoryperiod>
                 <delimiter>\t</delimiter>
                 <enclosed_values>"</enclosed_values>
                 <type>file</type>

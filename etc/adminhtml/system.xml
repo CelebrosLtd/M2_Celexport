@@ -45,6 +45,15 @@
                     <label>Data History Zip File Name</label>
                     <depends>
                         <field id="export_enabled">1</field>
+                        <field id="export_data_history">1</field>
+                    </depends>
+                </field>
+                <field id="datahistoryperiod" translate="label" type="text" sortOrder="42" showInDefault="1" showInWebsite="0" showInStore="1">
+                    <label>Data History Period</label>
+                    <comment>days</comment>
+                    <depends>
+                        <field id="export_enabled">1</field>
+                        <field id="export_data_history">1</field>
                     </depends>
                 </field>
                 <field id="delimiter" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="1">
