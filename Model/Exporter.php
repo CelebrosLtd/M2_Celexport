@@ -173,6 +173,7 @@ class Exporter
             $header = array("OrderID", "ProductSKU", "ProductID", "Date", "Count", "Sum");
             $glue = $enclosed . $delimeter . $enclosed;
             $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
+
             $strT = time() - 60 * 60 * $this->helper->getConfig('celexport/export_settings/datahistoryperiod', $store) * 24;
             $timeEdge = (new \DateTime(date("Y-m-d", $strT)))->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);            
             $page = 1;
@@ -1437,8 +1438,6 @@ class Exporter
             $products = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
                 ->setStoreId($store->getStoreId())
                 ->addStoreFilter($store->getStoreId())
-                ->addAttributeToSelect('status')
-                ->addFieldToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
                 ->addCategoryIds()
                 ->addOrder($entityName, "ASC")
                 ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT);
