@@ -57,3 +57,5 @@ Celebros Export Products
 1.3.23 - 1.3.28 - tech fix
 
 1.3.29 - order data export period added to adin settings, disabled products removed from export
+
+1.3.30 - tech fix for category row_id

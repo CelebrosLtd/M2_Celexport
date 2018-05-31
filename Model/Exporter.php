@@ -461,6 +461,16 @@ class Exporter
         return (isset($this->_entityRowMap[$entity_id]) ? $this->_entityRowMap[$entity_id] : $entity_id);
     }
     
+    public function getEntityIdByRowIdCat($row_id)
+    {
+        return (isset($this->_rowEntityMapCat[$row_id]) ? $this->_rowEntityMapCat[$row_id] : $row_id);
+    }
+    
+    public function getRowIdByEntityIdCat($entity_id)
+    {
+        return (isset($this->_entityRowMapCat[$entity_id]) ? $this->_entityRowMapCat[$entity_id] : $entity_id);
+    }
+    
     public function arrayToString($fields)
     {
         return "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
@@ -496,6 +506,34 @@ class Exporter
         
         $this->_rowEntityMap = $rowEntityMap;
         $this->_entityRowMap = array_flip($rowEntityMap);
+        
+        $entityName = $this->getProductEntityIdName("catalog_category_entity");
+        $table = $this->_resource->getTableName("catalog_category_entity");
+        $query = $this->_read->select();
+        if ($entityName == 'row_id') {
+            $query->from(
+                $table,
+                array('entity_id', 'row_id')
+            )->group('row_id'); 
+            
+            $rows = $query->query();
+            while ($row = $rows->fetch()) {
+                $rowEntityMap[$row['row_id']] = $row['entity_id'];
+            }
+        } else {
+            $query->from(
+                $table,
+                array('entity_id')
+            )->group('entity_id'); 
+            
+            $rows = $query->query();
+            while ($row = $rows->fetch()) {
+                $rowEntityMap[$row['entity_id']] = $row['entity_id'];
+            }    
+        }
+        
+        $this->_rowEntityMapCat = $rowEntityMap;
+        $this->_entityRowMapCat = array_flip($rowEntityMap);
         
         /*----- catalog_eav_attribute.txt -----*/
         $this->getTimeOffset(microtime());
@@ -1008,6 +1046,26 @@ class Exporter
                 unset($row['row_id']);
                 $row = array_merge($tmp, $row);
             }*/
+      
+            /* catalog_category_products */
+            if (isset($row['category_id']) && isset($row['product_id'])) {
+                $row['category_id'] = $this->getRowIdByEntityIdCat($row['category_id']);
+                $row['product_id'] = $this->getRowIdByEntityIdCat($row['product_id']);
+            }
+      
+            /* catalog_category_entity */
+            if (isset($row['row_id']) && isset($row['path'])) {
+                if (isset($row['parent_id'])) {
+                    $row['parent_id'] = $this->getRowIdByEntityIdCat($row['parent_id']);    
+                }
+                
+                $tmp = explode("/", $row['path']); 
+                foreach ($tmp as $key => $entity_id) {
+                    $tmp[$key] = $this->getRowIdByEntityIdCat($entity_id);
+                }
+                
+                $row['path'] = implode("/", $tmp);
+            }
             
             //remember all the rows we're processing now, so we won't go over them again when we iterate over the default store.
             if (isset($fields)) {
@@ -1029,7 +1087,7 @@ class Exporter
                 $str="";
             }
         }
-        
+       
         if (($rowCount%1000)!=0) {
             //$this->logProfiler("Write last block start");
             $this->write_to_file($str, $fh);
