@@ -46,6 +46,7 @@ class Exporter
     protected $_attrProductIdsChunks = [];
     protected $_ftpUpload = false;
     protected $_timeMarker = null;
+    protected $_row_id = false;
 
     public $helper;
     
@@ -480,6 +481,10 @@ class Exporter
     {
         $rowEntityMap = [];
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
+        if ($entityName == 'row_id') {
+            $this->_row_id = true;    
+        }
+        
         $table = $this->_resource->getTableName("catalog_product_entity");
         $query = $this->_read->select();
         if ($entityName == 'row_id') {
@@ -1443,10 +1448,11 @@ class Exporter
             return;
         }
         
-        $str = "^entity_id^\r\n";
+        $idName = ($this->_row_id) ? 'row_id' : 'entity_id';
+        $str = "^" . $idName . "^\r\n";
         
         foreach ($collection as $item) {
-            $str .= "^" . $item->getEntityId() . "^" . "\r\n";
+            $str .= "^" . $item->getData($idName) . "^" . "\r\n";
         }
         
         $this->write_to_file($str, $fh);
@@ -1537,6 +1543,10 @@ class Exporter
         $startTime = time();
         
         $fields = array('mag_id', 'price', 'type_id', 'sku');
+        
+        if ($this->_row_id) {
+            $fields[] = 'entity_id';
+        }
         
         if ($this->bExportProductLink) {
             $fields[] = 'link';

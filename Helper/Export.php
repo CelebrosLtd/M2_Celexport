@@ -197,12 +197,17 @@ class Export extends Data
             ];
             
             $values = array(
-                "id"                          => $product->getRowId() ? : $product->getEntityId(),
-                "price"                       => $this->getCalculatedPrice($product),
-                "type_id"                     => $product->getTypeId(),
-                "product_sku"                 => $product->getSku(),
-                "link"                        => $this->getProductUrl($product, $this->_storeId, $urlBuilder)
+                "id"          => $product->getRowId() ? : $product->getEntityId(),
+                "price"       => $this->getCalculatedPrice($product),
+                "type_id"     => $product->getTypeId(),
+                "product_sku" => $product->getSku()
             );
+            
+            if ($product->getRowId()) {
+                $values["entity_id"] = $product->getEntityId();   
+            }
+                       
+            $values["link"] = $this->getProductUrl($product, $this->_storeId, $urlBuilder);
             
             $prodParams = $this->getProdParams($this->_objectManager);
             foreach ($prodParams as $prodParam) { 
