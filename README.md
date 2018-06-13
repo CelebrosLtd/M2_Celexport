@@ -60,4 +60,6 @@ Celebros Export Products
 
 1.3.30 - tech fix for category row_id
 
-1.3.31 - entity_id added to source_products and categoryless_products 
+1.3.31 - entity_id added to source_products and categoryless_products
+
+1.3.32 - fix for php7.1 with microtime

@@ -103,7 +103,7 @@ class Exporter
         $this->_objectManager = $objectManager;
         $this->_exportProcessId = $this->helper->getExportProcessId();
        
-        $export_start = (float) array_sum(explode(' ', microtime()));
+        $export_start = (float) array_sum(explode(' ', microtime(true)));
         $this->comments_style('header', 0, 0);
         $this->comments_style('icon', date('Y/m/d H:i:s') . ', Starting profile execution, please wait...', 'icon');
         $this->comments_style('icon', 'Memory Limit: ' . ini_get('memory_limit'), 'icon');
@@ -118,7 +118,7 @@ class Exporter
         $this->export_orders($objectManager->create('Magento\Sales\Model\Order\Item'));
         $this->export_main($this->_exportProcessId);
         
-        $export_end = (float)array_sum(explode(' ', microtime()));
+        $export_end = (float)array_sum(explode(' ', microtime(true)));
         
         $this->comments_style('info', 'Finished profile execution within ' . round($export_end - $export_start, 3) . ' sec.', 'finish');
         $this->comments_style('finish', 0, 0);
@@ -396,7 +396,7 @@ class Exporter
             if ($this->_categoriesForStore && count($this->_categoriesForStore)) {
                 $this->comments_style('icon', 'Exporting products', 'icon');
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-                $this->getTimeOffset(microtime());
+                $this->getTimeOffset(microtime(true));
                 $this->logProfiler('Writing products file');
                 $this->logProfiler('---------------------');
                 
@@ -541,7 +541,7 @@ class Exporter
         $this->_entityRowMapCat = array_flip($rowEntityMap);
         
         /*----- catalog_eav_attribute.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_eav_attribute");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -551,11 +551,11 @@ class Exporter
         $this->export_table($query, "catalog_eav_attribute");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- attributes_lookup.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("eav_attribute");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -565,11 +565,11 @@ class Exporter
         $this->export_attributes_table($query, "attributes_lookup");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity");
         $this->logProfiler("START {$table}");
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
@@ -586,7 +586,7 @@ class Exporter
         $this->export_table($query, "catalog_product_entity");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- disabled_products.txt -----*/
@@ -606,7 +606,7 @@ class Exporter
         );
       
         /*----- catalog_product_entity_varchar.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity_varchar");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
@@ -617,11 +617,11 @@ class Exporter
         $this->export_product_att_table($sql, "catalog_product_entity_varchar", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_int.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity_int");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
@@ -632,11 +632,11 @@ class Exporter
         $this->export_product_att_table($query, "catalog_product_entity_int", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_text.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity_text");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
@@ -647,11 +647,11 @@ class Exporter
         $this->export_product_att_table($query, "catalog_product_entity_text", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_decimal.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity_decimal");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
@@ -662,11 +662,11 @@ class Exporter
         $this->export_product_att_table($query, "catalog_product_entity_decimal", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_entity_datetime.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity_datetime");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
@@ -677,11 +677,11 @@ class Exporter
         $this->export_product_att_table($query, "catalog_product_entity_datetime", $idName);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- eav_attribute_option_value.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("eav_attribute_option_value");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -691,11 +691,11 @@ class Exporter
         $this->export_table($query, "eav_attribute_option_value", array('option_id'));
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- eav_attribute_option.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("eav_attribute_option");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -705,11 +705,11 @@ class Exporter
         $this->export_table($query, "eav_attribute_option");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_category_product.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_category_product");
         $this->logProfiler("START {$table}");
         $categories = implode(',', $this->_getAllCategoriesForStore());
@@ -720,11 +720,11 @@ class Exporter
         $this->export_table($query, "catalog_category_product");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_category_entity.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
@@ -736,31 +736,31 @@ class Exporter
         $this->export_table($query, "catalog_category_entity");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- category_lookup.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_category_entity_varchar");
         $this->logProfiler("START {$table}");
         $categories = $this->_getAllCategoriesForStore($this->getProductEntityIdName($table));
         $this->exportLookupCategories("category_lookup", $categories);
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- disabled_categories.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $this->logProfiler("START {$table}");
         $this->exportDisabledCategories("disabled_categories");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_super_link.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
 
@@ -794,11 +794,11 @@ class Exporter
         
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_relation.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_relation");
         $this->logProfiler("START {$table}"); 
         $fields = ['parent_id', 'child_id'];
@@ -829,11 +829,11 @@ class Exporter
         
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_super_attribute.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_super_attribute");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -843,11 +843,11 @@ class Exporter
         $this->export_table($query, "catalog_product_super_attribute");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
        
         /*----- celebros_mapping.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("celebros_mapping");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -857,11 +857,11 @@ class Exporter
         $this->export_table($query, "celebros_mapping");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true), null, true);
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- review_entity.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("review_entity");
         $product_entity_id = $this->_read->select()->from(
             $table,
@@ -877,11 +877,11 @@ class Exporter
         $this->export_table($query, "review_entity", array('entity_pk_value'));
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         /*----- catalog_product_website.txt -----*/
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_website");
         $this->logProfiler("START {$table}");
         $query = $this->_read->select()->from(
@@ -891,7 +891,7 @@ class Exporter
         $this->export_table($query, "catalog_product_website");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
         
         $this->export_extra_tables($store);
@@ -1535,7 +1535,7 @@ class Exporter
     
     protected function export_products($productIds, $fileName, $store)
     {
-        $this->getTimeOffset(microtime());
+        $this->getTimeOffset(microtime(true));
         $this->comments_style('info', "Begining products export", 'info');
         $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
         
@@ -1699,7 +1699,7 @@ class Exporter
         }
         
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime()));
+        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler("FINISH export products");
     }
     
@@ -1733,16 +1733,15 @@ class Exporter
         return ftp_close($this->_conn);
     }
     
-    
-    public function getTimeOffset($cuurentMicrotime)
+    public function getTimeOffset($curentMicrotime)
     {
         $result = 0;
         
         if ($this->_timeMarker) {
-            $result = round($cuurentMicrotime - $this->_timeMarker, 3);
+            $result = round((float)$curentMicrotime - $this->_timeMarker, 3);
         }
         
-        $this->_timeMarker = $cuurentMicrotime;
+        $this->_timeMarker = (float)$curentMicrotime;
         
         return $result;
     }
