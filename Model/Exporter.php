@@ -728,7 +728,7 @@ class Exporter
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
         $this->logProfiler("START {$table}");
-        $categories = implode(',', $this->_getAllCategoriesForStore());
+        $categories = implode(',', $this->_getAllCategoriesForStore($idName));
         $query = $this->_read->select()->from(
             $table,
             array($idName, 'parent_id', 'path')
