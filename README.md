@@ -65,3 +65,6 @@ Celebros Export Products
 1.3.32 - fix for php7.1 with microtime
 
 1.3.33 - tech fix for category row_id
+
+1.3.34 - tech fix with product urls
+

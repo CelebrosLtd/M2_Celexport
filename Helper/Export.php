@@ -141,11 +141,16 @@ class Export extends Data
         return $this->_objectManager->create('Magento\Framework\Url')->setScope($storeId);
     }
     
-    public function getProductUrl($product, $storeId, $urlBuilder)
+    public function getProductUrl($product, $storeId, $urlBuilder, $urlRewrite)
     {
+        $requestPath = false;
         if ($product->isVisibleInSiteVisibility()) {
+            if (!$product->getRequestPath()) {
+                $requestPath = $this->extractProductUrl($product, $storeId, $urlRewrite);
+            };
+            
             $routeParams = [
-                '_direct' => $product->getRequestPath(),
+                '_direct' => $requestPath ? : $product->getRequestPath(),
                 '_query' => [],
                 '_nosid' => true,
                 '_seo_product_id' => 1
@@ -155,6 +160,18 @@ class Export extends Data
         }
         
         return false;
+    }
+    
+    public function extractProductUrl($product, $storeId, $urlRewrite)
+    {
+        $paths = $urlRewrite->getCollection()
+            ->addFieldToFilter('store_id', $storeId)
+            ->addFieldToFilter('entity_id', $product->getEntityId())
+            ->getColumnValues('request_path');
+        $lenghts = array_map('strlen', $paths);
+        $requestPath = $paths[array_search(min($lenghts), $lenghts)];
+        
+        return $requestPath;
     }
     
     public function getProductsData($ids, $customAttributes, $storeId, $objectManager)
@@ -207,7 +224,7 @@ class Export extends Data
                 $values["entity_id"] = $product->getEntityId();   
             }
                        
-            $values["link"] = $this->getProductUrl($product, $this->_storeId, $urlBuilder);
+            $values["link"] = $this->getProductUrl($product, $this->_storeId, $urlBuilder, $this->_objectManager->create('Magento\UrlRewrite\Model\UrlRewrite'));
             
             $prodParams = $this->getProdParams($this->_objectManager);
             foreach ($prodParams as $prodParam) { 
