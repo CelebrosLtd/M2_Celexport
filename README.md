@@ -68,3 +68,4 @@ Celebros Export Products
 
 1.3.34 - tech fix with product urls
 
+1.3.35 - tech fix

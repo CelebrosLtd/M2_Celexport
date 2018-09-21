@@ -164,12 +164,15 @@ class Export extends Data
     
     public function extractProductUrl($product, $storeId, $urlRewrite)
     {
+        $requestPath = false;
         $paths = $urlRewrite->getCollection()
             ->addFieldToFilter('store_id', $storeId)
             ->addFieldToFilter('entity_id', $product->getEntityId())
             ->getColumnValues('request_path');
-        $lenghts = array_map('strlen', $paths);
-        $requestPath = $paths[array_search(min($lenghts), $lenghts)];
+        if (!empty($paths)) {
+            $lenghts = array_map('strlen', $paths);
+            $requestPath = $paths[array_search(min($lenghts), $lenghts)];
+        }
         
         return $requestPath;
     }
