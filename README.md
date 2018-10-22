@@ -69,3 +69,6 @@ Celebros Export Products
 1.3.34 - tech fix with product urls
 
 1.3.35 - tech fix
+
+1.3.36 - php require version changed
+
