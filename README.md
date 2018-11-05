@@ -72,3 +72,6 @@ Celebros Export Products
 
 1.3.36 - php require version changed
 
+1.3.37 - tech fix
+
+

@@ -47,6 +47,7 @@ class Exporter
     protected $_ftpUpload = false;
     protected $_timeMarker = null;
     protected $_row_id = false;
+    protected $_productCollection;
 
     public $helper;
     
@@ -54,12 +55,14 @@ class Exporter
         \Celebros\Celexport\Helper\Export $helper,
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Framework\Shell $shell,
-        \Magento\Framework\Filesystem\DirectoryList $dir
+        \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollection
     ) {
         $this->helper = $helper;
         $this->_resource = $resource;
         $this->_dir = $dir;
         $this->_shell = $shell;
+        $this->_productCollection = $productCollection;
         ini_set('memory_limit', $this->helper->getMemoryLimit() . 'M');
         set_time_limit(18000);
         ini_set('max_execution_time', 18000);
@@ -1499,8 +1502,8 @@ class Exporter
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
         
         do {
-            $products = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection()
-                ->setStoreId($store->getStoreId())
+            $products = $this->_productCollection->create();
+            $products->setStoreId($store->getStoreId())
                 ->addStoreFilter($store->getStoreId())
                 ->addCategoryIds()
                 ->addOrder($entityName, "ASC")
