@@ -27,7 +27,8 @@ class Prodparams implements \Magento\Framework\Option\ArrayInterface
             ['value' => 'manage_stock', 'label'  => __('manage_stock')],
             ['value' => 'is_in_stock', 'label'  => __('is_in_stock')],
             ['value' => 'qty', 'label'  => __('qty')],
-            ['value' => 'min_qty', 'label'  => __('min_qty')]
+            ['value' => 'min_qty', 'label'  => __('min_qty')],
+            ['value' => 'regular_price', 'label'  => __('regular_price')],
         ];
     }
 }

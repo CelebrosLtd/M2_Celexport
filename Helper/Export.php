@@ -76,7 +76,7 @@ class Export extends Data
                 $price = $product->getMinPrice();
                 break;
             default:
-                $price = $product->getFinalPrice();
+                $price = $product->getMinPrice();
         }
         
         return $price; 
@@ -217,10 +217,10 @@ class Export extends Data
             ];
             
             $values = array(
-                "id"          => $product->getRowId() ? : $product->getEntityId(),
-                "price"       => $this->getCalculatedPrice($product),
-                "type_id"     => $product->getTypeId(),
-                "product_sku" => $product->getSku()
+                "id"            => $product->getRowId() ? : $product->getEntityId(),
+                "price"         => $this->getCalculatedPrice($product),
+                "type_id"       => $product->getTypeId(),
+                "product_sku"   => $product->getSku()
             );
             
             if ($product->getRowId()) {
@@ -246,6 +246,9 @@ class Export extends Data
                         break;
                     case 'min_qty':
                         $values['min_qty'] = (int)$product->getMinSaleQty();
+                        break;
+                    case 'regular_price':
+                        $values['regular_price'] = $product->getPrice();
                         break;
                     default:
                 }                
