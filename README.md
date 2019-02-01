@@ -74,4 +74,6 @@ Celebros Export Products
 
 1.3.37 - 1.3.38 - tech fix
 
-1.3.38 - regular_price added to export
+1.3.39 - regular_price added to export
+
+1.3.40 - default settings changed

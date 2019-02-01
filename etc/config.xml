@@ -36,10 +36,10 @@
                 <image_types>image,thumbnail</image_types>
             </image_settings>
             <advanced>
-                <single_process>0</single_process>
+                <single_process>1</single_process>
                 <export_chunk_size>1000</export_chunk_size>
                 <export_process_limit>3</export_process_limit>
-                <memory_limit>1024</memory_limit>
+                <memory_limit>2048</memory_limit>
                 <enable_log>1</enable_log>
                 <cronlog_lifetime>168</cronlog_lifetime>
             </advanced>
