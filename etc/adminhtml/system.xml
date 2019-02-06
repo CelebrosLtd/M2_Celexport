@@ -123,6 +123,13 @@
                     <label>Use Indexed Prices</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="use_catalog_price_rules" translate="label" type="select" sortOrder="250" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Use Catlog Price Rules</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="indexed_prices">0</field>
+                    </depends>
+                </field>
             </group>
             <group id="image_settings" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>Export Images</label>

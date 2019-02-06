@@ -131,8 +131,15 @@ class Export extends Data
                     $price = 0;
                 }
             }
+        } else {
+            return $price;
         }
        
+        if ($this->useCatalogPriceRules()) {
+            $price = $this->_objectManager->create('Magento\CatalogRule\Model\Rule')
+                ->calcProductPriceRule($product, $price);
+        }
+        
         return number_format($price, 2, ".", "");
     }
     

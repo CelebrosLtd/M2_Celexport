@@ -31,6 +31,7 @@
                 <rootcat_products_export>0</rootcat_products_export>
                 <custom_attributes>1</custom_attributes>
                 <indexed_prices>1</indexed_prices>
+                <use_catalog_price_rules>0</use_catalog_price_rules>
             </export_settings>
             <image_settings>
                 <image_types>image,thumbnail</image_types>
