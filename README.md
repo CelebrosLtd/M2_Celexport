@@ -79,3 +79,5 @@ Celebros Export Products
 1.3.40 - default settings changed
 
 1.3.41 - catalog price rules added
+
+1.3.42 - tech fix

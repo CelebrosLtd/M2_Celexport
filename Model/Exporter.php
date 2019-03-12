@@ -222,7 +222,7 @@ class Exporter
                     }
                 }
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                $this->logProfiler($e->getMessage());
                 return false;
             }    
         }
