@@ -1162,19 +1162,8 @@ class Exporter
         }
         
         $columns = $this->write_headers($originalSql, $fh);
-        
         $originalSql->limit(100000000, 0);
             
-        //Get Relevant Categories for the query.
-        $categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
-        
-        //Don't run the query at all if no categories were found to match the current store view.
-        if (!$categoriesForStore || !count($categoriesForStore)) {
-            ////$this->logProfiler("Total rows: 0");
-            fclose($fh);
-            return;
-        }
-        
         $page = 1;
         $chunksIds = [];
 

@@ -80,4 +80,4 @@ Celebros Export Products
 
 1.3.41 - catalog price rules added
 
-1.3.42 - tech fix
+1.3.42 - 1.3.43 - tech fix
