@@ -48,7 +48,7 @@ class Exporter
     protected $_timeMarker = null;
     protected $_row_id = false;
     protected $_productCollection;
-
+    
     public $helper;
     
     public function __construct(
@@ -95,11 +95,11 @@ class Exporter
                 return $entityId;
             }
         }
-
+        
         return false;
     }
-   
-   
+    
+    
     public function export_celebros($objectManager, $webAdmin)
     {
         $this->isWebRun = $webAdmin;
@@ -177,7 +177,7 @@ class Exporter
             $header = array("OrderID", "ProductSKU", "ProductID", "Date", "Count", "Sum");
             $glue = $enclosed . $delimeter . $enclosed;
             $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
-
+            
             $strT = time() - 60 * 60 * $this->helper->getConfig('celexport/export_settings/datahistoryperiod', $store) * 24;
             $timeEdge = (new \DateTime(date("Y-m-d", $strT)))->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);            
             $page = 1;
@@ -515,6 +515,7 @@ class Exporter
         $this->_rowEntityMap = $rowEntityMap;
         $this->_entityRowMap = array_flip($rowEntityMap);
         
+        $rowEntityMap = [];
         $entityName = $this->getProductEntityIdName("catalog_category_entity");
         $table = $this->_resource->getTableName("catalog_category_entity");
         $query = $this->_read->select();
@@ -607,7 +608,7 @@ class Exporter
             $this->_fStore_id,
             'not_visible_individually_products'
         );
-      
+        
         /*----- catalog_product_entity_varchar.txt -----*/
         $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_product_entity_varchar");
@@ -766,7 +767,7 @@ class Exporter
         $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
-
+        
         $table = $this->_resource->getTableName("catalog_product_super_link");
         $this->logProfiler("START {$table}");        
         $fields = ['product_id', 'parent_id'];
@@ -776,14 +777,14 @@ class Exporter
             $table,
             $fields
         ); 
-
+        
         $rows = $query->query();
         while ($row = $rows->fetch()) {
             /*$fields = [$row['product_id'], $this->getEntityIdByRowId($row['parent_id'])];*/
             $fields = [$this->getRowIdByEntityId($row['product_id']), $row['parent_id']];
             $str .= $this->arrayToString($fields);
         }
-
+        
         $filename = 'catalog_product_super_link';
         $fh = $this->create_file($filename);
         if (!$fh) {
@@ -848,7 +849,7 @@ class Exporter
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
         $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
-       
+        
         /*----- celebros_mapping.txt -----*/
         $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("celebros_mapping");
@@ -935,19 +936,19 @@ class Exporter
             ->getCollection()
             ->addAttributeToSelect(['entity_id','name'])
             ->addFieldToFilter($idName, ['in' => $categoriesIds]);
-
+        
         $fh = $this->create_file($filename);
         if (!$fh) {
             $this->comments_style('error', 'Could not create the file ' . $filename . ' path', 'problem with file');
             $this->logProfiler('Could not create the file ' . $filename . ' path');
             return;
         }
-
+        
         $str = "^" . $idName ."^" . $this->_fDel . "^value^\r\n";
         foreach ($categories as $category) {
             $str .= "^" . $category->getData($idName) . "^" . $this->_fDel . "^" . $category->getName() . "^" . "\r\n";
         }
-
+        
         $this->write_to_file($str, $fh);
         fclose($fh);
     }
@@ -1054,13 +1055,13 @@ class Exporter
                 unset($row['row_id']);
                 $row = array_merge($tmp, $row);
             }*/
-      
+            
             /* catalog_category_products */
             if (isset($row['category_id']) && isset($row['product_id'])) {
                 $row['category_id'] = $this->getRowIdByEntityIdCat($row['category_id']);
                 $row['product_id'] = $this->getRowIdByEntityIdCat($row['product_id']);
             }
-      
+            
             /* catalog_category_entity */
             if (isset($row['row_id']) && isset($row['path'])) {
                 if (isset($row['parent_id'])) {
@@ -1151,7 +1152,7 @@ class Exporter
         
         fclose($fh);
     }
-
+    
     protected function export_product_att_table($originalSql, $filename, $entityIdName = 'entity_id')
     {
         $fh = $this->create_file($filename);
@@ -1166,7 +1167,7 @@ class Exporter
             
         $page = 1;
         $chunksIds = [];
-
+        
         if (null == isset($this->_attrProductIdsChunks[$this->_fStore_id])) {
             $this->_attrProductIdsChunks[$this->_fStore_id] = [];
             do {
@@ -1180,7 +1181,7 @@ class Exporter
                 $page++;
             } while (count($productIds) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
         }
-
+        
         foreach ($this->_attrProductIdsChunks[$this->_fStore_id] as $ids) {       
             $sql = clone($originalSql);
             $table = $sql->getPart('from');
@@ -1505,8 +1506,8 @@ class Exporter
                     $categorylessIds[] = $prod->getData($entityName);
                 }
             }
-
-            $page++;            
+            
+            $page++;
         } while (count($products) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);        
         
         $this->_productIds = array_unique($productIds);
