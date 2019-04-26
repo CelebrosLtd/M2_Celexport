@@ -1059,7 +1059,7 @@ class Exporter
             /* catalog_category_products */
             if (isset($row['category_id']) && isset($row['product_id'])) {
                 $row['category_id'] = $this->getRowIdByEntityIdCat($row['category_id']);
-                $row['product_id'] = $this->getRowIdByEntityIdCat($row['product_id']);
+                $row['product_id'] = $this->getRowIdByEntityId($row['product_id']);
             }
             
             /* catalog_category_entity */
