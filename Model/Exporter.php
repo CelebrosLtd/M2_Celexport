@@ -396,7 +396,7 @@ class Exporter
             $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
             
             //Only run export products if there are categories assigned to the current store view.
-            if ($this->_categoriesForStore && count($this->_categoriesForStore)) {
+            if ($this->_categoriesForStore) {
                 $this->comments_style('icon', 'Exporting products', 'icon');
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
                 $this->getTimeOffset(microtime(true));
