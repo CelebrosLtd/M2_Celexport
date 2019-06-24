@@ -175,6 +175,7 @@ class Export extends Data
         $paths = $urlRewrite->getCollection()
             ->addFieldToFilter('store_id', $storeId)
             ->addFieldToFilter('entity_id', $product->getEntityId())
+            ->addFieldToFilter('entity_type', 'product')
             ->getColumnValues('request_path');
         if (!empty($paths)) {
             $lenghts = array_map('strlen', $paths);
