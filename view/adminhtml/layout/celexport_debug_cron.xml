@@ -35,6 +35,14 @@
                     <argument name="grid_header" xsi:type="string">Magento Cron Tasks</argument>
                 </action>
             </block>
+            <block class="Celebros\Celexport\Block\Adminhtml\Debug\Cron\ExportLogs" name="admin.celexport.logs">
+                <action method="setTemplate">
+                    <argument name="template" xsi:type="string">widget/grid.phtml</argument>
+                </action>
+                <action method="setGridHeader">
+                    <argument name="grid_header" xsi:type="string">Celebros Export Logs</argument>
+                </action>
+            </block>
         </referenceContainer>
     </body>
 </page>
