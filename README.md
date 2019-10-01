@@ -85,3 +85,5 @@ Celebros Export Products
 1.3.47 - product urls fix
 
 1.3.48 - export logs added to admin
+
+1.3.49 - tech fix
