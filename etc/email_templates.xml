@@ -11,6 +11,6 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Celebros_Celexport" setup_version="1.4.0" />
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:Magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="celexport_notification_email_template" label="Celebros Notification Email" file="notification.html" type="html" module="Celebros_Celexport" area="adminhtml"/>
 </config>

@@ -48,6 +48,7 @@ class Exporter
     protected $_timeMarker = null;
     protected $_row_id = false;
     protected $_productCollection;
+    public $zipFileName;
     
     public $helper;
     
@@ -100,7 +101,7 @@ class Exporter
     }
     
     
-    public function export_celebros($objectManager, $webAdmin)
+    public function export_celebros($objectManager, $webAdmin, $storeId = null)
     {
         $this->isWebRun = $webAdmin;
         $this->_objectManager = $objectManager;
@@ -118,8 +119,8 @@ class Exporter
         }
         
         $this->cleanExportDirectory();
-        $this->export_orders($objectManager->create('Magento\Sales\Model\Order\Item'));
-        $this->export_main($this->_exportProcessId);
+        $this->export_orders($objectManager->create('Magento\Sales\Model\Order\Item'), $storeId);
+        $this->export_main($this->_exportProcessId, $storeId);
         
         $export_end = (float)array_sum(explode(' ', microtime(true)));
         
@@ -158,54 +159,60 @@ class Exporter
         //end
     }
     
-    public function export_orders($orderItems)
+    public function export_orders($orderItems, $storeId = null)
     {
         //We'll run the orders export for each store where crosssell is enabled.
         $stores = $this->helper->getAllStores();
         foreach ($stores as $store) {
-            $this->helper->setCurrentStore($store->getStoreId());
-            $this->export_config($store);
-            
-            $enclosed = $this->_fEnclose;
-            $delimeter = $this->_fDel;
-            $newLine = "\r\n";
-            
-            if (!$this->helper->isEnabled($store) || !$this->helper->isOrdersExport($store)) {
-                continue;
-            }
+            if (!$storeId || $store->getStoreId() == $storeId) {
+                $this->helper->setCurrentStore($store->getStoreId());
+                $this->export_config($store);
                 
-            $header = array("OrderID", "ProductSKU", "ProductID", "Date", "Count", "Sum");
-            $glue = $enclosed . $delimeter . $enclosed;
-            $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
-            
-            $strT = time() - 60 * 60 * $this->helper->getConfig('celexport/export_settings/datahistoryperiod', $store) * 24;
-            $timeEdge = (new \DateTime(date("Y-m-d", $strT)))->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);            
-            $page = 1;
-            do {
-                $orders = $orderItems->getCollection()
-                    ->addFieldToFilter('created_at', ['gteq' => $timeEdge])
-                    ->addOrder('order_id', 'ASC')
-                    ->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
-                foreach ($orders as $item) {
-                    $record["OrderID"] = $item->getOrderId();
-                    $record["ProductSKU"] = $item->getSku();
-                    $record["ProductID"] = $item->getProductId();
-                    $created_at_time = strtotime($item->getCreatedAt());
-                    $record["Date"] = date("Y-m-d", $created_at_time);
-                    $record["Count"] = (int)$item->getQtyOrdered();
-                    $record["Sum"] = $item->getRowTotal();
-                    $strResult .= $enclosed . implode($glue, $record) . $enclosed . $newLine;
+                $enclosed = $this->_fEnclose;
+                $delimeter = $this->_fDel;
+                $newLine = "\r\n";
+                
+                if ((!$this->helper->isEnabled($store) || !$this->helper->isOrdersExport($store)) && !$storeId) {
+                    continue;
                 }
-                $page++;            
-            } while (count($orders) == self::ORDER_COLLETION_PAGE_LIMIT && $page < 5000);
-            
-            //Create, flush, zip and ftp the orders file
-            $zipFileName = $this->helper->getDataHistoryFileName($store);
-            
-            $this->_createAndUploadOrders($zipFileName, $strResult);
-            
-            $this->logProfiler("Exported orders of store {$this->_fStore_id} to file {$zipFileName} . Memory peak was: " . memory_get_peak_usage());
-            $this->comments_style('success', "Exported orders of store '{$this->_fStore_id} to file {$zipFileName}'. Memory peak was: " . memory_get_peak_usage(), 'orders');
+                
+                if ($storeId && $store->getStoreId() != $storeId) {
+                    continue;
+                }
+                    
+                $header = array("OrderID", "ProductSKU", "ProductID", "Date", "Count", "Sum");
+                $glue = $enclosed . $delimeter . $enclosed;
+                $strResult = $enclosed . implode($glue, $header) . $enclosed . $newLine;
+                
+                $strT = time() - 60 * 60 * $this->helper->getConfig('celexport/export_settings/datahistoryperiod', $store) * 24;
+                $timeEdge = (new \DateTime(date("Y-m-d", $strT)))->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);            
+                $page = 1;
+                do {
+                    $orders = $orderItems->getCollection()
+                        ->addFieldToFilter('created_at', ['gteq' => $timeEdge])
+                        ->addOrder('order_id', 'ASC')
+                        ->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
+                    foreach ($orders as $item) {
+                        $record["OrderID"] = $item->getOrderId();
+                        $record["ProductSKU"] = $item->getSku();
+                        $record["ProductID"] = $item->getProductId();
+                        $created_at_time = strtotime($item->getCreatedAt());
+                        $record["Date"] = date("Y-m-d", $created_at_time);
+                        $record["Count"] = (int)$item->getQtyOrdered();
+                        $record["Sum"] = $item->getRowTotal();
+                        $strResult .= $enclosed . implode($glue, $record) . $enclosed . $newLine;
+                    }
+                    $page++;            
+                } while (count($orders) == self::ORDER_COLLETION_PAGE_LIMIT && $page < 5000);
+
+                //Create, flush, zip and ftp the orders file
+                $zipFileName = $this->helper->getDataHistoryFileName($store);
+                
+                $this->_createAndUploadOrders($zipFileName, $strResult);
+                
+                $this->logProfiler("Exported orders of store {$this->_fStore_id} to file {$zipFileName} . Memory peak was: " . memory_get_peak_usage());
+                $this->comments_style('success', "Exported orders of store '{$this->_fStore_id} to file {$zipFileName}'. Memory peak was: " . memory_get_peak_usage(), 'orders');
+            }
         }
     }
     
@@ -350,108 +357,104 @@ class Exporter
         return $out;
     }
     
-    public function export_main($exportProcessId = 0)
+    public function export_main($exportProcessId = 0, $storeId = null)
     {
         $this->_exportProcessId = $exportProcessId;
-        
         $stores = $this->helper->getAllStores();
         foreach ($stores as $store) {
-            $this->helper->setCurrentStore($store->getStoreId());
-            if (!$this->helper->isEnabled($store)) {
-                $this->comments_style('info', "Export not enabled for store view: {$store->getName()}", 'STORE');
-                continue;
-            }
-           
-            $this->_fStore_id = $store->getStoreId();
-            $this->export_config($store);
-            
-            $this->_fileNameZip =$this->helper->getConfig('celexport/export_settings/zipname', $store);
-            
-            $this->comments_style('section', "Store code: {$this->_fStore_id}, name: {$store->getName()}", 'STORE');
-            $this->comments_style('section', "Zip file name: {$this->_fileNameZip}", 'STORE');
-           
-            //Resetting store categories mapping.
-            $this->_categoriesForStore = false;
-            $this->_categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
-            
-            $this->logProfiler('===============');
-            $this->logProfiler('Starting Export');
-            $this->logProfiler('===============');
-            $this->logProfiler('memory_limit: ' . ini_get('memory_limit'));
-            $this->logProfiler('max_execution_time: ' . ini_get('max_execution_time'));
-            $this->logProfiler('===============');
-            $this->logProfiler("Store code: {$this->_fStore_id}, name: {$store->getName()}");
-            $this->logProfiler("Zip file name: {$this->_fileNameZip}");
-            $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-            
-            $this->comments_style('icon', "Memory usage: " . memory_get_usage(true), 'icon');
-            $this->comments_style('icon', 'Exporting tables', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-            
-            $this->logProfiler('Exporting tables');
-            $this->logProfiler('----------------');
-            
-            $this->export_tables($store);
-            
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-            
-            //Only run export products if there are categories assigned to the current store view.
-            if ($this->_categoriesForStore) {
-                $this->comments_style('icon', 'Exporting products', 'icon');
-                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-                $this->getTimeOffset(microtime(true));
-                $this->logProfiler('Writing products file');
-                $this->logProfiler('---------------------');
-                
-                $this->export_store_products($store);
-            }
-            
-            //Running over the products that aren't assigned to a category separately.
-            $this->comments_style('icon', 'Exporting category-less products', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-            
-            $this->logProfiler('Writing category-less products file');
-            $this->logProfiler('-----------------------------------');
-            $this->export_categoryless_products($store);
-            
-            $this->comments_style('icon', 'Creating ZIP file', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-            
-            $this->logProfiler('Creating ZIP file');
-            $this->logProfiler('-----------------');
-            
-            $zipFilePath = $this->zipLargeFiles();
-            
-            $this->comments_style('icon', 'Checking FTP upload', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-            
-            if ($this->_fType === "ftp"/* && $this->_bUpload*/) {
-                $this->comments_style('info', 'Uploading export file', 'info');
-                $ftpRes = $this->ftpfile($zipFilePath);
-                if (!$ftpRes) {
-                    $this->comments_style('info', "Could not upload " . $zipFilePath . ' to ftp', 'info');
-                    $this->logProfiler('FTP upload ERROR');
-                } else {
-                    $this->logProfiler('FTP upload success');
+            if (!$storeId || $store->getStoreId() == $storeId) {
+                $this->helper->setCurrentStore($store->getStoreId());
+                if (!$this->helper->isEnabled($store) && !$storeId) {
+                    $this->comments_style('info', "Export not enabled for store view: {$store->getName()}", 'STORE');
+                    continue;
                 }
-            } else {
-                $this->comments_style('info', 'No need to upload export file', 'info');
-                $this->logProfiler('No need to upload export file');
+               
+                $this->_fStore_id = $store->getStoreId();
+                $this->export_config($store);
+                
+                $this->_fileNameZip =$this->helper->getConfig('celexport/export_settings/zipname', $store);
+                
+                $this->comments_style('section', "Store code: {$this->_fStore_id}, name: {$store->getName()}", 'STORE');
+                $this->comments_style('section', "Zip file name: {$this->_fileNameZip}", 'STORE');
+               
+                //Resetting store categories mapping.
+                $this->_categoriesForStore = false;
+                $this->_categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
+                
+                $this->logProfiler('===============');
+                $this->logProfiler('Starting Export');
+                $this->logProfiler('===============');
+                $this->logProfiler('memory_limit: ' . ini_get('memory_limit'));
+                $this->logProfiler('max_execution_time: ' . ini_get('max_execution_time'));
+                $this->logProfiler('===============');
+                $this->logProfiler("Store code: {$this->_fStore_id}, name: {$store->getName()}");
+                $this->logProfiler("Zip file name: {$this->_fileNameZip}");
+                $this->logProfiler('Mem usage: ' . memory_get_usage(true));
+                
+                $this->comments_style('icon', "Memory usage: " . memory_get_usage(true), 'icon');
+                $this->comments_style('icon', 'Exporting tables', 'icon');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                
+                $this->logProfiler('Exporting tables');
+                $this->logProfiler('----------------');
+                
+                $this->export_tables($store);
+                
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+              
+                //Only run export products if there are categories assigned to the current store view.
+                if ($this->_categoriesForStore) {
+                    $this->comments_style('icon', 'Exporting products', 'icon');
+                    $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                    $this->getTimeOffset(microtime(true));
+                    $this->logProfiler('Writing products file');
+                    $this->logProfiler('---------------------');
+                    
+                    $this->export_store_products($store);
+                }
+                
+                //Running over the products that aren't assigned to a category separately.
+                $this->comments_style('icon', 'Exporting category-less products', 'icon');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                
+                $this->logProfiler('Writing category-less products file');
+                $this->logProfiler('-----------------------------------');
+                $this->export_categoryless_products($store);
+                
+                $this->comments_style('icon', 'Creating ZIP file', 'icon');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                
+                $this->logProfiler('Creating ZIP file');
+                $this->logProfiler('-----------------');
+                
+                $zipFilePath = $this->zipLargeFiles();
+                $this->zipFileName = $zipFilePath;
+                
+                $this->comments_style('icon', 'Checking FTP upload', 'icon');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                
+                if ($this->_fType === "ftp"/* && $this->_bUpload*/) {
+                    $this->comments_style('info', 'Uploading export file', 'info');
+                    $ftpRes = $this->ftpfile($zipFilePath);
+                    if (!$ftpRes) {
+                        $this->comments_style('info', "Could not upload " . $zipFilePath . ' to ftp', 'info');
+                        $this->logProfiler('FTP upload ERROR');
+                    } else {
+                        $this->logProfiler('FTP upload success');
+                    }
+                } else {
+                    $this->comments_style('info', 'No need to upload export file', 'info');
+                    $this->logProfiler('No need to upload export file');
+                }
+                
+                $this->comments_style('icon', 'Finished', 'icon');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                $this->comments_style('info', "Memory peek usage: " . memory_get_peak_usage(true), 'info');
+                $this->comments_style('icon', date('Y/m/d H:i:s'), 'icon');
+                
+                $this->logProfiler('Mem usage: ' . memory_get_usage(true));
+                $this->logProfiler('Mem peek usage: ' . memory_get_peak_usage(true));
             }
-            
-            $this->comments_style('icon', 'Finished', 'icon');
-            $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-            $this->comments_style('info', "Memory peek usage: " . memory_get_peak_usage(true), 'info');
-            $this->comments_style('icon', date('Y/m/d H:i:s'), 'icon');
-            
-            $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-            $this->logProfiler('Mem peek usage: ' . memory_get_peak_usage(true));
-            
-            //self::stopProfiling(__FUNCTION__);
-            
-            //$html = self::getProfilingResultsString();
-            //$this->log_profiling_results($html);
-            //echo $html;
         }
     }
     

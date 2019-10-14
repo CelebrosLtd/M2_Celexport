@@ -196,6 +196,9 @@
                     <label>Cron Module Log Lifetime</label>
                     <comment>in hours</comment>
                 </field>
+                <field id="notifications_email" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Notifications Email</label>
+                </field> 
             </group>
             <group id="about" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>About</label>

@@ -43,6 +43,7 @@
                 <memory_limit>2048</memory_limit>
                 <enable_log>1</enable_log>
                 <cronlog_lifetime>168</cronlog_lifetime>
+                <notifications_email>support@celebros.com</notifications_email>
             </advanced>
         </celexport>
     </default>

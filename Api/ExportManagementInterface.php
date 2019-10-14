@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<!--
+<?php
+/**
  * Celebros
  *
  * DISCLAIMER
@@ -10,7 +10,16 @@
  ******************************************************************************
  * @category    Celebros
  * @package     Celebros_Celexport
- -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Celebros_Celexport" setup_version="1.4.0" />
-</config>
+ */
+namespace Celebros\Celexport\Api;
+ 
+interface ExportManagementInterface
+{
+    /**
+     * GET for Post api
+     * @param string $param
+     * @return string
+     */
+    
+    public function exportData($dataType, int $storeId);
+}

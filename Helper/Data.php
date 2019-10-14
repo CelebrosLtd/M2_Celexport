@@ -30,6 +30,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
     const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
     const CONFIG_UNSECURE_BASE_URL = 'web/unsecure/base_url';
+    const CONFIG_NOTIFICATION_EMAIL = 'celexport/advanced/notifications_email';
+    
     protected $_urlBuilder;
     public $_cssMin;
     public $_jsMin;
@@ -161,6 +163,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getExportProcessLimit()
     {
         return (int)$this->scopeConfig->getValue(self::CONFIG_EXPORT_PROCESS_LIMIT);
+    }
+    
+    public function getNotificationsEmail($store = null)
+    {
+        if ($store) {
+            $store = $this->getCurrentStore();
+        }
+        
+        return $this->scopeConfig->getValue(self::CONFIG_NOTIFICATION_EMAIL, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);    
     }
     
     public function useIndexedPrices()
