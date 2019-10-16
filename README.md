@@ -87,3 +87,7 @@ Celebros Export Products
 1.3.48 - export logs added to admin
 
 1.3.49 - 1.3.50 - tech fix
+
+1.4.0 - export api added
+
+1.4.1 - issue with stock_id fixed

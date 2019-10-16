@@ -306,7 +306,7 @@ class Exporter
     protected function _createDir($dirPath)
     {
         if (!is_dir($dirPath)) {
-            $dir = @mkdir($dirPath, 0777, true);
+            $dir = mkdir($dirPath, 0777, true);
         }
         
         return $dirPath;
@@ -1369,19 +1369,19 @@ class Exporter
             $ioConfig['path']= $this->_fPath;
         }
         $this->_config = $ioConfig;
-        $this->_conn = @ftp_connect($this->_config['host'], $this->_config['port']);
+        $this->_conn = ftp_connect($this->_config['host'], $this->_config['port']);
         
         if (!$this->_conn) {
             $this->comments_style('error', 'Could not establish FTP connection, invalid host or port', 'invalid_ftp_host/port');
             return false;
         }
-        if (!@ftp_login($this->_conn, $this->_config['user'], $this->_config['password'])) {
+        if (!ftp_login($this->_conn, $this->_config['user'], $this->_config['password'])) {
             $this->ftpClose();
             $this->comments_style('error', 'Could not establish FTP connection, invalid user name or password', 'Invalid_ftp_user_name_or_password');
             return false;
         }
         
-        if (!@ftp_pasv($this->_conn, true)) {
+        if (!ftp_pasv($this->_conn, true)) {
             $this->ftpClose();
             $this->comments_style('error', 'Invalid file transfer mode', 'Invalid_file_transfer_mode');
             return false;
@@ -1392,7 +1392,7 @@ class Exporter
                 $this->comments_style('error', 'No ' . $zipFilePath . ' file found', 'No_zip_file_found');
             }
             
-            $upload = @ftp_put($this->_conn, basename($zipFilePath), $zipFilePath, FTP_BINARY);
+            $upload = ftp_put($this->_conn, basename($zipFilePath), $zipFilePath, FTP_BINARY);
             if (!$upload) {
                  $this->comments_style('error', 'File upload failed', 'File_upload_failed');
                  $upload=false;
@@ -1407,7 +1407,7 @@ class Exporter
     public function uploadLog($connection)
     {
         $logfilename = $this->helper->getLogFilename($this->_exportProcessId);
-        @ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);
+        ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);
     }
     
     protected function get_category_is_active_attribute_id()

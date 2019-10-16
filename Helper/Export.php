@@ -17,6 +17,7 @@ use Magento\Framework\Stdlib\Datetime;
 class Export extends Data
 {
     const MIN_MEMORY_LIMIT = 256;
+    
     protected $_storeId;
     protected $_objectManager;
     protected $_catalogProductMediaConfig;
@@ -188,6 +189,7 @@ class Export extends Data
     public function getProductsData($ids, $customAttributes, $storeId, $objectManager)
     {
         $this->_storeId = $storeId;
+        $websiteId = $this->_stores->getStore($storeId)->getWebsiteId();
         $this->_objectManager = $objectManager;
         $str = null;
         $this->setCurrentStore($this->_storeId);
@@ -210,13 +212,13 @@ class Export extends Data
         
         $collection->addUrlRewrite()
             ->joinTable(
-                $this->_resource->getTableName('cataloginventory_stock_item'),
-                'product_id=entity_id',
+                ['items' => $this->_resource->getTableName('cataloginventory_stock_item')],
+                'product_id = entity_id',
                 array('manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'),
-                null,
+                'stock_id = ' . \Magento\CatalogInventory\Model\Stock::DEFAULT_STOCK_ID . ' ' . \Zend_Db_Select::SQL_AND . ' items.website_id IN (' . implode(",", [0, $websiteId]) . ')',
                 'left'
             );
-        
+      
         foreach ($collection as $product) {
             $routeParams = [
                 '_direct' => $product->getRequestPath(),

@@ -67,7 +67,7 @@ class Export implements \Magento\Framework\AppInterface
             $_fPath = $this->helper->getExportPath((int)$this->_processId) . '/' . $this->_store->getWebsite()->getCode() . '/' . $this->_store->getCode();
            
             if (!is_dir($_fPath)) {
-                $dir = @mkdir($_fPath, 0777, true);
+                $dir = mkdir($_fPath, 0777, true);
             }
             
             $filePath = $_fPath . '/' . 'export_chunk_' . $this->_chunkId . "." . 'txt';
