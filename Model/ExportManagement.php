@@ -13,6 +13,9 @@
  */
 namespace Celebros\Celexport\Model;
 
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
+
 class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterface
 {
     protected $_storeId;
@@ -76,9 +79,13 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
     public function getData_start_export()
     {
         $storeId = $this->_storeId ? : 1;
-        $pid = (int)shell_exec('nohup php ' . $this->_dir->getRoot() . '/bin/magento celebros:export ' . $storeId .' > /dev/null & echo $!');
+        $comm = 'nohup php ' . $this->_dir->getRoot() . '/bin/magento celebros:export ' . $storeId .' > /dev/null & echo $!';
+        $process = new Process($comm);
+        $process->start();
+        $pid = $process->getPid();
+        
         return [
-            'pid' => $pid,
+            'pid' => $pid
         ];
     }
     
@@ -126,15 +133,8 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
                 return [];   
             }
         } catch (\Exception $e) {
-            print_r($e->getMessage());die;
-            //$this->sendNotificationToEmail($e->getMessage());
+            $this->sendNotificationToEmail($e->getMessage());
         }
-    }
-    
-    protected function is_process_running($PID)
-    {
-        exec("ps $PID", $processState);
-        return (count($processState) >= 2);
     }
     
     public function sendNotificationToEmail($message)

@@ -34,7 +34,7 @@ class Logs extends \Celebros\Celexport\Controller\Adminhtml\Debug
     {
         if ($fileName = $this->getRequest()->getParam('filename', false)) {
             $filePath = $this->helper->getExportPath() . '/' . $fileName;
-            $content = @file_get_contents($filePath);
+            $content = file_get_contents($filePath);
 
             return $this->fileFactory->create(
                 $fileName,

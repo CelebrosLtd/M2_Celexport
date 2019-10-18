@@ -1722,12 +1722,6 @@ class Exporter
         return [];
     }
     
-    protected function is_process_running($PID)
-    {
-        exec("ps $PID", $ProcessState);
-        return (count($ProcessState) >= 2);
-    }
-    
     public function ftpClose()
     {
         return ftp_close($this->_conn);
