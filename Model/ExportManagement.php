@@ -126,7 +126,8 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
                 return [];   
             }
         } catch (\Exception $e) {
-            $this->sendNotificationToEmail($e->getMessage());
+            print_r($e->getMessage());die;
+            //$this->sendNotificationToEmail($e->getMessage());
         }
     }
     

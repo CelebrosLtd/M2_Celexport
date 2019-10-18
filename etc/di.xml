@@ -5,6 +5,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="celebrosExport" xsi:type="object">Celebros\Celexport\Console\Command\Export</item>
+                <item name="celebrosProcess" xsi:type="object">Celebros\Celexport\Console\Command\Process</item>
             </argument>
         </arguments>
     </type>

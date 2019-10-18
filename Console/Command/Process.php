@@ -11,47 +11,51 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\App;
+namespace Celebros\Celexport\Console\Command;
 
-use Magento\Framework\App\Bootstrap;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Magento\Framework\App\State as AppState;
 
-class Export implements \Magento\Framework\AppInterface
+class Process extends Command
 {
+    protected function configure()
+    {
+        $this->setName('celebros:process')
+            ->setHidden(true)
+            ->addArgument('chunk_id')
+            ->addArgument('store_id')
+            ->addArgument('process_id');
+    }
+    
+    public function __construct(
+        AppState $appState,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Celebros\Celexport\Helper\Export $helper,
+        \Magento\Store\Model\Store $store,
+        \Celebros\Celexport\Model\Cache $cache,
+        \Magento\Framework\App\State $state
+    ) {
+        $this->appState = $appState;
+        $this->_objectManager = $objectManager;
+        $this->helper = $helper;
+        $this->_store = $store;        
+        $this->_cache = $cache;
+        $this->_state = $state;
+        parent::__construct();
+    }
+    
     protected $_chunkId;
     protected $_storeId;
     protected $_processId;
     protected $_store;
     protected $_objectManager;
     protected $_state;
+    protected $_response;
     public $helper;
     
-    /**
-     * @param string $chunkId
-     * @param string $storeId
-     * @param string $processId
-     * @param \Magento\Framework\App\Console\Response $response
-     */
-    public function __construct(
-        $chunkId,
-        $storeId,
-        $processId,
-        \Celebros\Celexport\Helper\Export $helper,
-        \Magento\Store\Model\Store $store,
-        \Celebros\Celexport\Model\Cache $cache,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\ObjectManagerInterface $objectManager
-    ) {
-        $this->_chunkId = $chunkId;
-        $this->_storeId = $storeId;
-        $this->_store = $store->load($this->_storeId);
-        $this->_cache = $cache;
-        $this->_processId = $processId;
-        $this->_state = $state;
-        $this->_objectManager = $objectManager;
-        $this->helper = $helper;
-    }
-    
-    public function launch()
+    public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->_state->setAreaCode('frontend');
         ini_set('memory_limit', $this->helper->getMemoryLimit() . 'M');
@@ -59,8 +63,12 @@ class Export implements \Magento\Framework\AppInterface
         ini_set('max_execution_time', 18000);
         ini_set('display_errors', 1);
         ini_set('output_buffering', 0);
+
+        $this->_chunkId = $input->getArgument('chunk_id');
+        $this->_storeId = $input->getArgument('store_id');
+        $this->_processId = $input->getArgument('process_id');
+        $this->_store = $this->_store->load($this->_storeId);
         
-        $bExportProductLink = true;
         $process_error = 'no_errors';
         
         try {
@@ -74,7 +82,7 @@ class Export implements \Magento\Framework\AppInterface
             
             $fh = fopen($filePath, 'ab');
             if (!$fh) {
-                $this->helper->logProfiler('Cannot create file from separate process.', (int)$_SERVER['argv'][4]);
+                $this->helper->logProfiler('Cannot create file from separate process.', '');
                 return;
             }
             
@@ -91,17 +99,15 @@ class Export implements \Magento\Framework\AppInterface
             $str = $this->helper->getProductsData($ids, $customAttributes, $this->_storeId, $this->_objectManager);
             fwrite($fh, $str);
             fclose($fh);
+            
+            $this->_cache->setName('process_' . $this->_processId . '_' . $this->_chunkId)
+                ->setContent($process_error)
+                ->save();
+                
+            $output->writeln(0);    
         } catch (\Exception $e) {
             $this->helper->logProfiler('Caught exception: ' . $e->getMessage(), $this->_chunkId);
+            $output->writeln(1);
         }
-        
-        $this->_cache->setName('process_' . $this->_processId . '_' . $this->_chunkId)
-            ->setContent($process_error)
-            ->save();
-    }
-    
-    public function catchException(Bootstrap $bootstrap, \Exception $exception)
-    {
-        return false;
     }
 }

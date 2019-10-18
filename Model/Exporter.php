@@ -13,6 +13,10 @@
  */
 namespace Celebros\Celexport\Model;
 
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessBuilder;
+
 class Exporter
 {
     const ATTR_TABLE_PRODUCT_LIMIT = 1000;
@@ -1407,7 +1411,9 @@ class Exporter
     public function uploadLog($connection)
     {
         $logfilename = $this->helper->getLogFilename($this->_exportProcessId);
-        ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);
+        if (file_exists($this->helper->getExportPath() . $logfilename)) {
+            ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);
+        }
     }
     
     protected function get_category_is_active_attribute_id()
@@ -1599,19 +1605,19 @@ class Exporter
         $count = 0;
         
         if (!$this->helper->getConfig('celexport/advanced/single_process')) {
-            /* export with parallel processes */
+            $processes =[];
             foreach ($chunksIds as $ids) {
                 $count += 1;
                 $i = $this->_fStore_id * 1000 + $count;
-                if (count($pids) >= $process_limit) {
+                if (count($processes) >= $process_limit) {
                     do {
                         sleep(1);
                         $state = true;
-                        foreach ($pids as $key => $pid) {
-                            if (!$this->is_process_running($pid)) {
+                        foreach ($processes as $key => $proc) {
+                            if (!$proc->isRunning()) {
                                 $state = false;
                                 $finished[] = $key;
-                                unset($pids[$key]);
+                                unset($processes[$key]);
                             }
                         }
                     } while ($state);
@@ -1619,25 +1625,24 @@ class Exporter
                 
                 $this->logProfiler('Exported Products: ' . implode(',', $ids));
                 $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_chunk_' . $this->_exportProcessId . '_' . $i)->setContent(json_encode($ids))->save();
-                $pids[$i] = (int)shell_exec('nohup php ' . $this->_dir->getPath('app') . '/code/Celebros/Celexport/Shell/Export.php ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_dir->getPath('app') . '/bootstrap.php ' . $this->_exportProcessId . ' > /dev/null & echo $!');
+                $comm = 'php ' . $this->_dir->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_exportProcessId;
                 
-                if (!$pids[$i]) {
-                    $this->comments_style('error', 'Could not create a new system process. Please enable shell_exec in php.ini.', 'problem with process');
-                    $this->logProfiler('Failed creating a new system process for export parsing.');
-                    return;
-                }
+                $process = new Process($comm);
+                $processes[$i] = $process;
+                $process->start();
+                sleep(1);
             }
             
             do {
-                foreach ($pids as $key => $pid) {
-                    if (!$this->is_process_running($pid)) {
+                foreach ($processes as $key => $proc) {
+                    if (!$proc->isRunning()) {
                         $finished[] = $key;
-                        unset($pids[$key]);
+                        unset($processes[$key]);
                     }
                 }
                 sleep(1);
-            } while (count($pids));
-            
+            } while (count($processes));
+
             $_fPath = $this->helper->getExportPath($this->_exportProcessId) . '/' . $this->_fStore->getWebsite()->getCode() . '/' . $this->_fStore->getCode();
             if (!is_dir($_fPath)) {
                 try {
@@ -1648,7 +1653,8 @@ class Exporter
                     return;
                 }
             }
-            
+
+          
             foreach ($finished as $key) {
                 $item = $this->_objectManager->create('Celebros\Celexport\Model\Cache')
                     ->getCollection()
@@ -1671,13 +1677,11 @@ class Exporter
             
             fclose($fh);
             
-            //Reset the custom fields cache.
             $this->_objectManager->create('Celebros\Celexport\Model\Cache')->getCollection()
                 ->addFieldToFilter('name', 'export_custom_fields_' . $this->_exportProcessId)
                 ->getLastItem()
                 ->delete();
         } else {
-            /* export without parallel processes */
             $customAttributes = json_decode($this->_objectManager->create('Celebros\Celexport\Model\Cache')
                 ->getCollection()
                 ->addFieldToFilter('name', 'export_custom_fields_' . $this->_exportProcessId)
