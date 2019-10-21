@@ -23,7 +23,6 @@ class Process extends Command
     protected function configure()
     {
         $this->setName('celebros:process')
-            ->setHidden(true)
             ->addArgument('chunk_id')
             ->addArgument('store_id')
             ->addArgument('process_id');

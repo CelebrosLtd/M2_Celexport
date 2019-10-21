@@ -93,3 +93,5 @@ Celebros Export Products
 1.4.1 - issue with stock_id fixed
 
 1.4.2 - code refactoring for marketplace
+
+1.4.3 - tech fix
