@@ -123,4 +123,9 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
     {
         return $this->getUrl('*/*/logs', ['_current' => true, 'filename' => $row->getFilename()]);
     }
+    
+    public function getMainButtonsHtml()
+    {
+        return '';
+    }
 }
