@@ -1189,41 +1189,43 @@ class Exporter
             } while (count($productIds) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
         }
         
-        foreach ($this->_attrProductIdsChunks[$this->_fStore_id] as $ids) {       
-            $sql = clone($originalSql);
-            $table = $sql->getPart('from');
-            $table = array_shift($table);
-            $relevant_products = implode(',', $ids);;
-            $sql->where("{$table['tableName']}.`{$entityIdName}` IN ({$relevant_products})");
-            
-            $secondSql = clone($sql);
-            
-            $sql->where('`store_id` = ?', $this->_fStore_id);
-            
-            //Get list of rows with this specific store view, to exclude when running on the default store view.
-            $sql->columns($entityIdName);
-            $sql->columns('attribute_id');
-            $query = $sql->query();
-            $processedRows = array();
-            while ($row = $query->fetch()) {
-                $processedRows[] = $row['attribute_id'] . '-' . $row[$entityIdName];
+        foreach ($this->_attrProductIdsChunks[$this->_fStore_id] as $ids) {
+            if (is_array($ids) && !empty($ids)) {            
+                $sql = clone($originalSql);
+                $table = $sql->getPart('from');
+                $table = array_shift($table);
+                $relevant_products = implode(',', $ids);;
+                $sql->where("{$table['tableName']}.`{$entityIdName}` IN ({$relevant_products})");
+                
+                $secondSql = clone($sql);
+                
+                $sql->where('`store_id` = ?', $this->_fStore_id);
+                
+                //Get list of rows with this specific store view, to exclude when running on the default store view.
+                $sql->columns($entityIdName);
+                $sql->columns('attribute_id');
+                $query = $sql->query();
+                $processedRows = array();
+                while ($row = $query->fetch()) {
+                    $processedRows[] = $row['attribute_id'] . '-' . $row[$entityIdName];
+                }
+                $sql->setPart('columns', $columns);
+                $sql->order($entityIdName, 'ASC');
+                
+                //Run the query on each row and save results to the file.
+                $this->export_table_rows($sql, null, $fh);
+               
+                //Prepare the second query.
+                $secondSql->where('store_id = 0');
+                if (count($processedRows)) {
+                    $secondSql->where("CONCAT(`attribute_id`, '-', `{$entityIdName}`) NOT IN (?)", $processedRows);
+                }
+                
+                $secondSql->order($entityIdName, 'ASC');
+                
+                //Run for the second time, now with the default store view.
+                $this->export_table_rows($secondSql, null, $fh);
             }
-            $sql->setPart('columns', $columns);
-            $sql->order($entityIdName, 'ASC');
-            
-            //Run the query on each row and save results to the file.
-            $this->export_table_rows($sql, null, $fh);
-           
-            //Prepare the second query.
-            $secondSql->where('store_id = 0');
-            if (count($processedRows)) {
-                $secondSql->where("CONCAT(`attribute_id`, '-', `{$entityIdName}`) NOT IN (?)", $processedRows);
-            }
-            
-            $secondSql->order($entityIdName, 'ASC');
-            
-            //Run for the second time, now with the default store view.
-            $this->export_table_rows($secondSql, null, $fh);
         }        
        
         fclose($fh);
@@ -1256,7 +1258,7 @@ class Exporter
         
         $results = $this->_read->fetchPairs($sql2);
         $rootCategoryId = $this->_fStore->getRootCategoryId();
-        $categories = array();
+        $categories = [];
         foreach ($results as $entity_id => $path) {
             $path = explode('/', $path);
             if (count($path) > 1) {
