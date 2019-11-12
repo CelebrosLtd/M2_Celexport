@@ -13,7 +13,7 @@
  */
 namespace Celebros\Celexport\Controller\Adminhtml\Debug;
 
-use Magento\Framework\Phrase;
+use Magento\Framework\App\Filesystem\DirectoryList;
 
 class Logs extends \Celebros\Celexport\Controller\Adminhtml\Debug
 {
@@ -38,7 +38,8 @@ class Logs extends \Celebros\Celexport\Controller\Adminhtml\Debug
 
             return $this->fileFactory->create(
                 $fileName,
-                $content
+                $content,
+                DirectoryList::TMP
             );
         }
     }
