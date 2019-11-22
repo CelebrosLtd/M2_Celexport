@@ -94,4 +94,4 @@ Celebros Export Products
 
 1.4.2 - code refactoring for marketplace
 
-1.4.3 - 1.4.6 - tech fix
+1.4.3 - 1.4.7 - tech fix

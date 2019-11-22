@@ -16,10 +16,8 @@ namespace Celebros\Celexport\Api;
 interface ExportManagementInterface
 {
     /**
-     * GET for Post api
-     * @param string $param
-     * @return string
+     * @param string $dataType
+     * @param int $storeId
      */
-    
     public function exportData($dataType, int $storeId);
 }
