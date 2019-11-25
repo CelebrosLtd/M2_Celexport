@@ -18,6 +18,7 @@ interface ExportManagementInterface
     /**
      * @param string $dataType
      * @param int $storeId
+     * @return mixed
      */
     public function exportData($dataType, int $storeId);
 }
