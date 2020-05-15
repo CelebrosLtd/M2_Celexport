@@ -95,3 +95,5 @@ Celebros Export Products
 1.4.2 - code refactoring for marketplace
 
 1.4.3 - 1.4.8 - tech fix
+
+1.4.9 - issue with prices for configurable products has been fixed

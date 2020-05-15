@@ -13,6 +13,9 @@
 namespace Celebros\Celexport\Helper;
 
 use Magento\Framework\Stdlib\Datetime;
+use Magento\Catalog\Model\Product\Type as ProductType;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
+use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
 
 class Export extends Data
 {
@@ -34,6 +37,12 @@ class Export extends Data
             'h' => 90,
             'w' => 90
         ]
+    ];
+    
+    public $indexedPricesMapping = [
+        GroupedType::TYPE_CODE => 'min_price',
+        ProductType::TYPE_BUNDLE => 'min_price',
+        ConfigurableType::TYPE_CODE => 'price'
     ];
    
     public function getProductImage($product, $type = null)
@@ -69,18 +78,9 @@ class Export extends Data
     public function getIndexedPrice($product)
     {
         $type = $product->getTypeId();
-        switch ($type) {
-            case 'grouped':
-                $price = $product->getMinPrice();
-                break;
-            case 'bundle':
-                $price = $product->getMinPrice();
-                break;
-            default:
-                $price = $product->getMinPrice();
-        }
+        $priceDataName = isset($this->indexedPricesMapping[$type]) ? $this->indexedPricesMapping[$type] : 'min_price';
         
-        return $price; 
+        return $product->getData($priceDataName);
     }
     
     public function getCalculatedPrice($product)
