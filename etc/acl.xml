@@ -16,6 +16,7 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Celebros_Celexport::export" title="Celebros Export Processes" sortOrder="99" />
+                <resource id="Celebros_Celexport::api_export" title="Celebros API Export Processes" sortOrder="99" />
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">
                         <resource id="Magento_Config::config">
