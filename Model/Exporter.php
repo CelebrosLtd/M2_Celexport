@@ -104,12 +104,23 @@ class Exporter
         return false;
     }
     
+    public function setExportProcessId(int $exportProcessId)
+    {
+        $this->_exportProcessId = $exportProcessId;
+    }
+    
+    public function getExportProcessId() : int
+    {
+        return (int)$this->_exportProcessId;
+    }
     
     public function export_celebros($objectManager, $webAdmin, $storeId = null)
     {
         $this->isWebRun = $webAdmin;
         $this->_objectManager = $objectManager;
-        $this->_exportProcessId = $this->helper->getExportProcessId();
+        if (!$this->_exportProcessId) {
+            $this->_exportProcessId = $this->helper->getExportProcessId();
+        }
        
         $export_start = (float) array_sum(explode(' ', microtime(true)));
         $this->comments_style('header', 0, 0);
@@ -165,18 +176,18 @@ class Exporter
     
     public function export_orders($orderItems, $storeId = null)
     {
-        //We'll run the orders export for each store where crosssell is enabled.
         $stores = $this->helper->getAllStores();
         foreach ($stores as $store) {
             if (!$storeId || $store->getStoreId() == $storeId) {
                 $this->helper->setCurrentStore($store->getStoreId());
                 $this->export_config($store);
+                $this->_createDir($this->_fPath);
                 
                 $enclosed = $this->_fEnclose;
                 $delimeter = $this->_fDel;
                 $newLine = "\r\n";
                 
-                if ((!$this->helper->isEnabled($store) || !$this->helper->isOrdersExport($store)) && !$storeId) {
+                if (!$this->helper->isEnabled($store) || !$this->helper->isOrdersExport($store)) {
                     continue;
                 }
                 
@@ -375,6 +386,7 @@ class Exporter
                
                 $this->_fStore_id = $store->getStoreId();
                 $this->export_config($store);
+                $this->_createDir($this->_fPath);
                 
                 $this->_fileNameZip =$this->helper->getConfig('celexport/export_settings/zipname', $store);
                 

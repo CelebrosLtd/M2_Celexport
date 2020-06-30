@@ -1,9 +1,21 @@
 <?xml version="1.0"?>
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
-    <route url="/V1/celexport/:dataType/:storeId/exportData/" method="GET">
+    <route url="/V1/celexport/:dataType/:id/export/" method="GET">
         <service class="Celebros\Celexport\Api\ExportManagementInterface" method="exportData"/>
         <resources>
-            <resource ref="Celebros_Celexport::export"/>
+            <resource ref="Celebros_Celexport::api_export"/>
+        </resources>
+    </route>
+    <route url="/V1/celexport/:storeId/settings/" method="POST">
+        <service class="Celebros\Celexport\Api\SettingsInterface" method="setSettings"/>
+        <resources>
+            <resource ref="Celebros_Celexport::api_export"/>
+        </resources>
+    </route>
+    <route url="/V1/celexport/:storeId/settings/" method="GET">
+        <service class="Celebros\Celexport\Api\SettingsInterface" method="getSettings"/>
+        <resources>
+            <resource ref="Celebros_Celexport::api_export"/>
         </resources>
     </route>
 </routes>

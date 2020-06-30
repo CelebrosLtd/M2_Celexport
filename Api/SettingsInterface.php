@@ -13,12 +13,18 @@
  */
 namespace Celebros\Celexport\Api;
  
-interface ExportManagementInterface
+interface SettingsInterface
 {
     /**
-     * @param string $dataType
      * @param int $storeId
      * @return mixed
      */
-    public function exportData($dataType, int $id);
+    public function getSettings(int $storeId = null);
+    
+    /**
+     * @param array $settingsData
+     * @param int $storeId
+     * @return mixed
+     */
+    public function setSettings(array $settingsData, int $storeId = null);
 }
