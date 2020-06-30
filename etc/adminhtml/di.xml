@@ -12,5 +12,7 @@
  * @package     Celebros_Celexport
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Magento\Backend\Model\Menu\Item" type="Celebros\Celexport\Model\Adminhtml\Menu\Item" />
+    <type name="Magento\Backend\Model\Menu\Item">
+        <plugin name="Celebros_Celexport_Plugin_Backend_Model_Menu_Item" type="Celebros\Celexport\Plugin\Backend\Model\Menu\Item" sortOrder="10000" disabled="false"/>
+    </type>
 </config>
