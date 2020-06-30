@@ -24,7 +24,8 @@ class Export extends Command
     {
         $this->setName('celebros:export')
             ->setDescription('Start Celebros export process')
-            ->addArgument('store_id');
+            ->addArgument('store_id')
+            ->addArgument('export_process_id');
     }
     
     public function __construct(
@@ -45,7 +46,8 @@ class Export extends Command
         $storeId = $input->getArgument('store_id');
         if ($storeId) {
             $this->appState->setAreaCode('adminhtml');
-            $response = $this->exportManagment->startExportProcess($storeId);
+            $exportProcessId = $input->getArgument('export_process_id') ? : null;
+            $response = $this->exportManagment->startExportProcess($storeId, $exportProcessId);
             $output->write("\n");
             if (isset($response['export_url'])) {
                 $output->writeln("<info>Export Process Completed</info>");
