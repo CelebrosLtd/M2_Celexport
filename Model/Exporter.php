@@ -64,15 +64,11 @@ class Exporter
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollection
     ) {
         $this->helper = $helper;
+        $this->helper->initExportProcessSettings();
         $this->_resource = $resource;
         $this->_dir = $dir;
         $this->_shell = $shell;
         $this->_productCollection = $productCollection;
-        ini_set('memory_limit', $this->helper->getMemoryLimit() . 'M');
-        set_time_limit(18000);
-        ini_set('max_execution_time', 18000);
-        ini_set('display_errors', 1);
-        ini_set('output_buffering', 0);
         $this->_product_entity_type_id = $this->get_product_entity_type_id();
         $this->_category_entity_type_id = $this->get_category_entity_type_id();
         $this->_read = $this->_resource->getConnection('read');
