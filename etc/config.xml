@@ -32,6 +32,7 @@
                 <custom_attributes>1</custom_attributes>
                 <indexed_prices>1</indexed_prices>
                 <use_catalog_price_rules>0</use_catalog_price_rules>
+                <images_autoschedule_export>0</images_autoschedule_export>
             </export_settings>
             <image_settings>
                 <image_types>image,thumbnail</image_types>

@@ -20,6 +20,7 @@ use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
 class Export extends Data
 {
     const MIN_MEMORY_LIMIT = 256;
+    const MAX_EXEC_TIME = 18000;
     
     protected $_storeId;
     protected $_objectManager;
@@ -44,6 +45,21 @@ class Export extends Data
         ProductType::TYPE_BUNDLE => 'min_price',
         ConfigurableType::TYPE_CODE => 'price'
     ];
+
+    
+    /**
+     * Change php settings for export process
+     *
+     * @return void
+     */
+    public function initExportProcessSettings()
+    {
+        ini_set('memory_limit', $this->getMemoryLimit() . 'M');
+        ini_set('max_execution_time', self::MAX_EXEC_TIME);
+        ini_set('display_errors', 1);
+        ini_set('output_buffering', 0);
+        set_time_limit(self::MAX_EXEC_TIME);
+    }
    
     public function getProductImage($product, $type = null)
     {

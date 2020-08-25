@@ -57,11 +57,7 @@ class Process extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->_state->setAreaCode('frontend');
-        ini_set('memory_limit', $this->helper->getMemoryLimit() . 'M');
-        set_time_limit(18000);
-        ini_set('max_execution_time', 18000);
-        ini_set('display_errors', 1);
-        ini_set('output_buffering', 0);
+        $this->helper->initExportProcessSettings();
 
         $this->_chunkId = $input->getArgument('chunk_id');
         $this->_storeId = $input->getArgument('store_id');
