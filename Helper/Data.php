@@ -28,6 +28,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
     const CONFIG_EXPORT_USE_CATALOG_PRICE_RULES = 'celexport/export_settings/use_catalog_price_rules';
     const CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH = 'celexport/export_settings/images_autoschedule_export';
+    const CONFIG_EXPORT_IMAGES_RESOLUTION = 'celexport/image_settings/images_resolution';
+    const CONFIG_EXPORT_IMAGE_TYPES = 'celexport/image_settings/image_types';
     const CONFIG_EXPORT_CONF_ENV_STAMP = 'celexport/ftp_prod/env_stamp';
     const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
     const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';

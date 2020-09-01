@@ -142,6 +142,11 @@
                     <label>Image Types</label>
                     <source_model>Celebros\Celexport\Model\Config\Source\Images</source_model>
                 </field>
+                <field id="images_resolution" translate="label" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="1">
+                    <label>Images Resolution</label>
+                    <frontend_model>Celebros\Celexport\Block\Adminhtml\Form\Field\ImagesResolution</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                </field>
             </group>  
             <group id="ftp_prod" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>FTP Settings</label>
