@@ -22,30 +22,95 @@ class Export extends Data
     const MIN_MEMORY_LIMIT = 256;
     const MAX_EXEC_TIME = 18000;
     
+    /**
+     * @var \Magento\Framework\App\ObjectManager
+     */
+    protected $_objectManager;    
+    
+    /**
+     * @var int
+     */
     protected $_storeId;
-    protected $_objectManager;
-    protected $_catalogProductMediaConfig;
-    public $images = [
+    
+    /**
+     * Default Images Resolution 
+     * @var Array
+     */
+    protected $defResolutions = [
         'image' => [
-            'h' => 700,
-            'w' => 700
+            'height' => 700,
+            'width' => 700
         ],
         'small_image' => [
-            'h' => 120,
-            'w' => 120
+            'height' => 120,
+            'width' => 120
         ],
         'thumbnail' => [
-            'h' => 90,
-            'w' => 90
+            'height' => 90,
+            'width' => 90
         ]
     ];
     
+    /**
+     * @var Array
+     */
+    protected $resolutions = [];
+    
+    /**
+     * @var \Magento\Framework\Json\Helper\Data
+     */
+    public $jsonHelper;
+
+    /**
+     * @var Array
+     */
     public $indexedPricesMapping = [
         GroupedType::TYPE_CODE => 'min_price',
         ProductType::TYPE_BUNDLE => 'min_price',
         ConfigurableType::TYPE_CODE => 'price'
     ];
-
+    
+    /**
+     * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin
+     * @param \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin
+     * @param \Magento\Framework\App\ResponseInterface $response
+     * @param \Magento\Store\Model\StoreManager $stores
+     * @param \Magento\Framework\View\Asset\Repository $assetRepo
+     * @param \Magento\Framework\Filesystem\DirectoryList $dir
+     * @param \Magento\Framework\Filesystem $filesystem
+     * @param \Magento\Framework\App\ResourceConnection $resource
+     * @param \Magento\Config\Model\ResourceModel\Config $resourceConfig
+     * @param \Magento\Framework\Json\Helper\Data $jsonHelper
+     * @return void
+     */
+    public function __construct(
+        \Magento\Framework\App\Helper\Context $context,
+        \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
+        \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
+        \Magento\Framework\App\ResponseInterface $response,
+        \Magento\Store\Model\StoreManager $stores,
+        \Magento\Framework\View\Asset\Repository $assetRepo,
+        \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\Framework\Filesystem $filesystem,
+        \Magento\Framework\App\ResourceConnection $resource,
+        \Magento\Config\Model\ResourceModel\Config $resourceConfig,
+        \Magento\Framework\Json\Helper\Data $jsonHelper
+    ) {
+        $this->jsonHelper = $jsonHelper;
+        parent::__construct(
+            $context,
+            $cssMin,
+            $jsMin,
+            $response,
+            $stores,
+            $assetRepo,
+            $dir,
+            $filesystem,
+            $resource,
+            $resourceConfig
+        );
+    }
     
     /**
      * Change php settings for export process
@@ -61,16 +126,53 @@ class Export extends Data
         set_time_limit(self::MAX_EXEC_TIME);
     }
    
+    /**
+     * Get resolution according to image type
+     *
+     * @return void
+     */
+    protected function getResolutionByType(string $type) : ?array
+    {
+        if (!array_key_exists($type, $this->resolutions)) {
+            $resolutions = (array) $this->jsonHelper->jsonDecode(
+                $this->getConfig(self::CONFIG_EXPORT_IMAGES_RESOLUTION)
+            );
+            foreach ($resolutions as $resolution) {
+                if (isset($resolution['type'])) {
+                    $this->resolutions[$resolution['type']] = [
+                        'height' => $resolution['height'],
+                        'width' => $resolution['width']  
+                    ];
+                }
+            }
+
+            if (!array_key_exists($type, $this->resolutions)) {
+                $this->resolutions[$type] = array_key_exists($type, $this->defResolutions) 
+                    ? $this->defResolutions[$type] : [];
+            }
+        }
+        
+        return $this->resolutions[$type];
+    }
+   
+    /**
+     * Return product image url
+     *
+     * @param \Magento\Catalog\Model\Product $product
+     * @param string $type
+     * @return string
+     */
     public function getProductImage($product, $type = null)
     {
         $bImageExists = 'no_errors';
         $url = null;
         try {
-            if ($type && $type != 'original' && isset($this->images[$type])) {
+            $resolution = $this->getResolutionByType($type);
+            if ($type && $type != 'original' && !empty($resolution)) {
                 if ($product->getData($type) != 'no_selection') {
                     $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
                         ->setImageFile($product->getData($type))
-                        ->resize($this->images[$type]['w'], $this->images[$type]['h'])
+                        ->resize($resolution['width'], $resolution['height'])
                         ->getUrl();
                 } else {
                     $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->getDefaultPlaceholderUrl($type);
@@ -91,6 +193,12 @@ class Export extends Data
         return $url;
     }
     
+    /**
+     * Return product price from magneto index
+     *
+     * @param \Magento\Catalog\Model\Product $product
+     * @return string
+     */
     public function getIndexedPrice($product)
     {
         $type = $product->getTypeId();
@@ -313,7 +421,7 @@ class Export extends Data
     
     public function getImageTypes($objectManager)
     {
-        $avTypes = $this->getConfig('celexport/image_settings/image_types');
+        $avTypes = $this->getConfig(self::CONFIG_EXPORT_IMAGE_TYPES);
         $imageTypes = $objectManager->create('Celebros\Celexport\Model\Config\Source\Images')->toOptionArray();
         foreach ($imageTypes as $key => $imageType) {
             if (!in_array($imageType['value'], explode(',', $avTypes))) {
