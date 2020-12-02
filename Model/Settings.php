@@ -14,8 +14,8 @@
 namespace Celebros\Celexport\Model;
 
 use Celebros\Celexport\Helper\Data as Helper;
-use \Magento\Framework\App\Cache\TypeListInterface as CacheTypeList;
-use \Magento\Framework\App\Cache\Type\Config as CacheTypeConfig;
+use Magento\Framework\App\Cache\TypeListInterface as CacheTypeList;
+use Magento\Framework\App\Cache\Type\Config as CacheTypeConfig;
 
 class Settings implements \Celebros\Celexport\Api\SettingsInterface
 {

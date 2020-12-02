@@ -25,7 +25,7 @@ class Export extends Data
     /**
      * @var \Magento\Framework\App\ObjectManager
      */
-    protected $_objectManager;    
+    protected $_objectManager;
     
     /**
      * @var int
@@ -33,7 +33,7 @@ class Export extends Data
     protected $_storeId;
     
     /**
-     * Default Images Resolution 
+     * Default Images Resolution
      * @var Array
      */
     protected $defResolutions = [
@@ -95,9 +95,13 @@ class Export extends Data
         \Magento\Framework\Filesystem $filesystem,
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Config\Model\ResourceModel\Config $resourceConfig,
-        \Magento\Framework\Json\Helper\Data $jsonHelper
+        \Magento\Framework\Json\Helper\Data $jsonHelper,
+        \Magento\Catalog\Model\View\Asset\ImageFactory $viewAssetImageFactory,
+        \Magento\Catalog\Model\Product\Image\ParamsBuilder $imageParamsBuilder
     ) {
         $this->jsonHelper = $jsonHelper;
+        $this->viewAssetImageFactory = $viewAssetImageFactory;
+        $this->imageParamsBuilder = $imageParamsBuilder;
         parent::__construct(
             $context,
             $cssMin,
@@ -141,13 +145,13 @@ class Export extends Data
                 if (isset($resolution['type'])) {
                     $this->resolutions[$resolution['type']] = [
                         'height' => $resolution['height'],
-                        'width' => $resolution['width']  
+                        'width' => $resolution['width']
                     ];
                 }
             }
-
+            
             if (!array_key_exists($type, $this->resolutions)) {
-                $this->resolutions[$type] = array_key_exists($type, $this->defResolutions) 
+                $this->resolutions[$type] = array_key_exists($type, $this->defResolutions)
                     ? $this->defResolutions[$type] : [];
             }
         }
@@ -170,12 +174,23 @@ class Export extends Data
             $resolution = $this->getResolutionByType($type);
             if ($type && $type != 'original' && !empty($resolution)) {
                 if ($product->getData($type) != 'no_selection') {
-                    $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->init($product, $type)
-                        ->setImageFile($product->getData($type))
-                        ->resize($resolution['width'], $resolution['height'])
-                        ->getUrl();
+                    $viewImageConfig = [
+                        "type" => $type,
+                        "width" => $resolution['width'],
+                        "height" => $resolution['height']
+                    ];
+                    $imageMiscParams = $this->imageParamsBuilder->build($viewImageConfig);
+                    $originalFilePath = $product->getData($imageMiscParams['image_type']);
+                    $imageAsset = $this->viewAssetImageFactory->create(
+                        [
+                            'miscParams' => $imageMiscParams,
+                            'filePath' => $originalFilePath,
+                        ]
+                    );
+                    $url = $imageAsset->getUrl();
                 } else {
-                    $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')->getDefaultPlaceholderUrl($type);
+                    $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')
+                        ->getDefaultPlaceholderUrl($type);
                 }
             } else {
                 $url = (string)$product->getMediaConfig()->getMediaUrl($product->getImage());
@@ -318,8 +333,12 @@ class Export extends Data
         $str = null;
         $this->setCurrentStore($this->_storeId);
         $urlBuilder = $this->getUrlInstance($this->_storeId);
-        $entityName = $this->_objectManager->create('Celebros\Celexport\Model\Exporter')->getProductEntityIdName("catalog_product_entity");
-        $collection = $this->_objectManager->create('\Magento\Catalog\Model\ResourceModel\Product\CollectionFactory')->create();
+        $entityName = $this->_objectManager->create(
+            'Celebros\Celexport\Model\Exporter'
+        )->getProductEntityIdName("catalog_product_entity");
+        $collection = $this->_objectManager->create(
+            '\Magento\Catalog\Model\ResourceModel\Product\CollectionFactory'
+        )->create();
         $collection->setFlag('has_stock_status_filter', true);
         $collection->addFieldToFilter($entityName, array('in' => $ids))
             ->setStoreId($this->_storeId)
@@ -328,9 +347,9 @@ class Export extends Data
         
         if (is_array($customAttributes) && !empty($customAttributes)) {
             $collection->addAttributeToSelect($customAttributes);
-        }   
+        }
         
-        if ($this->useIndexedPrices()) {    
+        if ($this->useIndexedPrices()) {
             $collection->addPriceData();
         }
         
@@ -358,13 +377,18 @@ class Export extends Data
             );
             
             if ($product->getRowId()) {
-                $values["entity_id"] = $product->getEntityId();   
+                $values["entity_id"] = $product->getEntityId();
             }
                        
-            $values["link"] = $this->getProductUrl($product, $this->_storeId, $urlBuilder, $this->_objectManager->create('Magento\UrlRewrite\Model\UrlRewrite'));
+            $values["link"] = $this->getProductUrl(
+                $product,
+                $this->_storeId,
+                $urlBuilder,
+                $this->_objectManager->create('Magento\UrlRewrite\Model\UrlRewrite')
+            );
             
             $prodParams = $this->getProdParams($this->_objectManager);
-            foreach ($prodParams as $prodParam) { 
+            foreach ($prodParams as $prodParam) {
                 switch ($prodParam['value']) {
                     case 'is_saleable':
                         $values['is_salable'] = $product->isSaleable() ? "1" : "0";
@@ -385,18 +409,19 @@ class Export extends Data
                         $values['regular_price'] = $product->getPrice();
                         break;
                     default:
-                }                
+                }
             }
             
-            $imageTypes = $this->getImageTypes($this->_objectManager);         
+            $imageTypes = $this->getImageTypes($this->_objectManager);
             foreach ($imageTypes as $imgType) {
-                $values[(string)$imgType['label']] = $this->getProductImage($product, $imgType['value']);              
+                $values[(string)$imgType['label']] = $this->getProductImage($product, $imgType['value']);
             }
             
             //Process custom attributes.
             if (is_array($customAttributes) && !empty($customAttributes)) {
                 foreach ($customAttributes as $customAttribute) {
-                    $values[$customAttribute] = ($product->getData($customAttribute) == "") ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
+                    $values[$customAttribute] = ($product->getData($customAttribute) == "")
+                        ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
                 }
             }
             

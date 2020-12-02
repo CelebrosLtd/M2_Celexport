@@ -97,3 +97,5 @@ Celebros Export Products
 1.4.3 - 1.4.8 - tech fix
 
 1.4.9 - issue with prices for configurable products has been fixed
+
+1.5.0 - have been added: php 7.4.x to require dependency; images resolution setting; config endpoints to api; autoschedule after images refresh
