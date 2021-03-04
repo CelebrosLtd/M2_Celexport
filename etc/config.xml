@@ -38,6 +38,10 @@
                 <image_types>image,thumbnail</image_types>
                 <images_resolution>{"_1595856174591_591":{"type":"image","height":"700","width":"700"},"_1595856181305_305":{"type":"small_image","height":"120","width":"120"},"_1595856188165_165":{"type":"thumbnail","height":"90","width":"90"}}</images_resolution>
             </image_settings>
+            <ftp_prod>
+                <ftp_port>22</ftp_port>
+                <passive>1</passive>
+            </ftp_prod>
             <advanced>
                 <single_process>1</single_process>
                 <export_chunk_size>1000</export_chunk_size>

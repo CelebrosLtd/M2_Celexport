@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Celebros
  *
@@ -11,20 +12,21 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
-namespace Celebros\Celexport\Model\Config\Source;
 
-class Fileftp implements \Magento\Framework\Option\ArrayInterface
+namespace Celebros\Celexport\Client;
+
+interface RemoteInterface
 {
     /**
-     * Options getter
+     * Send file to remote location
      *
-     * @return array
+     * @param string $filename
+     * @param int $mode
+     * @return bool
      */
-    public function toOptionArray()
-    {
-        return [
-            ['value' => 'file', 'label' => __('File')],
-            ['value' => 'ftp', 'label'  => __('SFTP/FTP')],
-        ];
-    }
+    public function send(
+        array $config,
+        string $filePath,
+        string $remotePath
+    );
 }
