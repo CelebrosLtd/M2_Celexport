@@ -102,3 +102,4 @@ Celebros Export Products
 
 1.6.0 - sftp has been added to export upload
 
+1.6.1 - tech fixes

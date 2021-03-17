@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Celebros Qwiser - Magento Extension
  *
@@ -10,6 +11,7 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
+
 namespace Celebros\Celexport\Helper;
 
 use Magento\Framework\Stdlib\Datetime;
@@ -19,19 +21,19 @@ use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
 
 class Export extends Data
 {
-    const MIN_MEMORY_LIMIT = 256;
-    const MAX_EXEC_TIME = 18000;
-    
+    public const MIN_MEMORY_LIMIT = 256;
+    public const MAX_EXEC_TIME = 18000;
+
     /**
      * @var \Magento\Framework\App\ObjectManager
      */
     protected $_objectManager;
-    
+
     /**
      * @var int
      */
     protected $_storeId;
-    
+
     /**
      * Default Images Resolution
      * @var Array
@@ -50,12 +52,12 @@ class Export extends Data
             'width' => 90
         ]
     ];
-    
+
     /**
      * @var Array
      */
     protected $resolutions = [];
-    
+
     /**
      * @var \Magento\Framework\Json\Helper\Data
      */
@@ -69,7 +71,7 @@ class Export extends Data
         ProductType::TYPE_BUNDLE => 'min_price',
         ConfigurableType::TYPE_CODE => 'price'
     ];
-    
+
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin
@@ -115,7 +117,7 @@ class Export extends Data
             $resourceConfig
         );
     }
-    
+
     /**
      * Change php settings for export process
      *
@@ -129,13 +131,13 @@ class Export extends Data
         ini_set('output_buffering', 0);
         set_time_limit(self::MAX_EXEC_TIME);
     }
-   
+
     /**
      * Get resolution according to image type
      *
      * @return void
      */
-    protected function getResolutionByType(string $type) : ?array
+    protected function getResolutionByType(string $type): ?array
     {
         if (!array_key_exists($type, $this->resolutions)) {
             $resolutions = (array) $this->jsonHelper->jsonDecode(
@@ -149,16 +151,16 @@ class Export extends Data
                     ];
                 }
             }
-            
+
             if (!array_key_exists($type, $this->resolutions)) {
                 $this->resolutions[$type] = array_key_exists($type, $this->defResolutions)
                     ? $this->defResolutions[$type] : [];
             }
         }
-        
+
         return $this->resolutions[$type];
     }
-   
+
     /**
      * Return product image url
      *
@@ -199,15 +201,14 @@ class Export extends Data
             // We get here in case that there is no product image and no placeholder image is set.
             $bImageExists = false;
         }
-        
+
         if (!$bImageExists || (stripos($url, 'no_selection') !== false) || (substr($url, -1) == '/')) {
-            //$this->logProfiler('Warning: '. $type . ' Error: Product ID: '. $product->getEntityId() . ', image url: ' . $url, NULL);
             return null;
         }
-        
+
         return $url;
     }
-    
+
     /**
      * Return product price from magneto index
      *
@@ -218,17 +219,17 @@ class Export extends Data
     {
         $type = $product->getTypeId();
         $priceDataName = isset($this->indexedPricesMapping[$type]) ? $this->indexedPricesMapping[$type] : 'min_price';
-        
+
         return $product->getData($priceDataName);
     }
-    
+
     public function getCalculatedPrice($product)
     {
         $price = null;
         if ($this->useIndexedPrices()) {
             $price = $this->getIndexedPrice($product);
         }
-        
+
         if (!$price) {
             if ($product->getData("type_id") == "bundle") {
                 $product = $this->_objectManager->create('Magento\Catalog\Model\Product')
@@ -274,20 +275,20 @@ class Export extends Data
         } else {
             return $price;
         }
-       
+
         if ($this->useCatalogPriceRules()) {
             $price = $this->_objectManager->create('Magento\CatalogRule\Model\Rule')
                 ->calcProductPriceRule($product, $price);
         }
-        
+
         return number_format($price, 2, ".", "");
     }
-    
+
     private function getUrlInstance($storeId)
     {
         return $this->_objectManager->create('Magento\Framework\Url')->setScope($storeId);
     }
-    
+
     public function getProductUrl($product, $storeId, $urlBuilder, $urlRewrite)
     {
         $requestPath = false;
@@ -295,20 +296,20 @@ class Export extends Data
             if (!$product->getRequestPath()) {
                 $requestPath = $this->extractProductUrl($product, $storeId, $urlRewrite);
             };
-            
+
             $routeParams = [
                 '_direct' => $requestPath ? : $product->getRequestPath(),
                 '_query' => [],
                 '_nosid' => true,
                 '_seo_product_id' => 1
             ];
-            
+
             return $urlBuilder->getUrl('', $routeParams);
         }
-        
+
         return false;
     }
-    
+
     public function extractProductUrl($product, $storeId, $urlRewrite)
     {
         $requestPath = false;
@@ -321,10 +322,10 @@ class Export extends Data
             $lenghts = array_map('strlen', $paths);
             $requestPath = $paths[array_search(min($lenghts), $lenghts)];
         }
-        
+
         return $requestPath;
     }
-    
+
     public function getProductsData($ids, $customAttributes, $storeId, $objectManager)
     {
         $this->_storeId = $storeId;
@@ -344,15 +345,15 @@ class Export extends Data
             ->setStoreId($this->_storeId)
             ->addAttributeToSelect('visibility')
             ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type'));
-        
+
         if (is_array($customAttributes) && !empty($customAttributes)) {
             $collection->addAttributeToSelect($customAttributes);
         }
-        
+
         if ($this->useIndexedPrices()) {
             $collection->addPriceData();
         }
-        
+
         $collection->addUrlRewrite()
             ->joinTable(
                 ['items' => $this->_resource->getTableName('cataloginventory_stock_item')],
@@ -361,32 +362,32 @@ class Export extends Data
                 'stock_id = ' . \Magento\CatalogInventory\Model\Stock::DEFAULT_STOCK_ID . ' ' . \Zend_Db_Select::SQL_AND . ' items.website_id IN (' . implode(",", [0, $websiteId]) . ')',
                 'left'
             );
-      
+
         foreach ($collection as $product) {
             $routeParams = [
                 '_direct' => $product->getRequestPath(),
                 '_query' => [],
                 '_nosid' => true
             ];
-            
+
             $values = array(
                 "id"            => $product->getRowId() ? : $product->getEntityId(),
                 "price"         => $this->getCalculatedPrice($product),
                 "type_id"       => $product->getTypeId(),
                 "product_sku"   => $product->getSku()
             );
-            
+
             if ($product->getRowId()) {
                 $values["entity_id"] = $product->getEntityId();
             }
-                       
+
             $values["link"] = $this->getProductUrl(
                 $product,
                 $this->_storeId,
                 $urlBuilder,
                 $this->_objectManager->create('Magento\UrlRewrite\Model\UrlRewrite')
             );
-            
+
             $prodParams = $this->getProdParams($this->_objectManager);
             foreach ($prodParams as $prodParam) {
                 switch ($prodParam['value']) {
@@ -411,39 +412,42 @@ class Export extends Data
                     default:
                 }
             }
-            
+
             $imageTypes = $this->getImageTypes($this->_objectManager);
             foreach ($imageTypes as $imgType) {
                 $values[(string)$imgType['label']] = $this->getProductImage($product, $imgType['value']);
             }
-            
+
             //Process custom attributes.
             if (is_array($customAttributes) && !empty($customAttributes)) {
                 foreach ($customAttributes as $customAttribute) {
                     $values[$customAttribute] = ($product->getData($customAttribute) == "")
-                        ? "" : trim($product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product), " , ");
+                        ? "" : trim(
+                            $product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product),
+                            " , "
+                        );
                 }
             }
-            
+
             //Dispatching an event so that custom modules would be able to extend the functionality of the export,
             // by adding their own fields to the products export file.
             $this->_eventManager->dispatch('celexport_product_export', array(
                 'values'  => &$values,
                 'product' => &$product,
             ));
-            
+
             $fDel = $this->getConfig('celexport/export_settings/delimiter');
             if ($fDel === '\t') {
                 $fDel = chr(9);
             }
-            
+
             $str .= "^" . implode("^" . $fDel . "^", $values) . "^" . "\r\n";
         }
-        
+
         $this->setCurrentStore(0);
         return $str;
     }
-    
+
     public function getImageTypes($objectManager)
     {
         $avTypes = $this->getConfig(self::CONFIG_EXPORT_IMAGE_TYPES);
@@ -453,10 +457,10 @@ class Export extends Data
                 unset($imageTypes[$key]);
             }
         }
-        
+
         return $imageTypes;
     }
-    
+
     public function getProdParams($objectManager)
     {
         $avParams = $this->getConfig('celexport/export_settings/product_parameters');
@@ -466,18 +470,20 @@ class Export extends Data
                 unset($prodParams[$key]);
             }
         }
-        
+
         return $prodParams;
     }
-    
+
     public function getMemoryLimit()
     {
         $limit = (int) $this->getConfig('celexport/advanced/memory_limit');
-        if (!$limit
-        || $limit < self::MIN_MEMORY_LIMIT) {
+        if (
+            !$limit
+            || $limit < self::MIN_MEMORY_LIMIT
+        ) {
             return self::MIN_MEMORY_LIMIT;
         }
-        
+
         return $limit;
     }
 }
