@@ -20,6 +20,7 @@ use Magento\Cron\Model\Config;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Cron\Model\Schedule;
 use Magento\Cron\Model\ScheduleFactory;
+use Magento\Framework\Stdlib\DateTime\Timezone\LocalizedDateToUtcConverterInterface;
 
 class Cron extends AbstractHelper
 {
@@ -27,6 +28,13 @@ class Cron extends AbstractHelper
     public const CRON_JOB = 'celebros_export';
     public const SCHEDULE_EVERY_MINUTES = 30;
 
+    /**
+     * @param Context $context
+     * @param Config $cronConfig
+     * @param TimezoneInterface $timeZone
+     * @param Schedule $cronSchedule
+     * @param ScheduleFactory $scheduleFactory
+     */
     public function __construct(
         Context $context,
         Config $cronConfig,
@@ -34,29 +42,23 @@ class Cron extends AbstractHelper
         Schedule $cronSchedule,
         ScheduleFactory $scheduleFactory
     ) {
-        $this->_cronConfig = $cronConfig;
-        $this->_timeZone = $timeZone;
-        $this->_cronSchedule = $cronSchedule;
-        $this->_scheduleFactory = $scheduleFactory;
+        $this->cronConfig = $cronConfig;
+        $this->timeZone = $timeZone;
+        $this->cronSchedule = $cronSchedule;
+        $this->scheduleFactory = $scheduleFactory;
         parent::__construct($context);
     }
 
     /**
      * Schedule new export process
      *
-     * @return int $status
+     * @return array|null
      */
-    public function scheduleNewExport()
+    public function scheduleNewExport(): ?array
     {
-        //Flooring the minutes
-        $startTimeSeconds = ((int)($this->_timeZone->scopeTimeStamp() / 60)) * 60;
-        //Ceiling to the next 5 minutes
-        $startTimeMinutes = $startTimeSeconds / 60;
-        $startTimeMinutes = ((int)($startTimeMinutes / 5)) * 5 + 5;
-        $startTimeSeconds = $startTimeMinutes * 60;
-
-        $jobs = $this->_cronConfig->getJobs();
-
+        $dateTime = $this->timeZone->date();
+        $sts = $this->generateNextTaskTimestamp($dateTime->getTimeStamp());
+        $jobs = $this->cronConfig->getJobs();
         if (isset($jobs[self::CRON_GROUP])) {
             $i = 0;
             foreach ($jobs[self::CRON_GROUP] as $jobCode => $jobConfig) {
@@ -64,30 +66,27 @@ class Cron extends AbstractHelper
                     continue;
                 }
 
-                $timeCreated = strftime(
-                    '%Y-%m-%d %H:%M:%S',
-                    $this->_timeZone->scopeTimeStamp()
-                );
-                $timeScheduled = strftime(
-                    '%Y-%m-%d %H:%M:%S',
-                    $startTimeSeconds + $i * 60 * self::SCHEDULE_EVERY_MINUTES
-                );
+                $timeScheduled = $sts + $i * 60 * self::SCHEDULE_EVERY_MINUTES;
                 try {
-                    $lastItem = $this->_cronSchedule->getCollection()
+                    $lastItem = $this->cronSchedule->getCollection()
                         ->addFieldToFilter('job_code', self::CRON_JOB)
                         ->addFieldToFilter('scheduled_at', $timeScheduled)
                         ->getLastItem();
                     if (!$lastItem->getScheduleId()) {
-                        $newItem = $this->_scheduleFactory->create();
+                        $newItem = $this->scheduleFactory->create();
                         $newItem->setJobCode($jobCode)
-                            ->setCreatedAt($timeCreated)
                             ->setScheduledAt($timeScheduled)
                             ->setStatus('pending')
                             ->save();
 
-                        return $timeScheduled;
+                        return [
+                            $dateTime->setTimeStamp($timeScheduled)->format('Y-m-d H:i:s'),
+                            '(' . $dateTime->setTimeZone(
+                                new \DateTimeZone($this->timeZone->getDefaultTimezone())
+                            )->format('Y-m-d H:i:s') . ' ' . $this->timeZone->getDefaultTimezone() . ')'
+                        ];
                     } else {
-                        return false;
+                        return null;
                     }
                 } catch (\Exception $e) {
                     throw new \Exception(__('Unable to schedule Cron'));
@@ -97,6 +96,23 @@ class Cron extends AbstractHelper
             }
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * Calculate timestamp for next task
+     *
+     * @param int $ts
+     * @return int
+     */
+    protected function generateNextTaskTimestamp(
+        int $ts
+    ): int {
+        //Flooring the minutes
+        $sts = ((int)($ts / 60)) * 60;
+        //Ceiling to the next 5 minutes
+        $stm = $sts / 60;
+        $stm = ((int)($stm / 5)) * 5 + 5;
+        return  $stm * 60;
     }
 }

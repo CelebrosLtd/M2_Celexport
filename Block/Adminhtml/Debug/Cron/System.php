@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Celebros
  *
@@ -11,12 +12,13 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
+
 namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
 
 class System extends \Magento\Backend\Block\Widget\Form\Generic
 {
     public $helper;
-    public $timezone;
+    public $timeZone;
     
     /**
      * @param \Magento\Backend\Block\Template\Context $context
@@ -33,7 +35,7 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
         array $data = []
     ) {
         $this->helper = $helper;
-        $this->timezone = $context->getLocaleDate();
+        $this->timeZone = $context->getLocaleDate();
         parent::__construct($context, $registry, $formFactory, $data);
     }
     
@@ -41,8 +43,12 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
     {
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create();
+        $timeValue = $this->timeZone->date()->format('Y-m-d H:i:s') .
+            ' / ' . $this->timeZone->date()->setTimeZone(
+                new \DateTimeZone($this->timeZone->getDefaultTimezone())
+            )->format('Y-m-d H:i:s');
         $data = [
-            'current_magento_time'     => date('H:i:s (Y-m-d)', $this->timezone->scopeTimeStamp()),
+            'current_magento_time'     => $timeValue,
             'celebros_cron_expression' => $this->helper->getConfig('celexport/export_settings/cron_expr'),
             'celebros_cron_enabled'    => $this->helper->getConfig('celexport/export_settings/cron_enabled') ? __('Yes') : __('No')
         ];
@@ -51,8 +57,8 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
         
         $fieldset->addField('current_magento_time', 'label', [
             'name'     => 'current_magento_time',
-            'label'    => __('Current Magento Time'),
-            'title'    => __('Current Magento Time'),
+            'label'    => __('Current Magento / UTC Time'),
+            'title'    => __('Current Magento / UTC Time'),
             'required' => false,
             'disabled' => true
         ]);

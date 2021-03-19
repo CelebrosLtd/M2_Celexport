@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Celebros
  *
@@ -11,6 +12,7 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
+ 
 namespace Celebros\Celexport\Controller\Adminhtml\Export;
 
 use Celebros\Celexport\Helper\Cron as Scheduler;
@@ -41,8 +43,9 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                 __('Access Denied')
             );
         } else {
-            if ($timescheduled = $this->scheduler->scheduleNewExport()) {
-                $body = __("Celebros export cron job is scheduled at $timescheduled <br/>");
+            $timescheduled = $this->scheduler->scheduleNewExport();
+            if (is_array($timescheduled)) {
+                $timescheduled = $this->timeToString($timescheduled);
                 $this->messageManager->addSuccess(
                     __("Celebros export cron job is scheduled at $timescheduled <br/>")
                 );
@@ -54,6 +57,13 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
         }
         
         $this->_redirect($this->_redirect->getRefererUrl());
+    }
+    
+    protected function timeToString(
+        array $time,
+        string $string = ''
+    ): string {
+        return implode(" ", $time);
     }
     
     /**
