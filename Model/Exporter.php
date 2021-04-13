@@ -67,13 +67,10 @@ class Exporter
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollection
     ) {
         $this->helper = $helper;
-        $this->helper->initExportProcessSettings();
         $this->_resource = $resource;
         $this->_dir = $dir;
         $this->_shell = $shell;
         $this->_productCollection = $productCollection;
-        $this->_product_entity_type_id = $this->get_product_entity_type_id();
-        $this->_category_entity_type_id = $this->get_category_entity_type_id();
         $this->_read = $this->_resource->getConnection('read');
     }
 
@@ -114,6 +111,9 @@ class Exporter
 
     public function export_celebros($objectManager, $webAdmin, $storeId = null)
     {
+        $this->helper->initExportProcessSettings();
+        $this->_product_entity_type_id = $this->get_product_entity_type_id();
+        $this->_category_entity_type_id = $this->get_category_entity_type_id();
         $this->isWebRun = $webAdmin;
         $this->_objectManager = $objectManager;
         if (!$this->_exportProcessId) {
