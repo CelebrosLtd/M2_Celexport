@@ -199,7 +199,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store = $this->getCurrentStore();
         }
         
-        return (bool)$this->scopeConfig->getValue(self::CONFIG_ENABLED, \Magento\Store\Model\ScopeInterface::SCOPE_STORES, $store);
+        return (bool)$this->scopeConfig->getValue(
+            self::CONFIG_ENABLED,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            $store
+        );
     }
     
     public function isOrdersExport($store = null)
@@ -208,7 +212,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store = $this->getCurrentStore();
         }
         
-        return (bool)$this->scopeConfig->getValue(self::CONFIG_EXPORT_ORDERS, \Magento\Store\Model\ScopeInterface::SCOPE_STORES, $store);
+        return (bool)$this->scopeConfig->getValue(
+            self::CONFIG_EXPORT_ORDERS,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            $store
+        );
     }
     
     public function getDataHistoryFileName($store = null)
@@ -217,17 +225,28 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store = $this->getCurrentStore();
         }
         
-        return $this->scopeConfig->getValue(self::CONFIG_EXPORT_ORDERS_FILENAME, \Magento\Store\Model\ScopeInterface::SCOPE_STORES, $store);
+        return $this->scopeConfig->getValue(
+            self::CONFIG_EXPORT_ORDERS_FILENAME,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            $store
+        );
     }
     
     public function getCurrentEnvStamp()
     {
-        return sha1($this->scopeConfig->getValue(self::CONFIG_UNSECURE_BASE_URL, 'default', 0));
+        return sha1($this->scopeConfig->getValue(
+            self::CONFIG_UNSECURE_BASE_URL,
+            'default',
+            0
+        ));
     }
     
     public function getConfiguratedEnvStamp()
     {
-        return $this->scopeConfig->getValue(self::CONFIG_EXPORT_CONF_ENV_STAMP, \Magento\Store\Model\ScopeInterface::SCOPE_STORES);
+        return $this->scopeConfig->getValue(
+            self::CONFIG_EXPORT_CONF_ENV_STAMP,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORES
+        );
     }
     
     public function getExportLifetime()
@@ -261,7 +280,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store = $this->getCurrentStore();
         }
         
-        return $this->scopeConfig->getValue(self::CONFIG_NOTIFICATION_EMAIL, \Magento\Store\Model\ScopeInterface::SCOPE_STORES, $store);
+        return $this->scopeConfig->getValue(
+            self::CONFIG_NOTIFICATION_EMAIL,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            $store
+        );
     }
     
     public function useIndexedPrices()
@@ -275,7 +298,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             self::CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
-        ); 
+        );
     }
     
     public function useCatalogPriceRules()

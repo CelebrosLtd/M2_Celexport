@@ -47,6 +47,7 @@
                 <export_chunk_size>1000</export_chunk_size>
                 <export_process_limit>3</export_process_limit>
                 <memory_limit>2048</memory_limit>
+                <max_execution_time>18000</max_execution_time>
                 <enable_log>1</enable_log>
                 <cronlog_lifetime>168</cronlog_lifetime>
                 <notifications_email>support@celebros.com</notifications_email>

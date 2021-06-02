@@ -18,11 +18,20 @@ use Magento\Framework\Stdlib\Datetime;
 use Magento\Catalog\Model\Product\Type as ProductType;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
+use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Model\Product;
+use Magento\CatalogRule\Model\Rule;
+use Magento\Framework\Url;
+use Celebros\Celexport\Model\Exporter;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\UrlRewrite\Model\UrlRewrite;
+use Celebros\Celexport\Model\Config\Source\Images;
+use Celebros\Celexport\Model\Config\Source\Prodparams;
 
 class Export extends Data
 {
-    public const MIN_MEMORY_LIMIT = 256;
-    public const MAX_EXEC_TIME = 18000;
+    //public const MIN_MEMORY_LIMIT = 256;
+    //public const MAX_EXEC_TIME = 18000;
 
     /**
      * @var \Magento\Framework\App\ObjectManager
@@ -125,11 +134,13 @@ class Export extends Data
      */
     public function initExportProcessSettings()
     {
-        ini_set('memory_limit', $this->getMemoryLimit() . 'M');
-        ini_set('max_execution_time', self::MAX_EXEC_TIME);
-        ini_set('display_errors', 1);
-        ini_set('output_buffering', 0);
-        set_time_limit(self::MAX_EXEC_TIME);
+        if ($limit = (int)$this->getMemoryLimit()) {
+            ini_set('memory_limit', $limit . 'M');
+        }
+        
+        if ($execTime = (int)$this->getMaxExecutionTime()) {
+            ini_set('max_execution_time', $execTime);
+        }
     }
 
     /**
@@ -191,7 +202,7 @@ class Export extends Data
                     );
                     $url = $imageAsset->getUrl();
                 } else {
-                    $url = $this->_objectManager->create('Magento\Catalog\Helper\Image')
+                    $url = $this->_objectManager->create(Image::class)
                         ->getDefaultPlaceholderUrl($type);
                 }
             } else {
@@ -232,20 +243,20 @@ class Export extends Data
 
         if (!$price) {
             if ($product->getData("type_id") == "bundle") {
-                $product = $this->_objectManager->create('Magento\Catalog\Model\Product')
+                $product = $this->_objectManager->create(Product::class)
                     ->setStoreId($this->_storeId)
                     ->load($product->getEntityId());
                 $priceModel  = $product->getPriceModel();
                 $price = $priceModel->getTotalPrices($product, 'min', null, false);
             } elseif ($product->getData("type_id") == "grouped") {
-                $product = $this->_objectManager->create('Magento\Catalog\Model\Product')
+                $product = $this->_objectManager->create(Product::class)
                     ->setStoreId($this->_storeId)
                     ->load($product->getEntityId());
                 $aProductIds = $product->getTypeInstance()->getChildrenIds($product->getEntityId());
-                $prices = array();
+                $prices = [];
                 foreach ($aProductIds as $ids) {
                     foreach ($ids as $id) {
-                        $aProduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($id);
+                        $aProduct = $this->_objectManager->create(Product::class)->load($id);
                         if ($aProduct->isInStock()) {
                             $prices[] = $aProduct->getPriceModel()->getFinalPrice(null, $aProduct, true);
                         }
@@ -255,7 +266,7 @@ class Export extends Data
                 $price =  array_shift($prices);
             } elseif ($product->getData("type_id") == "giftcard") {
                 $min_amount = PHP_INT_MAX;
-                $product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($product->getId());
+                $product = $this->_objectManager->create(Product::class)->load($product->getId());
                 if ($product->getData("open_amount_min") != null && $product->getData("allow_open_amount")) {
                     $min_amount = $product->getData("open_amount_min");
                 }
@@ -277,7 +288,7 @@ class Export extends Data
         }
 
         if ($this->useCatalogPriceRules()) {
-            $price = $this->_objectManager->create('Magento\CatalogRule\Model\Rule')
+            $price = $this->_objectManager->create(Rule::class)
                 ->calcProductPriceRule($product, $price);
         }
 
@@ -286,7 +297,7 @@ class Export extends Data
 
     private function getUrlInstance($storeId)
     {
-        return $this->_objectManager->create('Magento\Framework\Url')->setScope($storeId);
+        return $this->_objectManager->create(Url::class)->setScope($storeId);
     }
 
     public function getProductUrl($product, $storeId, $urlBuilder, $urlRewrite)
@@ -335,16 +346,16 @@ class Export extends Data
         $this->setCurrentStore($this->_storeId);
         $urlBuilder = $this->getUrlInstance($this->_storeId);
         $entityName = $this->_objectManager->create(
-            'Celebros\Celexport\Model\Exporter'
+            Exporter::class
         )->getProductEntityIdName("catalog_product_entity");
         $collection = $this->_objectManager->create(
-            '\Magento\Catalog\Model\ResourceModel\Product\CollectionFactory'
+            CollectionFactory::class
         )->create();
         $collection->setFlag('has_stock_status_filter', true);
-        $collection->addFieldToFilter($entityName, array('in' => $ids))
+        $collection->addFieldToFilter($entityName, ['in' => $ids])
             ->setStoreId($this->_storeId)
             ->addAttributeToSelect('visibility')
-            ->addAttributeToSelect(array('sku', 'price', 'image', 'small_image', 'thumbnail', 'type'));
+            ->addAttributeToSelect(['sku', 'price', 'image', 'small_image', 'thumbnail', 'type']);
 
         if (is_array($customAttributes) && !empty($customAttributes)) {
             $collection->addAttributeToSelect($customAttributes);
@@ -358,8 +369,9 @@ class Export extends Data
             ->joinTable(
                 ['items' => $this->_resource->getTableName('cataloginventory_stock_item')],
                 'product_id = entity_id',
-                array('manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'),
-                'stock_id = ' . \Magento\CatalogInventory\Model\Stock::DEFAULT_STOCK_ID . ' ' . \Zend_Db_Select::SQL_AND . ' items.website_id IN (' . implode(",", [0, $websiteId]) . ')',
+                ['manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'],
+                'stock_id = ' . \Magento\CatalogInventory\Model\Stock::DEFAULT_STOCK_ID . ' '
+                    . \Zend_Db_Select::SQL_AND. ' items.website_id IN (' . implode(",", [0, $websiteId]) . ')',
                 'left'
             );
 
@@ -370,12 +382,12 @@ class Export extends Data
                 '_nosid' => true
             ];
 
-            $values = array(
+            $values = [
                 "id"            => $product->getRowId() ? : $product->getEntityId(),
                 "price"         => $this->getCalculatedPrice($product),
                 "type_id"       => $product->getTypeId(),
                 "product_sku"   => $product->getSku()
-            );
+            ];
 
             if ($product->getRowId()) {
                 $values["entity_id"] = $product->getEntityId();
@@ -385,7 +397,7 @@ class Export extends Data
                 $product,
                 $this->_storeId,
                 $urlBuilder,
-                $this->_objectManager->create('Magento\UrlRewrite\Model\UrlRewrite')
+                $this->_objectManager->create(UrlRewrite::class)
             );
 
             $prodParams = $this->getProdParams($this->_objectManager);
@@ -431,10 +443,10 @@ class Export extends Data
 
             //Dispatching an event so that custom modules would be able to extend the functionality of the export,
             // by adding their own fields to the products export file.
-            $this->_eventManager->dispatch('celexport_product_export', array(
+            $this->_eventManager->dispatch('celexport_product_export', [
                 'values'  => &$values,
                 'product' => &$product,
-            ));
+            ]);
 
             $fDel = $this->getConfig('celexport/export_settings/delimiter');
             if ($fDel === '\t') {
@@ -451,7 +463,7 @@ class Export extends Data
     public function getImageTypes($objectManager)
     {
         $avTypes = $this->getConfig(self::CONFIG_EXPORT_IMAGE_TYPES);
-        $imageTypes = $objectManager->create('Celebros\Celexport\Model\Config\Source\Images')->toOptionArray();
+        $imageTypes = $objectManager->create(Images::class)->toOptionArray();
         foreach ($imageTypes as $key => $imageType) {
             if (!in_array($imageType['value'], explode(',', $avTypes))) {
                 unset($imageTypes[$key]);
@@ -464,7 +476,7 @@ class Export extends Data
     public function getProdParams($objectManager)
     {
         $avParams = $this->getConfig('celexport/export_settings/product_parameters');
-        $prodParams = $objectManager->create('Celebros\Celexport\Model\Config\Source\Prodparams')->toOptionArray();
+        $prodParams = $objectManager->create(Prodparams::class)->toOptionArray();
         foreach ($prodParams as $key => $prodParam) {
             if (!in_array($prodParam['value'], explode(',', $avParams))) {
                 unset($prodParams[$key]);
@@ -474,16 +486,17 @@ class Export extends Data
         return $prodParams;
     }
 
-    public function getMemoryLimit()
+    public function getMemoryLimit(): ?int
     {
         $limit = (int) $this->getConfig('celexport/advanced/memory_limit');
-        if (
-            !$limit
-            || $limit < self::MIN_MEMORY_LIMIT
-        ) {
-            return self::MIN_MEMORY_LIMIT;
-        }
 
-        return $limit;
+        return $limit ?: null;
+    }
+    
+    public function getMaxExecutionTime(): ?int
+    {
+        $execTime = (int) $this->getConfig('celexport/advanced/max_execution_time');
+
+        return $execTime ?: null;
     }
 }

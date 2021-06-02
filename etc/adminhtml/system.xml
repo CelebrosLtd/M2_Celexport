@@ -195,7 +195,11 @@
                 </field>
                 <field id="memory_limit" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Memory Limit</label>
-                    <comment>in MB</comment>
+                    <comment>in MB - keep empty to disable it</comment>
+                </field>
+                <field id="max_execution_time" translate="label" type="text" sortOrder="45" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Max Execution Time</label>
+                    <comment>in milliseconds - keep empty to disable it</comment>
                 </field>
                 <field id="enable_log" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Export Log</label>

@@ -103,3 +103,6 @@ Celebros Export Products
 1.6.0 - sftp has been added to export upload
 
 1.6.1 - 1.6.3 - tech fixes
+
+1.6.4 - ability to disable init of memory_limit and max_execution_time has been added
+
