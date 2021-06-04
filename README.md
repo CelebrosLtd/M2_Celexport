@@ -106,3 +106,5 @@ Celebros Export Products
 
 1.6.4 - ability to disable init of memory_limit and max_execution_time has been added
 
+1.6.5 - api fixes
+

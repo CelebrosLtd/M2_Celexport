@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Celebros
  *
@@ -7,10 +8,10 @@
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
  *
- ******************************************************************************
  * @category    Celebros
  * @package     Celebros_Celexport
  */
+
 namespace Celebros\Celexport\Model;
 
 use Celebros\Celexport\Helper\Data as Helper;
@@ -31,11 +32,7 @@ class Settings implements \Celebros\Celexport\Api\SettingsInterface
         $this->helper = $celebrosHelper;
         $this->cacheTypeList = $cacheTypeList;
     }
-    
-    /**
-     * @param int $storeId
-     * @return array
-     */
+
     public function getSettings(int $storeId = null)
     {
         $settings = $this->helper->getAllSettings($storeId);
@@ -43,29 +40,25 @@ class Settings implements \Celebros\Celexport\Api\SettingsInterface
         foreach ($this->helper->getAllStores() as $store) {
             $stores[] = $store->getData();
         }
-        
+
         return ['response' => [
             'store_id' => $storeId,
             'settings' => $settings,
             'stores' => $stores
         ]];
     }
-    
-    /**
-     * @param array $settingsData
-     * @param int $storeId
-     * @return array
-     */
+
     public function setSettings(array $settingsData, int $storeId = null)
     {
-        $settings = [];
         foreach ($settingsData as $name => $value) {
             $return[$name] = $this->helper->setConfig($name, $value, $storeId);
             $this->cacheTypeList->cleanType(
                 CacheTypeConfig::TYPE_IDENTIFIER
             );
         }
-        
+
+        $settings = $this->helper->getAllSettings($storeId);
+
         return ['response' => [
             'settings' => $settings,
             'store_id' => $storeId

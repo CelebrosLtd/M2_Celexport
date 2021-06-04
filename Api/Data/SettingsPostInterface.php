@@ -12,14 +12,21 @@
  * @package     Celebros_Celexport
  */
 
-namespace Celebros\Celexport\Api;
- 
-interface ExportManagementInterface
+namespace Celebros\Celexport\Api\Data;
+
+interface SettingsPostInterface
 {
     /**
-     * @param string $dataType
-     * @param int $storeId
-     * @return \Celebros\Celexport\Api\Data\ExportManagementInterface
+     * Store id
+     *
+     * @return string|null
      */
-    public function exportData($dataType, int $id);
+    public function getStoreId();
+    
+    /**
+     * Settings
+     *
+     * @return string|null
+     */
+    public function getSettings();
 }
