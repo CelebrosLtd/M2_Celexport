@@ -27,7 +27,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONFIG_EXPORT_LOG = 'celexport/advanced/enable_log';
     const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
     const CONFIG_EXPORT_USE_CATALOG_PRICE_RULES = 'celexport/export_settings/use_catalog_price_rules';
-    const CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH = 'celexport/export_settings/images_autoschedule_export';
+    //const CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH = 'celexport/export_settings/images_autoschedule_export';
+    const CONFIG_EXPORT_ENABLE_AUTOSCHEDULE_BY_EVENTS = 'celexport/export_settings/enable_autoschedule_by_events';
+    const CONFIG_EXPORT_AUTOSCHEDULE_EVENTS = 'celexport/export_settings/autoschedule_events';
     const CONFIG_EXPORT_IMAGES_RESOLUTION = 'celexport/image_settings/images_resolution';
     const CONFIG_EXPORT_IMAGE_TYPES = 'celexport/image_settings/image_types';
     const CONFIG_EXPORT_CONF_ENV_STAMP = 'celexport/ftp_prod/env_stamp';
@@ -292,15 +294,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return (int)$this->scopeConfig->getValue(self::CONFIG_EXPORT_INDEXED_PRICES);
     }
     
-    public function isAutoscheduleImages($store = null)
-    {
-        return $this->scopeConfig->isSetFlag(
-            self::CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-    
     public function useCatalogPriceRules()
     {
         return (int)$this->scopeConfig->getValue(self::CONFIG_EXPORT_USE_CATALOG_PRICE_RULES);
@@ -389,5 +382,43 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getIconUrl($file)
     {
         return $this->_assetRepo->getUrl('Celebros_Celexport::images/' . $file);
+    }
+    
+    public function isAutoScheduleEventEnabled(
+        string $eventName,
+        $store = null
+    ): bool {
+        $isEnabled = $this->scopeConfig->isSetFlag(
+            self::CONFIG_EXPORT_ENABLE_AUTOSCHEDULE_BY_EVENTS,
+            ScopeInterface::SCOPE_STORES,
+            $store
+        );
+        
+        $avEvents = explode(
+            ",",
+            $this->scopeConfig->getValue(
+                self::CONFIG_EXPORT_AUTOSCHEDULE_EVENTS,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+                $store
+            )
+        );
+        
+        if (
+            $isEnabled
+            && in_array($eventName, $avEvents)
+        ) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+        
+    public function isAutoscheduleImages($store = null): bool
+    {
+        return $this->isAutoScheduleEventEnabled(
+            \Celebros\Celexport\Model\Config\Source\Events\Cache::IMAGE_FLUSH_EVENT_NAME,
+            $store
+        );
     }
 }

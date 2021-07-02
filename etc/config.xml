@@ -33,6 +33,8 @@
                 <indexed_prices>1</indexed_prices>
                 <use_catalog_price_rules>0</use_catalog_price_rules>
                 <images_autoschedule_export>0</images_autoschedule_export>
+                <enable_autoschedule_by_events>0</enable_autoschedule_by_events>
+                <autoschedule_events>images_flush,catalogsearch_fulltext,catalog_product_price,cataloginventory_stock,catalogpermissions_product,targetrule_product_rule,catalog_product_category,catalog_product_attribute,catalogrule_product,catalogpermissions_category</autoschedule_events>
             </export_settings>
             <image_settings>
                 <image_types>image,thumbnail</image_types>

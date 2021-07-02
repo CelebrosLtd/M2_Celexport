@@ -18,7 +18,7 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Cron\Model\Config;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Cron\Model\Schedule;
+use Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory as ScheduleCollectionFactory;
 use Magento\Cron\Model\ScheduleFactory;
 use Magento\Framework\Stdlib\DateTime\Timezone\LocalizedDateToUtcConverterInterface;
 
@@ -39,12 +39,12 @@ class Cron extends AbstractHelper
         Context $context,
         Config $cronConfig,
         TimezoneInterface $timeZone,
-        Schedule $cronSchedule,
+        ScheduleCollectionFactory $scheduleCollectionFactory,
         ScheduleFactory $scheduleFactory
     ) {
         $this->cronConfig = $cronConfig;
         $this->timeZone = $timeZone;
-        $this->cronSchedule = $cronSchedule;
+        $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->scheduleFactory = $scheduleFactory;
         parent::__construct($context);
     }
@@ -66,24 +66,28 @@ class Cron extends AbstractHelper
                     continue;
                 }
 
-                $timeScheduled = $sts + $i * 60 * self::SCHEDULE_EVERY_MINUTES;
+                $timeScheduledTS = $sts + $i * 60 * self::SCHEDULE_EVERY_MINUTES;
+                $timeScheduledLocal = $dateTime->setTimeStamp($timeScheduledTS)->format('Y-m-d H:i:s');
+                $timeScheduledUTC = $dateTime->setTimeZone(
+                    new \DateTimeZone($this->timeZone->getDefaultTimezone())
+                )->format('Y-m-d H:i:s');
+
                 try {
-                    $lastItem = $this->cronSchedule->getCollection()
-                        ->addFieldToFilter('job_code', self::CRON_JOB)
-                        ->addFieldToFilter('scheduled_at', $timeScheduled)
+                    $scheduleCollection = $this->scheduleCollectionFactory->create();
+                    $lastItem = $scheduleCollection->addFieldToFilter('job_code', self::CRON_JOB)
+                        ->addFieldToFilter('scheduled_at', $timeScheduledUTC)
                         ->getLastItem();
+                       
                     if (!$lastItem->getScheduleId()) {
                         $newItem = $this->scheduleFactory->create();
                         $newItem->setJobCode($jobCode)
-                            ->setScheduledAt($timeScheduled)
+                            ->setScheduledAt($timeScheduledUTC)
                             ->setStatus('pending')
                             ->save();
 
                         return [
-                            $dateTime->setTimeStamp($timeScheduled)->format('Y-m-d H:i:s'),
-                            '(' . $dateTime->setTimeZone(
-                                new \DateTimeZone($this->timeZone->getDefaultTimezone())
-                            )->format('Y-m-d H:i:s') . ' ' . $this->timeZone->getDefaultTimezone() . ')'
+                            $timeScheduledLocal,
+                            '(' . $timeScheduledUTC . ' ' . $this->timeZone->getDefaultTimezone() . ')'
                         ];
                     } else {
                         return null;
@@ -100,13 +104,25 @@ class Cron extends AbstractHelper
     }
 
     /**
+     * @param array $time
+     * @param string $string
+     * @return string
+     */
+    public function timeToString(
+        array $time,
+        string $string = ''
+    ): string {
+        return implode(" ", $time);
+    }
+
+    /**
      * Calculate timestamp for next task
      *
      * @param int $ts
      * @return int
      */
     protected function generateNextTaskTimestamp(
-        int $ts
+       int $ts
     ): int {
         //Flooring the minutes
         $sts = ((int)($ts / 60)) * 60;

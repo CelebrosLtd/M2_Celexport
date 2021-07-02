@@ -8,34 +8,34 @@
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
  *
- ******************************************************************************
  * @category    Celebros
  * @package     Celebros_Celexport
  */
- 
+
 namespace Celebros\Celexport\Controller\Adminhtml\Export;
 
 use Celebros\Celexport\Helper\Cron as Scheduler;
+use Magento\Backend\App\Action\Context;
 
 class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
 {
     /**
-     * @var \Celebros\Celexport\Helper\Cron
+     * @var Scheduler
      */
     protected $scheduler;
-    
+
     /**
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Celebros\Celexport\Helper\Cron $scheduler
+     * @param Context $context
+     * @param Scheduler $scheduler
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
+        Context $context,
         Scheduler $scheduler
     ) {
         parent::__construct($context);
         $this->scheduler = $scheduler;
     }
-    
+
     public function execute()
     {
         if (!$this->_isAllowed()) {
@@ -45,7 +45,7 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
         } else {
             $timescheduled = $this->scheduler->scheduleNewExport();
             if (is_array($timescheduled)) {
-                $timescheduled = $this->timeToString($timescheduled);
+                $timescheduled = $this->scheduler->timeToString($timescheduled);
                 $this->messageManager->addSuccess(
                     __("Celebros export cron job is scheduled at $timescheduled <br/>")
                 );
@@ -55,17 +55,12 @@ class Schedule extends \Celebros\Celexport\Controller\Adminhtml\Export
                 );
             }
         }
-        
-        $this->_redirect($this->_redirect->getRefererUrl());
+
+        $this->_redirect(
+            $this->_redirect->getRefererUrl()
+        );
     }
-    
-    protected function timeToString(
-        array $time,
-        string $string = ''
-    ): string {
-        return implode(" ", $time);
-    }
-    
+
     /**
      * Check for is allowed
      *

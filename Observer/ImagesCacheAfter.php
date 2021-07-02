@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Celebros
  *
@@ -11,6 +12,7 @@
  * @category    Celebros
  * @package     Celebros_Celexport
  */
+
 namespace Celebros\Celexport\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
@@ -20,6 +22,21 @@ use Magento\Framework\Message\ManagerInterface;
 
 class ImagesCacheAfter implements ObserverInterface
 {
+    /**
+     * @var Helper
+     */
+    protected $helper;
+
+    /**
+     * @var Scheduler
+     */
+    protected $scheduler;
+
+    /**
+     * @var ManagerInterface
+     */
+    protected $message;
+
     /**
      * @param Helper $helper
      * @param Scheduler $scheduler
@@ -35,16 +52,18 @@ class ImagesCacheAfter implements ObserverInterface
         $this->scheduler = $scheduler;
         $this->messageManager = $message;
     }
-    
+
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         if ($this->helper->isAutoscheduleImages()) {
-            if ($this->scheduler->scheduleNewExport()) {
-                $message = __("New Celebros export task has been scheduled");
+            $timescheduled = $this->scheduler->scheduleNewExport();
+            if (is_array($timescheduled)) {
+                $timescheduled = $this->scheduler->timeToString($timescheduled);
+                $message = __("Celebros export cron job is scheduled at $timescheduled <br/>");
             } else {
-                $message = __("New Celebros export task hasn't been scheduled");
+                $message = __("Celebros export cron job are already exist <br/>");
             }
-            
+
             $this->messageManager->addNotice($message);
         }
     }

@@ -130,9 +130,20 @@
                         <field id="indexed_prices">0</field>
                     </depends>
                 </field>
-                <field id="images_autoschedule_export" translate="label" type="select" sortOrder="260" showInDefault="1" showInWebsite="0" showInStore="0">
+                <!--<field id="images_autoschedule_export" translate="label" type="select" sortOrder="260" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Schedule New Export After Images Clean</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>-->
+                <field id="enable_autoschedule_by_events" translate="label" type="select" sortOrder="300" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Autoschedule By Events</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="autoschedule_events" translate="label" type="multiselect" sortOrder="310" showInDefault="1" showInWebsite="0" showInStore="1">
+                    <label>Autoschedule Events</label>
+                    <source_model>Celebros\Celexport\Model\Config\Source\Events</source_model>
+                    <depends>
+                        <field id="enable_autoschedule_by_events">1</field>
+                    </depends>                    
                 </field>
             </group>
             <group id="image_settings" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="1">

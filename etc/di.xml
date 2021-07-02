@@ -10,4 +10,15 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Indexer\Model\Indexer">
+        <plugin name="Celebros_Celexport_Plugin_Indexer_Model_Indexer" type="Celebros\Celexport\Plugin\Indexer\Model\Indexer" sortOrder="10000" disabled="false"/>
+    </type>
+    <type name="Celebros\Celexport\Model\Config\Source\Events">
+        <arguments>
+            <argument name="events" xsi:type="array">
+                <item name="cache" xsi:type="object">Celebros\Celexport\Model\Config\Source\Events\Cache</item>
+                <item name="indexers" xsi:type="object">Celebros\Celexport\Model\Config\Source\Events\Indexers</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
