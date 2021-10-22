@@ -25,6 +25,7 @@ class Exporter
     const ATTR_TABLE_PRODUCT_LIMIT = 1000;
     const ORDER_COLLETION_PAGE_LIMIT = 500;
     const ORDERS_AGE = 120; /* days */
+    public const CACHE_LIFETIME = 13600;
 
     protected $_config;
     protected $_conn;
@@ -64,7 +65,8 @@ class Exporter
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Framework\Shell $shell,
         \Magento\Framework\Filesystem\DirectoryList $dir,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollection
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollection,
+        \Magento\Framework\App\Cache $cache
     ) {
         $this->helper = $helper;
         $this->_resource = $resource;
@@ -72,6 +74,7 @@ class Exporter
         $this->_shell = $shell;
         $this->_productCollection = $productCollection;
         $this->_read = $this->_resource->getConnection('read');
+        $this->cache = $cache;
     }
 
     protected function logProfiler($msg, $process = null)
@@ -865,20 +868,6 @@ class Exporter
         $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
         $this->logProfiler('------------------------------------');
 
-        /*----- celebros_mapping.txt -----*/
-        $this->getTimeOffset(microtime(true));
-        $table = $this->_resource->getTableName("celebros_mapping");
-        $this->logProfiler("START {$table}");
-        $query = $this->_read->select()->from(
-            $table,
-            array('xml_field', 'code_field')
-        );
-        $this->export_table($query, "celebros_mapping");
-        $this->logProfiler("FINISH {$table}");
-        $this->logProfiler('Mem usage: ' . memory_get_usage(true), null, true);
-        $this->logProfiler('Time usage: ' . $this->getTimeOffset(microtime(true)));
-        $this->logProfiler('------------------------------------');
-
         /*----- review_entity.txt -----*/
         $this->getTimeOffset(microtime(true));
         $table = $this->_resource->getTableName("review_entity");
@@ -1540,11 +1529,6 @@ class Exporter
             $fields[] = (string)$imgType['label'];
         }
 
-        $mapping = $this->_objectManager->create('Celebros\Celexport\Model\Mapping');
-        foreach ($fields as $key => $field) {
-            $fields[$key] = $mapping->getMapping($field);
-        }
-
         //Fetching a list of custom attributes, for which we'll need to map out the values from the corresponding source models.
         $customAttributes = $this->_getCustomAttributes();
         foreach ($customAttributes as $key => $customAttribute) {
@@ -1553,7 +1537,12 @@ class Exporter
         }
 
         //Creating a custom fields cache for use in the separate processes.
-        $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_custom_fields_' . $this->_exportProcessId)->setContent(json_encode($customAttributes))->save();
+        $this->cache->save(
+            json_encode($customAttributes),
+            'export_custom_fields_' . $this->_exportProcessId,
+            [],
+            self::CACHE_LIFETIME
+        );
 
         //Dispatching event in case a custom module would want to modify the export process.
         /*Mage::dispatchEvent('celexport_before_export_products', array(
@@ -1600,7 +1589,13 @@ class Exporter
                 }
 
                 $this->logProfiler('Exported Products: ' . implode(',', $ids));
-                $this->_objectManager->create('Celebros\Celexport\Model\Cache')->setName('export_chunk_' . $this->_exportProcessId . '_' . $i)->setContent(json_encode($ids))->save();
+                $this->cache->save(
+                    json_encode($ids),
+                    'export_chunk_' . $this->_exportProcessId . '_' . $i,
+                    [],
+                    self::CACHE_LIFETIME
+                );
+
                 $comm = 'php ' . $this->_dir->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_exportProcessId;
 
                 $process = new Process($comm);
@@ -1631,11 +1626,7 @@ class Exporter
             }
 
             foreach ($finished as $key) {
-                $item = $this->_objectManager->create('Celebros\Celexport\Model\Cache')
-                    ->getCollection()
-                    ->addFieldToFilter('name', 'process_' . $this->_exportProcessId . '_' . $key)
-                    ->getLastItem();
-                $status = $item->getContent();
+                $status = $this->cache->load('process_' . $this->_exportProcessId . '_' . $key);
 
                 if ($status == 'no_errors') {
                     $filePath = $_fPath . '/' . 'export_chunk_' . $key . "." . 'txt';
@@ -1646,23 +1637,15 @@ class Exporter
                     return;
                 }
 
-                $item->delete();
+                $this->cache->remove('process_' . $this->_exportProcessId . '_' . $key);
             }
 
             fclose($fh);
 
-            $this->_objectManager->create('Celebros\Celexport\Model\Cache')->getCollection()
-                ->addFieldToFilter('name', 'export_custom_fields_' . $this->_exportProcessId)
-                ->getLastItem()
-                ->delete();
+            $this->cache->remove('export_custom_fields_' . $this->_exportProcessId);  
         } else {
-            $customAttributes = json_decode($this->_objectManager->create('Celebros\Celexport\Model\Cache')
-                ->getCollection()
-                ->addFieldToFilter('name', 'export_custom_fields_' . $this->_exportProcessId)
-                ->getLastItem()
-                ->getContent());
+            $customAttributes = json_decode($this->cache->load('export_custom_fields_' . $this->_exportProcessId));
             $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
-
             foreach ($chunksIds as $ids) {
                 $this->logProfiler('Exported Products: ' . implode(',', $ids));
                 $str = $exportHelper->getProductsData($ids, $customAttributes, $store->getStoreId(), $this->_objectManager);

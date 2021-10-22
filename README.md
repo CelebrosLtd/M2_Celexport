@@ -109,3 +109,6 @@ Celebros Export Products
 1.6.5 - api fixes
 
 1.7.0 - autoschedule has been added for indexes
+
+1.7.1 - redundant tables has been removed; code refactoring
+

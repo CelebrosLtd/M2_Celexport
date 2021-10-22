@@ -1,0 +1,12 @@
+{
+    "celebros_cronlog": {
+        "column": {
+            "id": true,
+            "executed_at": true,
+            "event": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

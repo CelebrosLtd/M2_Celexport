@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+ * Celebros
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish correct extension functionality.
+ * If you wish to customize it, please contact Celebros.
+ *
+ ******************************************************************************
+ * @category    Celebros
+ * @package     Celebros_Celexport
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="celebros_cronlog" resource="default" engine="innodb" comment="Celebros Cronlog">
+    <column name="id" xsi:type="int" unsigned="true" nullable="false" identity="true" comment="Id"/>
+    <column name="executed_at" xsi:type="timestamp" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Executed At"/>
+    <column name="event" xsi:type="varchar" nullable="true" length="255" comment="Event"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="id"/>
+    </constraint>
+  </table>
+</schema>
