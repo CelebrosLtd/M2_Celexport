@@ -167,6 +167,7 @@ class Exporter
         $this->_fFTPUser = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_user', $store) : null;
         $this->_fFTPPassword = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_password', $store) : null;
         $this->_fFTPPassive = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/passive', $store) : null;
+        $this->_fFTPTls = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/tls', $store) : null;
 
         //feature is not in use
         $this->_fEnableCron = $this->helper->getConfig('celexport/export_settings/cron_enabled');
@@ -1369,6 +1370,7 @@ class Exporter
         }
 
         $ioConfig['passive'] = $this->_fFTPPassive;
+        $ioConfig['ssl'] = $this->_fFTPTls;
 
         return $ioConfig;
     }
@@ -1642,7 +1644,7 @@ class Exporter
 
             fclose($fh);
 
-            $this->cache->remove('export_custom_fields_' . $this->_exportProcessId);  
+            $this->cache->remove('export_custom_fields_' . $this->_exportProcessId);
         } else {
             $customAttributes = json_decode($this->cache->load('export_custom_fields_' . $this->_exportProcessId));
             $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
