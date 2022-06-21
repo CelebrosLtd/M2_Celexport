@@ -112,3 +112,4 @@ Celebros Export Products
 
 1.7.1 - redundant tables has been removed; code refactoring
 
+1.8.0 - Fix email notification is not sending if export fails; Add FTP over TLS support for file export
