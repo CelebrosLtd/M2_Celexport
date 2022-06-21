@@ -43,6 +43,7 @@
             <ftp_prod>
                 <ftp_port>22</ftp_port>
                 <passive>1</passive>
+                <tls>0</tls>
             </ftp_prod>
             <advanced>
                 <single_process>1</single_process>

@@ -27,7 +27,8 @@ class Remote implements RemoteInterface
      */
     protected $portMapping = [
         22 => 'sftp',
-        21 => 'ftp'
+        21 => 'ftp',
+        990 => 'ftp'
     ];
 
     /**
@@ -62,7 +63,7 @@ class Remote implements RemoteInterface
      *
      * @return string
      */
-    public function getRemoteType(): string
+    protected function getRemoteType(): string
     {
         $type = $this->config['type'] ?? null;
         if (!$type) {
@@ -104,13 +105,16 @@ class Remote implements RemoteInterface
             'username' => $this->config['user'] ?? null,
             'user' => $this->config['user'] ?? null,
             'password' => $this->config['password'] ?? null,
-            'passive' => $this->config['passive'] ?? null
+            'passive' => $this->config['passive'] ?? null,
+            'ssl' => $this->config['ssl'] ?? null
         ]);
+
         $fileDriver = new FileDriver();
         if ($fileDriver->isExists($filePath) && $fileDriver->isReadable($filePath)) {
             $file = new File();
             $fileInfo = $file->getPathInfo($filePath);
             $result = $connection->write($fileInfo['basename'], $filePath);
+
             $connection->close();
 
             return (bool) $result;

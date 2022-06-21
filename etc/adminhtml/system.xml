@@ -143,7 +143,7 @@
                     <source_model>Celebros\Celexport\Model\Config\Source\Events</source_model>
                     <depends>
                         <field id="enable_autoschedule_by_events">1</field>
-                    </depends>                    
+                    </depends>
                 </field>
             </group>
             <group id="image_settings" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="1">
@@ -158,7 +158,7 @@
                     <frontend_model>Celebros\Celexport\Block\Adminhtml\Form\Field\ImagesResolution</frontend_model>
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                 </field>
-            </group>  
+            </group>
             <group id="ftp_prod" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>SFTP/FTP Settings</label>
                 <hide_in_single_store_mode>0</hide_in_single_store_mode>
@@ -184,7 +184,11 @@
                     <label>Passive</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-            </group>    
+                <field id="tls" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="1">
+                    <label>Use TLS</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
             <group id="advanced" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Advanced Settings</label>
                 <hide_in_single_store_mode>0</hide_in_single_store_mode>
@@ -222,7 +226,7 @@
                 </field>
                 <field id="notifications_email" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Notifications Email</label>
-                </field> 
+                </field>
             </group>
             <group id="about" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>About</label>

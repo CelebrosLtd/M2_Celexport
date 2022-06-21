@@ -1,0 +1,8 @@
+<!--@subject Magento Error API export process "{{config path="web/secure/base_url"}}"  @-->
+<div>
+    {{config path="web/secure/base_url"}} - Store-id: {{var store.store_id}} - Store-code: {{var store.code}}
+    <br>
+    Error Message:
+    <br>
+    {{var message|escape|nl2br}}
+</div>
