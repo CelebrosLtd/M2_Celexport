@@ -137,7 +137,7 @@ class Export extends Data
         if ($limit = (int)$this->getMemoryLimit()) {
             ini_set('memory_limit', $limit . 'M');
         }
-        
+
         if ($execTime = (int)$this->getMaxExecutionTime()) {
             ini_set('max_execution_time', $execTime);
         }
@@ -435,7 +435,9 @@ class Export extends Data
                 foreach ($customAttributes as $customAttribute) {
                     $values[$customAttribute] = ($product->getData($customAttribute) == "")
                         ? "" : trim(
-                            $product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue($product),
+                            (string)$product->getResource()->getAttribute($customAttribute)->getFrontend()->getValue(
+                                $product
+                            ),
                             " , "
                         );
                 }
@@ -462,7 +464,7 @@ class Export extends Data
 
     public function getImageTypes($objectManager)
     {
-        $avTypes = $this->getConfig(self::CONFIG_EXPORT_IMAGE_TYPES);
+        $avTypes = (string)$this->getConfig(self::CONFIG_EXPORT_IMAGE_TYPES);
         $imageTypes = $objectManager->create(Images::class)->toOptionArray();
         foreach ($imageTypes as $key => $imageType) {
             if (!in_array($imageType['value'], explode(',', $avTypes))) {
@@ -475,7 +477,7 @@ class Export extends Data
 
     public function getProdParams($objectManager)
     {
-        $avParams = $this->getConfig('celexport/export_settings/product_parameters');
+        $avParams = (string)$this->getConfig('celexport/export_settings/product_parameters');
         $prodParams = $objectManager->create(Prodparams::class)->toOptionArray();
         foreach ($prodParams as $key => $prodParam) {
             if (!in_array($prodParam['value'], explode(',', $avParams))) {
@@ -492,7 +494,7 @@ class Export extends Data
 
         return $limit ?: null;
     }
-    
+
     public function getMaxExecutionTime(): ?int
     {
         $execTime = (int) $this->getConfig('celexport/advanced/max_execution_time');
