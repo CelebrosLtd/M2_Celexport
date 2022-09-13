@@ -8,7 +8,7 @@
         "AFL-3.0"
     ],
     "require": {
-        "php": ">=7.0.0",
+        "php": "~7.3|~7.4|~8.0|~8.1",
         "magento/framework": ">=102.0.0",
         "celebros/module-main": ">=0.9.11"
     },

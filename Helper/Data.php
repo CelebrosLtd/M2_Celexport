@@ -396,7 +396,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         $avEvents = explode(
             ",",
-            $this->scopeConfig->getValue(
+            (string)$this->scopeConfig->getValue(
                 self::CONFIG_EXPORT_AUTOSCHEDULE_EVENTS,
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
                 $store

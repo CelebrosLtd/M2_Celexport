@@ -1,16 +1,12 @@
 <?php
 
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 
 namespace Celebros\Celexport\Model;
@@ -123,7 +119,7 @@ class Exporter
             $this->_exportProcessId = $this->helper->getExportProcessId();
         }
 
-        $export_start = (float) array_sum(explode(' ', microtime(true)));
+        $export_start = microtime(true);
         $this->comments_style('header', 0, 0);
         $this->comments_style('icon', date('Y/m/d H:i:s') . ', Starting profile execution, please wait...', 'icon');
         $this->comments_style('icon', 'Memory Limit: ' . ini_get('memory_limit'), 'icon');
@@ -138,7 +134,7 @@ class Exporter
         $this->export_orders($objectManager->create('Magento\Sales\Model\Order\Item'), $storeId);
         $this->export_main($this->_exportProcessId, $storeId);
 
-        $export_end = (float)array_sum(explode(' ', microtime(true)));
+        $export_end = microtime(true);
 
         $this->comments_style('info', 'Finished profile execution within ' . round($export_end - $export_start, 3) . ' sec.', 'finish');
         $this->comments_style('finish', 0, 0);
@@ -1073,7 +1069,7 @@ class Exporter
                     $row['parent_id'] = $this->getRowIdByEntityIdCat($row['parent_id']);
                 }
 
-                $tmp = explode("/", $row['path']);
+                $tmp = explode("/", (string)$row['path']);
                 foreach ($tmp as $key => $entity_id) {
                     $tmp[$key] = $this->getRowIdByEntityIdCat($entity_id);
                 }
@@ -1258,7 +1254,7 @@ class Exporter
         $rootCategoryId = $this->_fStore->getRootCategoryId();
         $categories = [];
         foreach ($results as $entity_id => $path) {
-            $path = explode('/', $path);
+            $path = explode('/', (string)$path);
             if (count($path) > 1) {
                 if ($path[1] == $rootCategoryId) {
                     $categories[] = $entity_id;
@@ -1383,7 +1379,7 @@ class Exporter
         }
     }
 
-    protected function get_category_is_active_attribute_id()
+    protected function getCategoryIsActiveAttributeId()
     {
         $table = $this->_resource->getTableName("eav_attribute");
         $sql = "SELECT attribute_id
@@ -1393,7 +1389,7 @@ class Exporter
         return $this->_resource->getConnection('read')->fetchOne($sql);
     }
 
-    protected function get_category_name_attribute_id()
+    protected function getCategoryNnameAttributeId()
     {
         $table = $this->_resource->getTableName("eav_attribute");
         $sql = "SELECT attribute_id
@@ -1403,7 +1399,7 @@ class Exporter
         return $this->_resource->getConnection('read')->fetchOne($sql);
     }
 
-    public function exportProdIdsByAttributeValue($attribute_code, $attribute_value, $store_id = 0, $filename)
+    protected function exportProdIdsByAttributeValue($attribute_code, $attribute_value, $store_id, $filename)
     {
         $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
         $collection->setStoreId($store_id)
@@ -1431,7 +1427,7 @@ class Exporter
     protected function export_extra_tables($store)
     {
         $this->comments_style('icon', "Exporting extra tables", 'icon');
-        $extraTablesData = $this->helper->getConfig('celexport/export_settings/extra_tables', $store);
+        $extraTablesData = (string)$this->helper->getConfig('celexport/export_settings/extra_tables', $store) ?? '';
         $extraTables = explode("\n", $extraTablesData);
         foreach ($extraTables as $table) {
             if (trim($table)=='') {
