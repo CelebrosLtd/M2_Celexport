@@ -1,19 +1,16 @@
 <?php
 
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- * @category    Celebros
- * @package     Celebros_Celexport
  */
- 
+
 namespace Celebros\Celexport\Api;
- 
+
 interface SettingsInterface
 {
     /**
@@ -23,7 +20,7 @@ interface SettingsInterface
      * @return \Celebros\Celexport\Api\Data\SettingsGetInterface
      */
     public function getSettings(int $storeId = null);
-    
+
     /**
      * Import Celebros export module settings for selected store
      *

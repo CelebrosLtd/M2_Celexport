@@ -1,15 +1,11 @@
 <?php
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
 
@@ -18,10 +14,10 @@ use Magento\Store\Model\Store;
 class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
 {
     const DEFAULT_FILTER_OFFSET = 1;
-    
+
     protected $_collection;
     protected $_timezone;
-    
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
@@ -32,7 +28,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->_timezone = $context->getLocaleDate();
         parent::__construct($context, $backendHelper, $data);
     }
-    
+
     /**
      * @return void
      */
@@ -53,7 +49,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->setDefaultFilter(['executed-at' => ['from' => $this->_localeDate->formatDateTime($borderTime), 'locale' => 'en_US']]);
         $this->setUseAjax(true);
     }
-    
+
     /**
      * @return $this
      */
@@ -64,7 +60,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_prepareCollection();
         return $this;
     }
-    
+
     protected function _prepareColumns()
     {
         $this->addColumn('executed-at', [
@@ -73,20 +69,20 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
             'type'             => 'datetime',
             'filter_time'      => true
         ]);
-        
+
         $this->addColumn('event', [
             'header' => __('Event'),
             'index'  => 'event'
         ]);
-        
+
         return parent::_prepareColumns();
     }
-    
+
     public function getGridUrl()
     {
         return $this->getUrl('*/*/crongrid', ['_current' => true]);
     }
-    
+
     public function getRowUrl($row)
     {
         return false;

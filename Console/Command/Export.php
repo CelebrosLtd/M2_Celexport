@@ -1,15 +1,11 @@
 <?php
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Console\Command;
 
@@ -27,7 +23,7 @@ class Export extends Command
             ->addArgument('store_id')
             ->addArgument('export_process_id');
     }
-    
+
     public function __construct(
         AppState $appState,
         \Celebros\Celexport\Model\Exporter $celebrosExport,
@@ -40,7 +36,7 @@ class Export extends Command
         $this->celebrosExport = $celebrosExport;
         parent::__construct();
     }
-    
+
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $storeId = $input->getArgument('store_id');

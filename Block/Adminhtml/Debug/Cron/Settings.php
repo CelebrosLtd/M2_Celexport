@@ -1,22 +1,18 @@
 <?php
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
 
 class Settings extends \Magento\Backend\Block\Widget\Form\Generic
 {
     public $helper;
-    
+
     /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -54,7 +50,7 @@ class Settings extends \Magento\Backend\Block\Widget\Form\Generic
             'required' => false,
             'disabled' => true
         ]);
-        
+
         $fieldset->addField('schedule_ahead_for', 'label', [
             'name'     => 'schedule_ahead_for',
             'label'    => __('Schedule Ahead For') . ' (' . __('index') . '/' . __('default') . ')',
@@ -62,7 +58,7 @@ class Settings extends \Magento\Backend\Block\Widget\Form\Generic
             'required' => false,
             'disabled' => true
         ]);
-        
+
         $fieldset->addField('schedule_lifetime', 'label', [
             'name'     => 'schedule_lifetime',
             'label'    => __('Missed if Not Run Within') . ' (' . __('index') . '/' . __('default') . ')',

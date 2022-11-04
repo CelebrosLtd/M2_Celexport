@@ -1,15 +1,11 @@
 <?php
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Model;
 
@@ -33,14 +29,14 @@ class Cronlog extends \Magento\Framework\Model\AbstractModel
         } else {
             $data['executed_at'] = $time;
         }
-        
+
         $data['event'] = $event;
         try {
             $this->setData($data)->save();
         } catch (\Exception $e) {
             return false;
         }
-        
+
         $this->cleanUpCollection($this->getCronlogLifetime());
     }
 
