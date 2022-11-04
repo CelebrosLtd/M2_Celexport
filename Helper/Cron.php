@@ -1,15 +1,12 @@
 <?php
 
 /**
- * Celebros Qwiser - Magento Extension
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 
 namespace Celebros\Celexport\Helper;
@@ -77,7 +74,7 @@ class Cron extends AbstractHelper
                     $lastItem = $scheduleCollection->addFieldToFilter('job_code', self::CRON_JOB)
                         ->addFieldToFilter('scheduled_at', $timeScheduledUTC)
                         ->getLastItem();
-                       
+
                     if (!$lastItem->getScheduleId()) {
                         $newItem = $this->scheduleFactory->create();
                         $newItem->setJobCode($jobCode)

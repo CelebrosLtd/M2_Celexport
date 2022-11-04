@@ -1,15 +1,11 @@
 <?php
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
 
@@ -17,9 +13,9 @@ use Magento\Store\Model\Store;
 
 class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
 {
-    
+
     protected $_collection;
-    
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
@@ -33,17 +29,17 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->helper = $helper;
         $this->timezone = $timezone;
         $files = $this->getLogFilesList();
-      
+
         $this->_collection = $collection->create();
         foreach ($files as $file) {
             $varienObject = new \Magento\Framework\DataObject();
             $varienObject->setData($file);
             $this->_collection->addItem($varienObject);
         }
-        
+
         parent::__construct($context, $backendHelper, $data);
     }
-    
+
     public function getLogFilesList()
     {
         $dir = $this->helper->getExportPath();
@@ -55,17 +51,17 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
                 if (isset($fl[0])) {
                     $date = $this->timezone->date((int)$fl[0])->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);
                 }
-                
+
                 $result[] = [
                     'date' => $date,
                     'filename' => $file
                 ];
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
      * @return void
      */
@@ -79,7 +75,7 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->setVarNameFilter('logs_filter');
         $this->setPagerVisibility(false);
     }
-    
+
     /**
      * @return $this
      */
@@ -90,7 +86,7 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
         parent::_prepareCollection();
         return $this;
     }
-    
+
     protected function _prepareColumns()
     {
         $this->addColumn('filename', [
@@ -99,7 +95,7 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
             'sortable' => false,
             'filter' => false
         ]);
-        
+
         $this->addColumn('date', [
             'header'      => __('Date'),
             'index'       => 'date',
@@ -107,10 +103,10 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
             'filter' => false,
             'sortable' => false
         ]);
-        
+
         return parent::_prepareColumns();
     }
-    
+
     /**
      * @return string
      */
@@ -118,12 +114,12 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
     {
         return false;
     }
-    
+
     public function getRowUrl($row)
     {
         return $this->getUrl('*/*/logs', ['_current' => true, 'filename' => $row->getFilename()]);
     }
-    
+
     public function getMainButtonsHtml()
     {
         return '';

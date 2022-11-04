@@ -1,15 +1,12 @@
 <?php
 
-/*
- * Celebros
+/**
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 
 namespace Celebros\Celexport\Plugin\Indexer\Model;
@@ -25,7 +22,7 @@ class Indexer
      * @var Helper
      */
     protected $helper;
-    
+
     /**
      * @param Helper $helper
      * @param Cron $cron
@@ -41,7 +38,7 @@ class Indexer
         $this->cron = $cron;
         $this->messageManager = $message;
     }
-    
+
     /**
      * @param ParentIndexer $subj
      * @param $result
@@ -53,7 +50,7 @@ class Indexer
     ) {
         $this->scheduleNewExport($subj->getId());
     }
-    
+
     /**
      * @param ParentIndexer $subj
      * @param $result
@@ -65,7 +62,7 @@ class Indexer
     ) {
         $this->scheduleNewExport($subj->getId());
     }
-    
+
     /**
      * @param ParentIndexer $subj
      * @param $result
@@ -77,7 +74,7 @@ class Indexer
     ) {
         $this->scheduleNewExport($subj->getId());
     }
-    
+
     /**
      * @param string $indexerName
      * @return void

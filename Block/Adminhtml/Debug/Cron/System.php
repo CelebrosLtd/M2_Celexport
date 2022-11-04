@@ -1,16 +1,12 @@
 <?php
 
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 
 namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
@@ -19,7 +15,7 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
 {
     public $helper;
     public $timeZone;
-    
+
     /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\Registry $registry
@@ -38,7 +34,7 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
         $this->timeZone = $context->getLocaleDate();
         parent::__construct($context, $registry, $formFactory, $data);
     }
-    
+
     protected function _prepareForm()
     {
         /** @var \Magento\Framework\Data\Form $form */
@@ -52,9 +48,9 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
             'celebros_cron_expression' => $this->helper->getConfig('celexport/export_settings/cron_expr'),
             'celebros_cron_enabled'    => $this->helper->getConfig('celexport/export_settings/cron_enabled') ? __('Yes') : __('No')
         ];
-        
+
         $fieldset = $form->addFieldset('celebros_cron_settings', ['legend' => __('Celebros Cron Settings')]);
-        
+
         $fieldset->addField('current_magento_time', 'label', [
             'name'     => 'current_magento_time',
             'label'    => __('Current Magento / UTC Time'),
@@ -62,7 +58,7 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
             'required' => false,
             'disabled' => true
         ]);
-        
+
         $fieldset->addField('celebros_cron_expression', 'label', [
             'name'     => 'celebros_cron_expression',
             'label'    => __('Celebros Cron Expression'),
@@ -70,7 +66,7 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
             'required' => false,
             'disabled' => true
         ]);
-        
+
         $fieldset->addField('celebros_cron_enabled', 'label', [
             'name'     => 'celebros_cron_enabled',
             'label'    => __('Enable Cron Catalog Update'),
@@ -78,14 +74,14 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
             'required' => false,
             'disabled' => true
         ]);
-        
+
         $form->setValues($data);
         $form->setMethod('post');
         $form->setUseContainer(false);
         $form->setId('celebros_cron_settings');
-        
+
         $this->setForm($form);
-        
+
         return parent::_prepareForm();
     }
 }

@@ -1,15 +1,11 @@
 <?php
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Controller\Adminhtml\Export;
 
@@ -23,15 +19,15 @@ class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
     ) {
         parent::__construct($context);
     }
-    
+
     public function execute()
     {
         $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
-        
+
         $isWebRun = $this->getRequest()->getParam('webadmin');
         $this->getResponse()->setBody($model->export_celebros($this->_objectManager, $isWebRun));
     }
-    
+
     /**
      * Check for is allowed
      *

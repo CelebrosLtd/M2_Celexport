@@ -1,15 +1,11 @@
 <?php
-/*
- * Celebros
+/**
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 namespace Celebros\Celexport\Block\Adminhtml\Form\Field;
 
@@ -23,14 +19,14 @@ class ImagesResolution extends AbstractFieldArray
      * @var \Magento\Framework\View\Element\Html\Select
      */
     protected $imageTypeRenderer;
-    
+
     /**
      * Image source model
      *
      * @var \Celebros\Celexport\Model\Config\Source\Images
      */
     protected $images;
-    
+
     /**
      * @param \Magento\Backend\Block\Template\Context $context,
      * @param \Celebros\Celexport\Model\Config\Source\Images $images
@@ -45,7 +41,7 @@ class ImagesResolution extends AbstractFieldArray
         $this->images = $images;
         parent::__construct($context, $data);
     }
-    
+
     /**
      * Prepare to render
      *
@@ -78,7 +74,7 @@ class ImagesResolution extends AbstractFieldArray
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add Image Type');
     }
-    
+
     /**
      * Renderer for image type column
      *
@@ -92,14 +88,14 @@ class ImagesResolution extends AbstractFieldArray
                 '',
                 ['data' => ['is_render_to_js_template' => true]]
             );
-            
+
             $this->imageTypeRenderer->setOptions(
                 $this->images->excludeOption('original')->toOptionArray()
             );
-            
+
             $this->imageTypeRenderer->setClass('image_type_select validate-options');
         }
-        
+
         return $this->imageTypeRenderer;
     }
 
@@ -122,7 +118,7 @@ class ImagesResolution extends AbstractFieldArray
             $optionExtraAttr
         );
     }
-    
+
     /**
      * Render array cell for prototypeJS template
      *
@@ -151,7 +147,7 @@ class ImagesResolution extends AbstractFieldArray
                 $column
             )->toHtml();
         }
-        
+
         return parent::renderCellTemplate($columnName);
     }
 }

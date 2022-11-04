@@ -2,13 +2,13 @@
     "name": "celebros/module-celexport",
     "description": "Export Products for Celebros Service",
     "type": "magento2-module",
-    "version": "1.7.1",
+    "version": "1.8.0",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
     ],
     "require": {
-        "php": ">=7.0.0",
+        "php": "~7.3|~7.4|~8.0|~8.1",
         "magento/framework": ">=102.0.0",
         "celebros/module-main": ">=0.9.11"
     },
