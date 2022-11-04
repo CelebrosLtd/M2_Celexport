@@ -1,23 +1,22 @@
 <?php
 
 /**
- * Celebros
+ * Celebros (C) 2022. All Rights Reserved.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish correct extension functionality.
  * If you wish to customize it, please contact Celebros.
- *
- ******************************************************************************
- * @category    Celebros
- * @package     Celebros_Celexport
  */
 
 namespace Celebros\Celexport\Client;
 
 use Magento\Framework\Phrase;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Filesystem\Io\{Sftp, Ftp, AbstractIo, File};
+use Magento\Framework\Filesystem\Io\Sftp;
+use Magento\Framework\Filesystem\Io\Ftp;
+use Magento\Framework\Filesystem\Io\AbstractIo;
+use Magento\Framework\Filesystem\Io\File;
 use Magento\Framework\Filesystem\Driver\File as FileDriver;
 
 class Remote implements RemoteInterface
@@ -39,9 +38,11 @@ class Remote implements RemoteInterface
     /**
      * Send file to remote location
      *
-     * @param string $filename
-     * @param int $mode
+     * @param array $config
+     * @param string $filePath
+     * @param string|null $remotePath
      * @return bool
+     * @throws LocalizedException
      */
     public function send(
         array $config,
@@ -62,15 +63,14 @@ class Remote implements RemoteInterface
      * Detect protocol type
      *
      * @return string
+     * @throws LocalizedException
      */
     protected function getRemoteType(): string
     {
         $type = $this->config['type'] ?? null;
         if (!$type) {
             $port = $this->config['port'] ?? null;
-            if (
-                !$port
-                || !($type = $this->portMapping[$port] ?? null)
+            if (!$port || !($type = $this->portMapping[$port] ?? null)
             ) {
                 throw new LocalizedException(new Phrase('Type or port fields are not exist in config'));
             }
@@ -79,6 +79,14 @@ class Remote implements RemoteInterface
         return $type;
     }
 
+    /**
+     * Send file over SFTP
+     *
+     * @param string $filePath
+     * @param string|null $remotePath
+     * @return bool
+     * @throws \Magento\Framework\Exception\FileSystemException
+     */
     protected function sendTsftp(
         string $filePath,
         string $remotePath = null
@@ -87,6 +95,14 @@ class Remote implements RemoteInterface
         return $this->sendFile($connection, $filePath, $remotePath);
     }
 
+    /**
+     * Send File over FTP
+     *
+     * @param string $filePath
+     * @param string|null $remotePath
+     * @return bool
+     * @throws \Magento\Framework\Exception\FileSystemException
+     */
     protected function sendTftp(
         string $filePath,
         string $remotePath = null
@@ -95,6 +111,15 @@ class Remote implements RemoteInterface
         return $this->sendFile($connection, $filePath, $remotePath);
     }
 
+    /**
+     * Send file
+     *
+     * @param AbstractIo $connection
+     * @param string $filePath
+     * @param string|null $remotePath
+     * @return bool
+     * @throws \Magento\Framework\Exception\FileSystemException
+     */
     protected function sendFile(
         AbstractIo $connection,
         string $filePath,

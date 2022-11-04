@@ -338,7 +338,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $processId . '.log';
     }
 
-    public function comments_style($kind, $text, $alt)
+    public function comments_style($kind, $text, $alt = null)
     {
         switch ($kind) {
             case 'header':
@@ -351,22 +351,28 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 <body><ul>';
                 break;
             case 'icon':
+                $alt = $alt ?? 'icon';
                 $this->_body .= '<li style="background-color: rgb(128, 128, 128); color:rgb(255,255,255);">
                 <img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'info':
+                $alt = $alt ?? 'info';
                 $this->_body .= '<li><img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'warning':
+                $alt = $alt ?? 'warning';
                 $this->_body .= '<li style="background-color: rgb(255, 255, 128);"><img style="margin-right: 5px;" src="' . $this->getIconUrl('fam_bullet_error.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'success':
+                $alt = $alt ?? 'success';
                 $this->_body .= '<li style="background-color: rgb(128, 255, 128);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'section':
+                $alt = $alt ?? 'section';
                 $this->_body .= '<li style="background-color: rgb(100, 149, 237);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'error':
+                $alt = $alt ?? 'error';
                 $this->_body .= '<li style="background-color: rgb(255, 187, 187);"><img src="' . $this->getIconUrl('error_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             default:

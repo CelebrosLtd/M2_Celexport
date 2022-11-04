@@ -11,7 +11,7 @@
 
 namespace Celebros\Celexport\Model;
 
-use Symfony\Component\Process\Exception\ProcessFailedException;
+use Magento\Framework\Exception\ConfigurationMismatchException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 use Celebros\Celexport\Client\Remote;
@@ -273,12 +273,13 @@ class Exporter
         return rmdir($dir);
     }
 
-    public function comments_style($kind, $text, $alt)
+    public function comments_style($kind, $text, $alt = null)
     {
         if (!$this->isWebRun) {
             return;
         }
-        return $this->helper->comments_style($kind, $text, $alt);
+
+        $this->helper->comments_style($kind, $text, $alt);
     }
 
     protected function _createAndUploadOrders($zipFileName, $str)
@@ -1327,27 +1328,37 @@ class Exporter
         return $out;
     }
 
-    public function remoteUpload(
+    private function remoteUpload(
         string $zipFilePath
     ): bool {
         $remote = new Remote();
-        $remote->send($this->collectIOConfig(), $zipFilePath);
+        try {
+            $remote->send($this->collectIOConfig(), $zipFilePath);
+        } catch (ConfigurationMismatchException $e) {
+            $this->comments_style('error', $e->getMessage());
+            return false;
+        }
+
         return true;
     }
 
-    public function collectIOConfig()
+    /**
+     * @throws ConfigurationMismatchException
+     * @return array
+     */
+    private function collectIOConfig(): array
     {
         if (!$this->_ftpUpload) {
-            $this->comments_style('error', 'Env stamp is incorrect - ftp upload is not available', 'Empty_host');
-            return false;
+            throw new ConfigurationMismatchException(__('Env stamp is incorrect - ftp upload is not available'));
+        }
+
+        if (!$this->_fFTPHost) {
+            throw new ConfigurationMismatchException(__('Empty host specified'));
         }
 
         $ioConfig = [];
         if ($this->_fFTPHost != '') {
             $ioConfig['host'] = $this->_fFTPHost;
-        } else {
-            $this->comments_style('error', 'Empty host specified', 'Empty_host');
-            return false;
         }
 
         if ($this->_fFTPPort != '') {
