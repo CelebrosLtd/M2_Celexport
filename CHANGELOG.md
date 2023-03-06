@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.8.1
+
+### FIXES
+
+- Fix Code sniffer errors
+
 ## 1.8.0
 
 ### FEATURES
