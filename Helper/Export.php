@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Celebros (C) 2022. All Rights Reserved.
+ * Celebros (C) 2023. All Rights Reserved.
  *
  * DISCLAIMER
  *
@@ -11,19 +11,20 @@
 
 namespace Celebros\Celexport\Helper;
 
-use Magento\Framework\Stdlib\Datetime;
-use Magento\Catalog\Model\Product\Type as ProductType;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
-use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
-use Magento\Catalog\Helper\Image;
-use Magento\Catalog\Model\Product;
-use Magento\CatalogRule\Model\Rule;
-use Magento\Framework\Url;
-use Celebros\Celexport\Model\Exporter;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\UrlRewrite\Model\UrlRewrite;
 use Celebros\Celexport\Model\Config\Source\Images;
 use Celebros\Celexport\Model\Config\Source\Prodparams;
+use Celebros\Celexport\Model\Exporter;
+use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Type as ProductType;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\CatalogInventory\Model\Stock;
+use Magento\CatalogRule\Model\Rule;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
+use Magento\Framework\DB\Select as DbSelect;
+use Magento\Framework\Url;
+use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
+use Magento\UrlRewrite\Model\UrlRewrite;
 
 class Export extends Data
 {
@@ -367,8 +368,12 @@ class Export extends Data
                 ['items' => $this->_resource->getTableName('cataloginventory_stock_item')],
                 'product_id = entity_id',
                 ['manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'],
-                'stock_id = ' . \Magento\CatalogInventory\Model\Stock::DEFAULT_STOCK_ID . ' '
-                    . \Zend_Db_Select::SQL_AND. ' items.website_id IN (' . implode(",", [0, $websiteId]) . ')',
+                sprintf(
+                    "stock_id = %s %s items.website_id IN (%s)",
+                    Stock::DEFAULT_STOCK_ID,
+                    DbSelect::SQL_AND,
+                    implode(",", [0, $websiteId])
+                ),
                 'left'
             );
 
