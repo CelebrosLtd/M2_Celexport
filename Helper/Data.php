@@ -233,7 +233,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getCurrentEnvStamp()
     {
-        return sha1($this->scopeConfig->getValue(
+        return sha1((string) $this->scopeConfig->getValue(
             self::CONFIG_UNSECURE_BASE_URL,
             'default',
             0

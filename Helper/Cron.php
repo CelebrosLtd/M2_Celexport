@@ -59,7 +59,7 @@ class Cron extends AbstractHelper
         if (isset($jobs[self::CRON_GROUP])) {
             $i = 0;
             foreach ($jobs[self::CRON_GROUP] as $jobCode => $jobConfig) {
-                if (strpos($jobCode, self::CRON_JOB) === false) {
+                if (strpos((string) $jobCode, self::CRON_JOB) === false) {
                     continue;
                 }
 

@@ -208,7 +208,7 @@ class Exporter
                         $record["OrderID"] = $item->getOrderId();
                         $record["ProductSKU"] = $item->getSku();
                         $record["ProductID"] = $item->getProductId();
-                        $created_at_time = strtotime($item->getCreatedAt());
+                        $created_at_time = strtotime((string) $item->getCreatedAt());
                         $record["Date"] = date("Y-m-d", $created_at_time);
                         $record["Count"] = (int)$item->getQtyOrdered();
                         $record["Sum"] = $item->getRowTotal();
@@ -336,7 +336,7 @@ class Exporter
 
     protected function _stringToTextFile($str, $fh)
     {
-        fwrite($fh, $str);
+        fwrite($fh, (string) $str);
     }
 
     protected function _zipFile($filePath, $zipFilePath)
@@ -355,7 +355,7 @@ class Exporter
         }
 
         if ($zip->open($zipFilePath, \ZipArchive::CREATE) == true) {
-            $out = $zip->addFile($filePath, basename($filePath));
+            $out = $zip->addFile($filePath, basename((string) $filePath));
             if (!$out) {
                 $this->comments_style('error', 'Could not add ' . $filePath . 'to zip archive', 'Could_not_add_txt_file_to_zip_file');
             }
@@ -1038,7 +1038,7 @@ class Exporter
 
     protected function write_to_file($str, $fh)
     {
-        fwrite($fh, $str);
+        fwrite($fh, (string) $str);
     }
 
     protected function export_table_rows($sql, $fields, $fh)
@@ -1310,8 +1310,8 @@ class Exporter
         }
 
         if ($zip->open($zipPath, \ZipArchive::CREATE) == true) {
-            $fileName = basename($filePath);
-            $out = $zip->addFile($filePath, basename($filePath));
+            $fileName = basename((string) $filePath);
+            $out = $zip->addFile($filePath, basename((string) $filePath));
             if (!$out) {
                 throw new \Exception("Could not add file '{$fileName}' to_zip_file");
             }
@@ -1653,12 +1653,12 @@ class Exporter
 
             $this->cache->remove('export_custom_fields_' . $this->_exportProcessId);
         } else {
-            $customAttributes = json_decode($this->cache->load('export_custom_fields_' . $this->_exportProcessId));
+            $customAttributes = json_decode((string) $this->cache->load('export_custom_fields_' . $this->_exportProcessId));
             $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
             foreach ($chunksIds as $ids) {
                 $this->logProfiler('Exported Products: ' . implode(',', $ids));
                 $str = $exportHelper->getProductsData($ids, $customAttributes, $store->getStoreId(), $this->_objectManager);
-                fwrite($fh, $str);
+                fwrite($fh, (string) $str);
             }
 
             fclose($fh);

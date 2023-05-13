@@ -71,7 +71,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
     public function exportData($dataType, int $id)
     {
         $this->id = $id;
-        $methodName = 'getData' . str_replace("_", "", ucwords($dataType, "_"));
+        $methodName = 'getData' . str_replace("_", "", ucwords((string) $dataType, "_"));
         if (method_exists($this, $methodName)) {
             return $this->$methodName();
         }
@@ -93,7 +93,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
 
     protected function _moveAndRenameExportZip($path)
     {
-        $pathArr = explode("/", $path);
+        $pathArr = explode("/", (string) $path);
         $name = $pathArr[count($pathArr) - 4];
         copy($path, $this->getIntMediaFolder('celebros') . "/" . $name . ".zip");
 
@@ -121,7 +121,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
         $rootPath = $this->dir->getRoot();
         $baseUrl = $this->storeManager->getStore()->getBaseUrl();
 
-        return str_replace($this->dir->getRoot(), $this->storeManager->getStore()->getBaseUrl(), $path);
+        return str_replace($this->dir->getRoot(), $this->storeManager->getStore()->getBaseUrl(), (string) $path);
     }
 
     public function getExportStatusByStore($store)

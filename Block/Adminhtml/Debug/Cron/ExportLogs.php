@@ -46,8 +46,8 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
         $files = scandir($dir);
         $result = [];
         foreach ($files as $key => $file) {
-            if (strpos($file, ".log") !== false) {
-                $fl = explode(".", $file);
+            if (strpos((string) $file, ".log") !== false) {
+                $fl = explode(".", (string) $file);
                 if (isset($fl[0])) {
                     $date = $this->timezone->date((int)$fl[0])->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);
                 }

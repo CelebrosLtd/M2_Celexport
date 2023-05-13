@@ -135,7 +135,7 @@ class Process extends Command
             $customAttributes = $this->_cache->load('export_custom_fields_' . $this->_processId);
 
             $str = $this->_helper->getProductsData($ids, $customAttributes, $this->_storeId, $this->_objectManager);
-            fwrite($fh, $str);
+            fwrite($fh, (string) $str);
             fclose($fh);
 
             $this->_cache->save(

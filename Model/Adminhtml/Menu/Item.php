@@ -25,7 +25,7 @@ class Item extends \Magento\Backend\Model\Menu\Item
      */
     public function hasClickCallback()
     {
-        return (($this->getUrl() == '#') || strpos($this->getUrl(), self::CELEBROS_EXPORT_PATH));
+        return (($this->getUrl() == '#') || strpos((string) $this->getUrl(), self::CELEBROS_EXPORT_PATH));
     }
 
 
@@ -38,7 +38,7 @@ class Item extends \Magento\Backend\Model\Menu\Item
     {
         if ($this->getUrl() == '#') {
             return 'return false;';
-        } elseif (strpos($this->getUrl(), self::CELEBROS_EXPORT_PATH) !== false) {
+        } elseif (strpos((string) $this->getUrl(), self::CELEBROS_EXPORT_PATH) !== false) {
             return "window.open(this.href, '_blank');return false;";
         }
         return '';
