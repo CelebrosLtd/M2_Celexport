@@ -13,19 +13,26 @@ use Magento\Store\Model\Store;
 
 class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
 {
-    const DEFAULT_FILTER_OFFSET = 1;
+    public const DEFAULT_FILTER_OFFSET = 1;
 
-    protected $_collection;
-    protected $_timezone;
+    /**
+     * @var \Celebros\Celexport\Model\ResourceModel\Cronlog\CollectionFactory
+     */
+    private $collectionFactory;
 
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param \Celebros\Celexport\Model\ResourceModel\Cronlog\CollectionFactory $collectionFactory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
-        \Celebros\Celexport\Model\ResourceModel\Cronlog\Collection $collection,
+        \Celebros\Celexport\Model\ResourceModel\Cronlog\CollectionFactory $collectionFactory,
         array $data = []
     ) {
-        $this->_collection = $collection;
-        $this->_timezone = $context->getLocaleDate();
+        $this->collectionFactory = $collectionFactory;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -38,7 +45,7 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->setId('cronlogGrid');
         $this->setDefaultSort('executed_at');
         $this->setDefaultDir('DESC');
-        $borderTime = date('Y-m-d H:i:s', ($this->_timezone->scopeTimeStamp() - self::DEFAULT_FILTER_OFFSET * 3600));
+        $borderTime = date('Y-m-d H:i:s', ($this->_localeDate->scopeTimeStamp() - self::DEFAULT_FILTER_OFFSET * 3600));
         $adminTimeZone = new \DateTimeZone(
             $this->_scopeConfig->getValue(
                 $this->_localeDate->getDefaultTimezonePath(),
@@ -55,10 +62,9 @@ class Cron extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $collection = $this->_collection;
+        $collection = $this->collectionFactory->create();
         $this->setCollection($collection);
-        parent::_prepareCollection();
-        return $this;
+        return parent::_prepareCollection();
     }
 
     protected function _prepareColumns()

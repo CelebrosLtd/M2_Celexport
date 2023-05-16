@@ -14,8 +14,6 @@ use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
 class ImagesResolution extends AbstractFieldArray
 {
     /**
-     * Image type renderer
-     *
      * @var \Magento\Framework\View\Element\Html\Select
      */
     protected $imageTypeRenderer;
@@ -25,7 +23,7 @@ class ImagesResolution extends AbstractFieldArray
      *
      * @var \Celebros\Celexport\Model\Config\Source\Images
      */
-    protected $images;
+    private $images;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context,

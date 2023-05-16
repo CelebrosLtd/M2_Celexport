@@ -12,20 +12,26 @@ namespace Celebros\Celexport\Controller\Adminhtml\Export;
 class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
 {
     /**
+     * @var \Celebros\Celexport\Model\Exporter
+     */
+    private $exporter;
+
+    /**
      * @param \Magento\Backend\App\Action\Context $context
+     * @param \Celebros\Celexport\Model\Exporter $exporter
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context
+        \Magento\Backend\App\Action\Context $context,
+        \Celebros\Celexport\Model\Exporter $exporter
     ) {
         parent::__construct($context);
+        $this->exporter = $exporter;
     }
 
     public function execute()
     {
-        $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
-
         $isWebRun = $this->getRequest()->getParam('webadmin');
-        $this->getResponse()->setBody($model->export_celebros($this->_objectManager, $isWebRun));
+        $this->getResponse()->setBody($this->exporter->export_celebros($isWebRun));
     }
 
     /**

@@ -21,22 +21,31 @@ class Indexer
     /**
      * @var Helper
      */
-    protected $helper;
+    private $helper;
+
+    /**
+     * @var Cron
+     */
+    private $cron;
+
+    /**
+     * @var ManagerInterface
+     */
+    private $messageManager;
 
     /**
      * @param Helper $helper
      * @param Cron $cron
-     * @param ManagerInterface $message
-     * @return void
+     * @param ManagerInterface $messageManager
      */
     public function __construct(
         Helper $helper,
         Cron $cron,
-        ManagerInterface $message
+        ManagerInterface $messageManager
     ) {
         $this->helper = $helper;
         $this->cron = $cron;
-        $this->messageManager = $message;
+        $this->messageManager = $messageManager;
     }
 
     /**

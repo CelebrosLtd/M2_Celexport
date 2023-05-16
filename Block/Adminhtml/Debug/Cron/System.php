@@ -13,8 +13,10 @@ namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
 
 class System extends \Magento\Backend\Block\Widget\Form\Generic
 {
-    public $helper;
-    public $timeZone;
+    /**
+     * @var \Celebros\Celexport\Helper\Export
+     */
+    private $helper;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context
@@ -31,7 +33,6 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
         array $data = []
     ) {
         $this->helper = $helper;
-        $this->timeZone = $context->getLocaleDate();
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -39,9 +40,9 @@ class System extends \Magento\Backend\Block\Widget\Form\Generic
     {
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create();
-        $timeValue = $this->timeZone->date()->format('Y-m-d H:i:s') .
-            ' / ' . $this->timeZone->date()->setTimeZone(
-                new \DateTimeZone($this->timeZone->getDefaultTimezone())
+        $timeValue = $this->_localeDate->date()->format('Y-m-d H:i:s') .
+            ' / ' . $this->_localeDate->date()->setTimeZone(
+                new \DateTimeZone($this->_localeDate->getDefaultTimezone())
             )->format('Y-m-d H:i:s');
         $data = [
             'current_magento_time'     => $timeValue,

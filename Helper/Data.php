@@ -14,75 +14,88 @@ use \Magento\Store\Model\ScopeInterface;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const CONFIG_ENABLED = 'celexport/export_settings/export_enabled';
-    const CONFIG_EXPORT_PATH = 'celexport/export_settings/path';
-    const CONFIG_EXPORT_LIFETIME = 'celexport/export_settings/export_lifetime';
-    const CONFIG_EXPORT_ORDERS = 'celexport/export_settings/export_data_history';
-    const CONFIG_EXPORT_ORDERS_FILENAME = 'celexport/export_settings/datahistoryname';
-    const CONFIG_EXPORT_CHUNK_SIZE = 'celexport/advanced/export_chunk_size';
-    const CONFIG_EXPORT_PROCESS_LIMIT = 'celexport/advanced/export_process_limit';
-    const CONFIG_EXPORT_LOG = 'celexport/advanced/enable_log';
-    const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
-    const CONFIG_EXPORT_USE_CATALOG_PRICE_RULES = 'celexport/export_settings/use_catalog_price_rules';
-    //const CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH = 'celexport/export_settings/images_autoschedule_export';
-    const CONFIG_EXPORT_ENABLE_AUTOSCHEDULE_BY_EVENTS = 'celexport/export_settings/enable_autoschedule_by_events';
-    const CONFIG_EXPORT_AUTOSCHEDULE_EVENTS = 'celexport/export_settings/autoschedule_events';
-    const CONFIG_EXPORT_IMAGES_RESOLUTION = 'celexport/image_settings/images_resolution';
-    const CONFIG_EXPORT_IMAGE_TYPES = 'celexport/image_settings/image_types';
-    const CONFIG_EXPORT_CONF_ENV_STAMP = 'celexport/ftp_prod/env_stamp';
-    const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
-    const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
-    const CONFIG_UNSECURE_BASE_URL = 'web/unsecure/base_url';
-    const CONFIG_NOTIFICATION_EMAIL = 'celexport/advanced/notifications_email';
+    public const CONFIG_ENABLED = 'celexport/export_settings/export_enabled';
+    public const CONFIG_EXPORT_PATH = 'celexport/export_settings/path';
+    public const CONFIG_EXPORT_LIFETIME = 'celexport/export_settings/export_lifetime';
+    public const CONFIG_EXPORT_ORDERS = 'celexport/export_settings/export_data_history';
+    public const CONFIG_EXPORT_ORDERS_FILENAME = 'celexport/export_settings/datahistoryname';
+    public const CONFIG_EXPORT_CHUNK_SIZE = 'celexport/advanced/export_chunk_size';
+    public const CONFIG_EXPORT_PROCESS_LIMIT = 'celexport/advanced/export_process_limit';
+    public const CONFIG_EXPORT_LOG = 'celexport/advanced/enable_log';
+    public const CONFIG_EXPORT_INDEXED_PRICES = 'celexport/export_settings/indexed_prices';
+    public const CONFIG_EXPORT_USE_CATALOG_PRICE_RULES = 'celexport/export_settings/use_catalog_price_rules';
+    //public const CONFIG_EXPORT_AUTOSCHEDULE_IMAGE_REFRESH = 'celexport/export_settings/images_autoschedule_export';
+    public const CONFIG_EXPORT_ENABLE_AUTOSCHEDULE_BY_EVENTS = 'celexport/export_settings/enable_autoschedule_by_events';
+    public const CONFIG_EXPORT_AUTOSCHEDULE_EVENTS = 'celexport/export_settings/autoschedule_events';
+    public const CONFIG_EXPORT_IMAGES_RESOLUTION = 'celexport/image_settings/images_resolution';
+    public const CONFIG_EXPORT_IMAGE_TYPES = 'celexport/image_settings/image_types';
+    public const CONFIG_EXPORT_CONF_ENV_STAMP = 'celexport/ftp_prod/env_stamp';
+    public const CONFIG_CRON_LOG_LIFETIME = 'celexport/advanced/cronlog_lifetime';
+    public const CONFIG_CUSTOM_ATTRIBUTES = 'celexport/export_settings/custom_attributes';
+    public const CONFIG_UNSECURE_BASE_URL = 'web/unsecure/base_url';
+    public const CONFIG_NOTIFICATION_EMAIL = 'celexport/advanced/notifications_email';
 
-    protected $_urlBuilder;
-    public $_cssMin;
-    public $_jsMin;
-    protected $_response;
-    protected $_stores;
-    protected $_dir;
-    protected $_assetRepo;
-    protected $_resource;
-    protected $_configWriter;
-    protected $dirWrite;
-    protected $_body = null;
+    /**
+     * @var string|null
+     */
+    protected $body = null;
+
+    /**
+     * @var \Magento\Store\Model\StoreManager
+     */
+    protected $storeManager;
+
+    /**
+     * @var \Magento\Framework\Filesystem\DirectoryList
+     */
+    protected $directoryList;
+
+    /**
+     * @var \Magento\Framework\View\Asset\Repository
+     */
+    protected $assetRepo;
+
+    /**
+     * @var \Magento\Framework\App\ResourceConnection
+     */
+    protected $resource;
+
+    /**
+     * @var \Magento\Config\Model\ResourceModel\Config
+     */
+    protected $resourceConfig;
+
+    /**
+     * @var \Magento\Framework\Filesystem\Directory\WriteInterface
+     */
+    protected $directoryWrite;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin
-     * @param \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin
-     * @param \Magento\Framework\App\ResponseInterface $response
      * @param \Magento\Store\Model\StoreManager $stores
      * @param \Magento\Framework\View\Asset\Repository $assetRepo
-     * @param \Magento\Framework\Filesystem\DirectoryList $dir
+     * @param \Magento\Framework\Filesystem\DirectoryList $directoryList
      * @param \Magento\Framework\Filesystem $filesystem
      * @param \Magento\Framework\App\ResourceConnection $resource
      * @param \Magento\Config\Model\ResourceModel\Config $resourceConfig
-     * @return void
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
-        \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
-        \Magento\Framework\App\ResponseInterface $response,
         \Magento\Store\Model\StoreManager $stores,
         \Magento\Framework\View\Asset\Repository $assetRepo,
-        \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\Framework\Filesystem\DirectoryList $directoryList,
         \Magento\Framework\Filesystem $filesystem,
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Config\Model\ResourceModel\Config $resourceConfig
     ) {
-        $this->_urlBuilder = $context->getUrlBuilder();
-        $this->_cssMin = $cssMin;
-        $this->_jsMin = $jsMin;
-        $this->_response = $response;
-        $this->_stores = $stores;
-        $this->_dir = $dir;
-        $this->_assetRepo = $assetRepo;
-        $this->_resource = $resource;
-        $this->resourceConfig = $resourceConfig;
-        $this->_log = $filesystem->getDirectoryWrite($dir::ROOT);
         parent::__construct($context);
+        $this->storeManager = $stores;
+        $this->directoryList = $directoryList;
+        $this->assetRepo = $assetRepo;
+        $this->resource = $resource;
+        $this->resourceConfig = $resourceConfig;
+        $this->directoryWrite = $filesystem->getDirectoryWrite($directoryList::ROOT);
     }
 
     /**
@@ -125,18 +138,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getAllStores()
     {
-        return $this->_stores->getStores();
+        return $this->storeManager->getStores();
     }
 
     public function getCurrentStore()
     {
-        return $this->_stores->getStore();
+        return $this->storeManager->getStore();
     }
 
     public function setCurrentStore($storeId)
     {
         try {
-            $this->_stores->setCurrentStore($storeId);
+            $this->storeManager->setCurrentStore($storeId);
         } catch (\Exception $e) {
             $this->logProfiler($e->getMessage());
         }
@@ -255,7 +268,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getExportPath($id = null)
     {
-        return $this->_dir->getRoot() . $this->scopeConfig->getValue(self::CONFIG_EXPORT_PATH) . '/' . $id;
+        return $this->directoryList->getRoot() . $this->scopeConfig->getValue(self::CONFIG_EXPORT_PATH) . '/' . $id;
     }
 
     public function getExportProcessId()
@@ -318,7 +331,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         $str = date('Y-m-d H:i:s') . ' ' .  $msg . "\r\n";
 
-        $stream = $this->_log->openFile($this->getLogFilePath($process), 'a');
+        $stream = $this->directoryWrite->openFile($this->getLogFilePath($process), 'a');
         $stream->lock();
         $stream->write($str);
         $stream->unlock();
@@ -339,7 +352,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         switch ($kind) {
             case 'header':
-                $this->_body .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+                $this->body .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
                 <html><head><style type="text/css">
                 ul { list-style-type:none; padding:0; margin:0; }
                 li { margin-left:0; border:1px solid #ccc; margin:2px; padding:2px 2px 2px 2px; font:normal 12px sans-serif;  }
@@ -349,42 +362,42 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 break;
             case 'icon':
                 $alt = $alt ?? 'icon';
-                $this->_body .= '<li style="background-color: rgb(128, 128, 128); color:rgb(255,255,255);">
+                $this->body .= '<li style="background-color: rgb(128, 128, 128); color:rgb(255,255,255);">
                 <img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'info':
                 $alt = $alt ?? 'info';
-                $this->_body .= '<li><img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->body .= '<li><img style="margin-right: 5px;" src="' . $this->getIconUrl('note_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'warning':
                 $alt = $alt ?? 'warning';
-                $this->_body .= '<li style="background-color: rgb(255, 255, 128);"><img style="margin-right: 5px;" src="' . $this->getIconUrl('fam_bullet_error.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->body .= '<li style="background-color: rgb(255, 255, 128);"><img style="margin-right: 5px;" src="' . $this->getIconUrl('fam_bullet_error.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'success':
                 $alt = $alt ?? 'success';
-                $this->_body .= '<li style="background-color: rgb(128, 255, 128);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->body .= '<li style="background-color: rgb(128, 255, 128);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'section':
                 $alt = $alt ?? 'section';
-                $this->_body .= '<li style="background-color: rgb(100, 149, 237);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->body .= '<li style="background-color: rgb(100, 149, 237);"><img src="' . $this->getIconUrl('fam_bullet_success.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             case 'error':
                 $alt = $alt ?? 'error';
-                $this->_body .= '<li style="background-color: rgb(255, 187, 187);"><img src="' . $this->getIconUrl('error_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
+                $this->body .= '<li style="background-color: rgb(255, 187, 187);"><img src="' . $this->getIconUrl('error_msg_icon.gif') . '" alt=' . $alt . '/>' . $text . '</li>';
                 break;
             default:
-                $this->_body .= '</ul></body></html>';
+                $this->body .= '</ul></body></html>';
         }
     }
 
     public function getBodyForResponse()
     {
-        return $this->_body;
+        return $this->body;
     }
 
     public function getIconUrl($file)
     {
-        return $this->_assetRepo->getUrl('Celebros_Celexport::images/' . $file);
+        return $this->assetRepo->getUrl('Celebros_Celexport::images/' . $file);
     }
 
     public function isAutoScheduleEventEnabled(

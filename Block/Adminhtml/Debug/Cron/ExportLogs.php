@@ -13,34 +13,44 @@ use Magento\Store\Model\Store;
 
 class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
 {
+    /**
+     * @var Magento\Framework\Filesystem\DirectoryList
+     */
+    private $directoryList;
 
-    protected $_collection;
+    /**
+     * @var \Celebros\Celexport\Helper\Data
+     */
+    private $helper;
 
+    /**
+     * @var \Magento\Framework\Data\CollectionFactory
+     */
+    private $collectionFactory;
+
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param \Magento\Framework\Filesystem\DirectoryList $directoryList
+     * @param \Celebros\Celexport\Helper\Data $helper
+     * @param \Magento\Framework\Data\CollectionFactory $collectionFactory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Framework\Data\CollectionFactory $collection,
-        \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\Framework\Filesystem\DirectoryList $directoryList,
         \Celebros\Celexport\Helper\Data $helper,
-        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
+        \Magento\Framework\Data\CollectionFactory $collectionFactory,
         array $data = []
     ) {
-        $this->_dir = $dir;
+        $this->directoryList = $directoryList;
         $this->helper = $helper;
-        $this->timezone = $timezone;
-        $files = $this->getLogFilesList();
-
-        $this->_collection = $collection->create();
-        foreach ($files as $file) {
-            $varienObject = new \Magento\Framework\DataObject();
-            $varienObject->setData($file);
-            $this->_collection->addItem($varienObject);
-        }
-
+        $this->collectionFactory = $collectionFactory;
         parent::__construct($context, $backendHelper, $data);
     }
 
-    public function getLogFilesList()
+    protected function getLogFilesList()
     {
         $dir = $this->helper->getExportPath();
         $files = scandir($dir);
@@ -49,7 +59,7 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
             if (strpos((string) $file, ".log") !== false) {
                 $fl = explode(".", (string) $file);
                 if (isset($fl[0])) {
-                    $date = $this->timezone->date((int)$fl[0])->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);
+                    $date = $this->_localeDate->date((int)$fl[0])->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);
                 }
 
                 $result[] = [
@@ -81,10 +91,16 @@ class ExportLogs extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $collection = $this->_collection;
+        $files = $this->getLogFilesList();
+        $collection = $this->collectionFactory->create();
+        foreach ($files as $file) {
+            $varienObject = new \Magento\Framework\DataObject();
+            $varienObject->setData($file);
+            $collection->addItem($varienObject);
+        }
+
         $this->setCollection($collection);
-        parent::_prepareCollection();
-        return $this;
+        return parent::_prepareCollection();
     }
 
     protected function _prepareColumns()

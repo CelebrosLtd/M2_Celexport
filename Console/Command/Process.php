@@ -24,29 +24,14 @@ use Magento\Framework\Serialize\Serializer\Json;
 class Process extends Command
 {
     /**
-     * @var int
+     * @var Export
      */
-    protected $_chunkId;
-
-    /**
-     * @var int
-     */
-    protected $_storeId;
-
-    /**
-     * @var int
-     */
-    protected $_processId;
+    protected $_helper;
 
     /**
      * @var Store
      */
     protected $_store;
-
-    /**
-     * @var Magento\Framework\ObjectManagerInterface
-     */
-    protected $_objectManager;
 
     /**
      * @var Cache
@@ -64,27 +49,19 @@ class Process extends Command
     protected $_json;
 
     /**
-     * @var Export
-     */
-    protected $_helper;
-
-    /**
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param Export $helper
      * @param Store $store
      * @param Cache $cache
      * @param State $state
-     * @return void
+     * @param Json $json
      */
     public function __construct(
-        \Magento\Framework\ObjectManagerInterface $objectManager,
         Export $helper,
         Store $store,
         Cache $cache,
         State $state,
         Json $json
     ) {
-        $this->_objectManager = $objectManager;
         $this->_helper = $helper;
         $this->_store = $store;
         $this->_cache = $cache;
@@ -93,6 +70,9 @@ class Process extends Command
         parent::__construct();
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function configure()
     {
         $this->setName('celebros:process')
@@ -101,27 +81,31 @@ class Process extends Command
             ->addArgument('process_id');
     }
 
+    /**
+     * @inheritDoc
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
     public function execute(
         InputInterface $input,
         OutputInterface $output
     ) {
         $this->_state->setAreaCode('frontend');
         $this->_helper->initExportProcessSettings();
-        $this->_chunkId = $input->getArgument('chunk_id');
-        $this->_storeId = $input->getArgument('store_id');
-        $this->_processId = $input->getArgument('process_id');
-        $this->_store = $this->_store->load($this->_storeId);
+        $chunkId = $input->getArgument('chunk_id');
+        $storeId = $input->getArgument('store_id');
+        $processId = $input->getArgument('process_id');
+        $store = $this->_store->load($storeId);
         $process_error = 'no_errors';
         try {
-            $_fPath = $this->_helper->getExportPath((int)$this->_processId)
-                . '/' . $this->_store->getWebsite()->getCode()
-                . '/' . $this->_store->getCode();
+            $_fPath = $this->_helper->getExportPath((int)$processId)
+                . '/' . $store->getWebsite()->getCode()
+                . '/' . $store->getCode();
 
             if (!is_dir($_fPath)) {
                 $dir = mkdir($_fPath, 0777, true);
             }
 
-            $filePath = $_fPath . '/' . 'export_chunk_' . $this->_chunkId . "." . 'txt';
+            $filePath = $_fPath . '/' . 'export_chunk_' . $chunkId . "." . 'txt';
 
             $fh = fopen($filePath, 'ab');
             if (!$fh) {
@@ -130,24 +114,24 @@ class Process extends Command
             }
 
             $ids = $this->_json->unserialize(
-                $this->_cache->load('export_chunk_' . $this->_processId . '_' . $this->_chunkId)
+                $this->_cache->load('export_chunk_' . $processId . '_' . $chunkId)
             );
-            $customAttributes = $this->_cache->load('export_custom_fields_' . $this->_processId);
+            $customAttributes = $this->_cache->load('export_custom_fields_' . $processId);
 
-            $str = $this->_helper->getProductsData($ids, $customAttributes, $this->_storeId, $this->_objectManager);
+            $str = $this->_helper->getProductsData($ids, $customAttributes, $storeId);
             fwrite($fh, (string) $str);
             fclose($fh);
 
             $this->_cache->save(
                 $process_error,
-                'process_' . $this->_processId . '_' . $this->_chunkId,
+                'process_' . $processId . '_' . $chunkId,
                 [],
                 Exporter::CACHE_LIFETIME
             );
 
             $output->writeln(0);
         } catch (\Exception $e) {
-            $this->_helper->logProfiler('Caught exception: ' . $e->getMessage(), $this->_chunkId);
+            $this->_helper->logProfiler('Caught exception: ' . $e->getMessage(), $chunkId);
             $output->writeln(1);
         }
     }
