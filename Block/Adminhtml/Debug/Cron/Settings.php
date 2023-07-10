@@ -11,7 +11,10 @@ namespace Celebros\Celexport\Block\Adminhtml\Debug\Cron;
 
 class Settings extends \Magento\Backend\Block\Widget\Form\Generic
 {
-    public $helper;
+    /**
+     * @var \Celebros\Celexport\Helper\Export
+     */
+    private $helper;
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context

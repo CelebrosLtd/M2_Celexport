@@ -12,63 +12,253 @@
 namespace Celebros\Celexport\Model;
 
 use Magento\Framework\Exception\ConfigurationMismatchException;
+use Magento\Store\Model\Store;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 use Celebros\Celexport\Client\Remote;
 
 class Exporter
 {
-    const ATTR_TABLE_PRODUCT_LIMIT = 1000;
-    const ORDER_COLLETION_PAGE_LIMIT = 500;
-    const ORDERS_AGE = 120; /* days */
+    public const ATTR_TABLE_PRODUCT_LIMIT = 1000;
+    public const ORDER_COLLETION_PAGE_LIMIT = 500;
+    public const ORDERS_AGE = 120; /* days */
     public const CACHE_LIFETIME = 13600;
 
-    protected $_config;
-    protected $_conn;
-    protected $_read;
-    protected $_fDel;
-    protected $_fEnclose;
-    protected $_fPath;
-    protected $_fType;
-    protected $_fStore_id;
-    protected $_fStore;
-    protected $_fileNameZip;
-    protected $_bUpload = true;
+    /**
+     * @var string
+     */
+    protected $categoriesForStore;
+
+    /**
+     * @var array
+     */
+    protected $rowEntityMap;
+
+    /**
+     * @var array
+     */
+    protected $entityRowMap;
+
+    /**
+     * @var array
+     */
+    protected $rowEntityMapCat;
+
+    /**
+     * @var array
+     */
+    protected $entityRowMapCat;
+
+    /**
+     * @var string
+     */
+    protected $fDel;
+
+    /**
+     * @var string
+     */
+    protected $fEnclose;
+
+    /**
+     * @var string
+     */
+    protected $fPath;
+
+    /**
+     * @var string
+     */
+    protected $fType;
+
+    /**
+     * @var int
+     */
+    protected $fStoreId;
+
+    /**
+     * @var \Magento\Store\Api\Data\StoreInterface
+     */
+    protected $fStore;
+
+    /**
+     * @var bool
+     */
+    protected $fStoreExportEnabled;
+
+    /**
+     * @var string
+     */
+    protected $fFTPHost;
+
+    /**
+     * @var string
+     */
+    protected $fFTPPort;
+
+    /**
+     * @var string
+     */
+    protected $fFTPUser;
+
+    /**
+     * @var string
+     */
+    protected $fFTPPassword;
+
+    /**
+     * @var bool
+     */
+    protected $fFTPPassive;
+
+    /**
+     * @var bool
+     */
+    protected $fFTPTls;
+
+    /**
+     * @var string
+     */
+    protected $fileNameZip;
+
+    /**
+     * @var bool
+     */
+    protected $isUpload = true;
+
+    /**
+     * @var bool
+     */
     protected $isWebRun = false;
-    protected $_exportProcessId = null;
-    protected $_resource;
-    protected $_product_entity_type_id = null;
-    protected $_category_entity_type_id = null;
-    protected $_objectManager;
-    protected $categoryless_prod_file_name = "categoryless_products";
-    protected $prod_file_name = "source_products";
-    protected $bExportProductLink = true;
-    protected $_dir;
-    protected $_shell;
-    protected $_productIds = [];
-    protected $_categorylessIds = [];
-    protected $_attrProductIdsChunks = [];
-    protected $_ftpUpload = false;
-    protected $_timeMarker = null;
-    protected $_row_id = false;
-    protected $_productCollection;
-    public $zipFileName;
 
-    public $helper;
+    /**
+     * @var int|null
+     */
+    protected $exportProcessId = null;
 
+    /**
+     * @var string|null
+     */
+    protected $productEntityTypeId = null;
+
+    /**
+     * @var string|null
+     */
+    protected $categoryEntityTypeId = null;
+
+    /**
+     * @var string
+     */
+    protected $categorylessProductsFileName = "categoryless_products";
+
+    /**
+     * @var string
+     */
+    protected $productsFileName = "source_products";
+
+    /**
+     * @var bool
+     */
+    protected $isExportProductLink = true;
+
+    /**
+     * @var array
+     */
+    protected $productIds = [];
+
+    /**
+     * @var array
+     */
+    protected $categorylessIds = [];
+
+    /**
+     * @var array
+     */
+    protected $attrProductIdsChunks = [];
+
+    /**
+     * @var bool
+     */
+    protected $ftpUpload = false;
+
+    /**
+     * @var float|null
+     */
+    protected $timeMarker = null;
+
+    /**
+     * @var bool
+     */
+    protected $isRowId = false;
+
+    /**
+     * @var string
+     */
+    public $zipFileName = '';
+
+
+    /**
+     * @var \Celebros\Celexport\Helper\Export
+     */
+    private $helper;
+
+    /**
+     * @var \Magento\Framework\App\ResourceConnection
+     */
+    private $_resource;
+
+    /**
+     * @var \Magento\Framework\Filesystem\DirectoryList
+     */
+    private $directoryList;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     */
+    private $productCollectionFactory;
+
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory
+     */
+    private $categoryCollectionFactory;
+
+    /**
+     * @var Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory
+     */
+    private $orderItemCollectionFactory;
+
+    /**
+     * @var \Magento\Framework\DB\Adapter\AdapterInterface
+     */
+    private $_read;
+
+    /**
+     * @var \Magento\Framework\App\Cache
+     */
+    private $cache;
+
+    /**
+     * @param \Celebros\Celexport\Helper\Export $helper
+     * @param \Magento\Framework\App\ResourceConnection $resource
+     * @param \Magento\Framework\Filesystem\DirectoryList $directoryList
+     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory
+     * @param \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory $orderItemCollectionFactory
+     * @param \Magento\Framework\App\Cache $cache
+     */
     public function __construct(
         \Celebros\Celexport\Helper\Export $helper,
         \Magento\Framework\App\ResourceConnection $resource,
-        \Magento\Framework\Shell $shell,
-        \Magento\Framework\Filesystem\DirectoryList $dir,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollection,
+        \Magento\Framework\Filesystem\DirectoryList $directoryList,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
+        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
+        \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory $orderItemCollectionFactory,
         \Magento\Framework\App\Cache $cache
     ) {
         $this->helper = $helper;
         $this->_resource = $resource;
-        $this->_dir = $dir;
-        $this->_shell = $shell;
-        $this->_productCollection = $productCollection;
+        $this->directoryList = $directoryList;
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->orderItemCollectionFactory = $orderItemCollectionFactory;
         $this->_read = $this->_resource->getConnection('read');
         $this->cache = $cache;
     }
@@ -76,7 +266,7 @@ class Exporter
     protected function logProfiler($msg, $process = null)
     {
         if (!$process) {
-            $process = $this->_exportProcessId;
+            $process = $this->exportProcessId;
         }
 
         $this->helper->logProfiler($msg, $process);
@@ -84,39 +274,27 @@ class Exporter
 
     public function getProductEntityIdName($tableName)
     {
-        $entityIds = [
-            'row_id',
-            'entity_id'
-        ];
-        $table = $this->_resource->getTableName($tableName);
-        foreach ($entityIds as $entityId) {
-            $sql = "SHOW COLUMNS FROM `{$table}` LIKE '{$entityId}'";
-            if ($this->_resource->getConnection('read')->fetchOne($sql)) {
-                return $entityId;
-            }
-        }
-            return false;
+        return $this->helper->getProductEntityIdName($tableName);
     }
 
     public function setExportProcessId(int $exportProcessId)
     {
-        $this->_exportProcessId = $exportProcessId;
+        $this->exportProcessId = $exportProcessId;
     }
 
     public function getExportProcessId() : int
     {
-        return (int)$this->_exportProcessId;
+        return (int)$this->exportProcessId;
     }
 
-    public function export_celebros($objectManager, $webAdmin, $storeId = null)
+    public function export_celebros($webAdmin, $storeId = null)
     {
         $this->helper->initExportProcessSettings();
-        $this->_product_entity_type_id = $this->get_product_entity_type_id();
-        $this->_category_entity_type_id = $this->get_category_entity_type_id();
+        $this->productEntityTypeId = $this->get_product_entity_type_id();
+        $this->categoryEntityTypeId = $this->get_category_entity_type_id();
         $this->isWebRun = $webAdmin;
-        $this->_objectManager = $objectManager;
-        if (!$this->_exportProcessId) {
-            $this->_exportProcessId = $this->helper->getExportProcessId();
+        if (!$this->exportProcessId) {
+            $this->exportProcessId = $this->helper->getExportProcessId();
         }
 
         $export_start = microtime(true);
@@ -127,12 +305,12 @@ class Exporter
         $this->comments_style('warning', 'Warning: Please don\'t close window during importing/exporting data', 'warning');
 
         if ($this->helper->getConfiguratedEnvStamp() == $this->helper->getCurrentEnvStamp()) {
-            $this->_ftpUpload = true;
+            $this->ftpUpload = true;
         }
 
         $this->cleanExportDirectory();
-        $this->export_orders($objectManager->create('Magento\Sales\Model\Order\Item'), $storeId);
-        $this->export_main($this->_exportProcessId, $storeId);
+        $this->export_orders($storeId);
+        $this->export_main($this->exportProcessId, $storeId);
 
         $export_end = microtime(true);
 
@@ -144,44 +322,39 @@ class Exporter
 
     public function export_config($store)
     {
-        $this->_fStore_id = $store->getStoreId();
-        $this->_fStore = $store;
-        $this->_fStore_export_enabled = $this->helper->isEnabled($store);
+        $this->fStoreId = $store->getStoreId();
+        $this->fStore = $store;
+        $this->fStoreExportEnabled = $this->helper->isEnabled($store);
 
-        $this->_fDel = $this->helper->getConfig('celexport/export_settings/delimiter', $store);
-        if ($this->_fDel === '\t') {
-            $this->_fDel = chr(9);
+        $this->fDel = $this->helper->getConfig('celexport/export_settings/delimiter', $store);
+        if ($this->fDel === '\t') {
+            $this->fDel = chr(9);
         }
 
-        $this->_fEnclose = $this->helper->getConfig('celexport/export_settings/enclosed_values', $store);
-        $this->_fType = $this->helper->getConfig('celexport/export_settings/type', $store);
-        $this->_fPath = $this->helper->getExportPath($this->_exportProcessId) . '/' . $store->getWebsite()->getCode() . '/' . $store->getCode();
+        $this->fEnclose = $this->helper->getConfig('celexport/export_settings/enclosed_values', $store);
+        $this->fType = $this->helper->getConfig('celexport/export_settings/type', $store);
+        $this->fPath = $this->helper->getExportPath($this->exportProcessId) . '/' . $store->getWebsite()->getCode() . '/' . $store->getCode();
 
         $ftppath = 'ftp_prod';
-        $this->_fFTPHost = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_host', $store) : null;
-        $this->_fFTPPort = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_port', $store) : null;
-        $this->_fFTPUser = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_user', $store) : null;
-        $this->_fFTPPassword = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_password', $store) : null;
-        $this->_fFTPPassive = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/passive', $store) : null;
-        $this->_fFTPTls = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/tls', $store) : null;
-
-        //feature is not in use
-        $this->_fEnableCron = $this->helper->getConfig('celexport/export_settings/cron_enabled');
-        $this->CronExpression = $this->helper->getConfig('celexport/export_settings/cron_expr');
-        //end
+        $this->fFTPHost = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_host', $store) : null;
+        $this->fFTPPort = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_port', $store) : null;
+        $this->fFTPUser = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_user', $store) : null;
+        $this->fFTPPassword = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/ftp_password', $store) : null;
+        $this->fFTPPassive = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/passive', $store) : null;
+        $this->fFTPTls = $ftppath ? $this->helper->getConfig('celexport/' . $ftppath . '/tls', $store) : null;
     }
 
-    public function export_orders($orderItems, $storeId = null)
+    public function export_orders($storeId = null)
     {
         $stores = $this->helper->getAllStores();
         foreach ($stores as $store) {
             if (!$storeId || $store->getStoreId() == $storeId) {
                 $this->helper->setCurrentStore($store->getStoreId());
                 $this->export_config($store);
-                $this->_createDir($this->_fPath);
+                $this->_createDir($this->fPath);
 
-                $enclosed = $this->_fEnclose;
-                $delimeter = $this->_fDel;
+                $enclosed = $this->fEnclose;
+                $delimeter = $this->fDel;
                 $newLine = "\r\n";
 
                 if (!$this->helper->isEnabled($store) || !$this->helper->isOrdersExport($store)) {
@@ -200,30 +373,30 @@ class Exporter
                 $timeEdge = (new \DateTime(date("Y-m-d", $strT)))->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT);
                 $page = 1;
                 do {
-                    $orders = $orderItems->getCollection()
-                        ->addFieldToFilter('created_at', ['gteq' => $timeEdge])
+                    $orderItemsCollection = $this->orderItemCollectionFactory->create();
+                    $orderItemsCollection->addFieldToFilter('created_at', ['gteq' => $timeEdge])
                         ->addOrder('order_id', 'ASC')
                         ->setPage($page, self::ORDER_COLLETION_PAGE_LIMIT);
-                    foreach ($orders as $item) {
+                    foreach ($orderItemsCollection as $item) {
                         $record["OrderID"] = $item->getOrderId();
                         $record["ProductSKU"] = $item->getSku();
                         $record["ProductID"] = $item->getProductId();
-                        $created_at_time = strtotime($item->getCreatedAt());
+                        $created_at_time = strtotime((string) $item->getCreatedAt());
                         $record["Date"] = date("Y-m-d", $created_at_time);
                         $record["Count"] = (int)$item->getQtyOrdered();
                         $record["Sum"] = $item->getRowTotal();
                         $strResult .= $enclosed . implode($glue, $record) . $enclosed . $newLine;
                     }
                     $page++;
-                } while (count($orders) == self::ORDER_COLLETION_PAGE_LIMIT && $page < 5000);
+                } while ($orderItemsCollection->count() == self::ORDER_COLLETION_PAGE_LIMIT && $page < 5000);
 
                 //Create, flush, zip and ftp the orders file
                 $zipFileName = $this->helper->getDataHistoryFileName($store);
 
                 $this->_createAndUploadOrders($zipFileName, $strResult);
 
-                $this->logProfiler("Exported orders of store {$this->_fStore_id} to file {$zipFileName} . Memory peak was: " . memory_get_peak_usage());
-                $this->comments_style('success', "Exported orders of store '{$this->_fStore_id} to file {$zipFileName}'. Memory peak was: " . memory_get_peak_usage(), 'orders');
+                $this->logProfiler("Exported orders of store {$this->fStoreId} to file {$zipFileName} . Memory peak was: " . memory_get_peak_usage());
+                $this->comments_style('success', "Exported orders of store '{$this->fStoreId} to file {$zipFileName}'. Memory peak was: " . memory_get_peak_usage(), 'orders');
             }
         }
     }
@@ -285,13 +458,13 @@ class Exporter
     protected function _createAndUploadOrders($zipFileName, $str)
     {
         //Create directory to put the file
-        if (!$this->_createDir($this->_fPath)) {
-            $this->comments_style('error', 'Could not create the directory in ' . $this->_fPath . ' path', 'problemwith dir');
+        if (!$this->_createDir($this->fPath)) {
+            $this->comments_style('error', 'Could not create the directory in ' . $this->fPath . ' path', 'problemwith dir');
             return;
         }
 
-        $filePath = $this->_fPath . "/Data_History.txt";
-        $zipFilePath = $this->_fPath . "/" . $zipFileName;
+        $filePath = $this->fPath . "/Data_History.txt";
+        $zipFilePath = $this->fPath . "/" . $zipFileName;
 
         //Create file
         if ((!$fh = $this->_createFile($filePath))) {
@@ -307,7 +480,7 @@ class Exporter
         $this->_zipFile($filePath, $zipFilePath);
 
         //Ftp file
-        if ($this->_fType==="ftp" && $this->_bUpload) {
+        if ($this->fType==="ftp" && $this->isUpload) {
             $ftpRes = $this->remoteUpload($zipFilePath);
             if (!$ftpRes) {
                 $this->comments_style('error', 'Could not upload ' . $zipFilePath . ' to ftp', 'Could_not_upload_to_ftp');
@@ -336,7 +509,7 @@ class Exporter
 
     protected function _stringToTextFile($str, $fh)
     {
-        fwrite($fh, $str);
+        fwrite($fh, (string) $str);
     }
 
     protected function _zipFile($filePath, $zipFilePath)
@@ -355,7 +528,7 @@ class Exporter
         }
 
         if ($zip->open($zipFilePath, \ZipArchive::CREATE) == true) {
-            $out = $zip->addFile($filePath, basename($filePath));
+            $out = $zip->addFile($filePath, basename((string) $filePath));
             if (!$out) {
                 $this->comments_style('error', 'Could not add ' . $filePath . 'to zip archive', 'Could_not_add_txt_file_to_zip_file');
             }
@@ -371,7 +544,7 @@ class Exporter
 
     public function export_main($exportProcessId = 0, $storeId = null)
     {
-        $this->_exportProcessId = $exportProcessId;
+        $this->exportProcessId = $exportProcessId;
         $stores = $this->helper->getAllStores();
         foreach ($stores as $store) {
             if (!$storeId || $store->getStoreId() == $storeId) {
@@ -381,18 +554,17 @@ class Exporter
                     continue;
                 }
 
-                $this->_fStore_id = $store->getStoreId();
+                $this->fStoreId = $store->getStoreId();
                 $this->export_config($store);
-                $this->_createDir($this->_fPath);
+                $this->_createDir($this->fPath);
 
-                $this->_fileNameZip =$this->helper->getConfig('celexport/export_settings/zipname', $store);
+                $this->fileNameZip =$this->helper->getConfig('celexport/export_settings/zipname', $store);
 
-                $this->comments_style('section', "Store code: {$this->_fStore_id}, name: {$store->getName()}", 'STORE');
-                $this->comments_style('section', "Zip file name: {$this->_fileNameZip}", 'STORE');
+                $this->comments_style('section', "Store code: {$this->fStoreId}, name: {$store->getName()}", 'STORE');
+                $this->comments_style('section', "Zip file name: {$this->fileNameZip}", 'STORE');
 
                 //Resetting store categories mapping.
-                $this->_categoriesForStore = false;
-                $this->_categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
+                $this->categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
 
                 $this->logProfiler('===============');
                 $this->logProfiler('Starting Export');
@@ -400,8 +572,8 @@ class Exporter
                 $this->logProfiler('memory_limit: ' . ini_get('memory_limit'));
                 $this->logProfiler('max_execution_time: ' . ini_get('max_execution_time'));
                 $this->logProfiler('===============');
-                $this->logProfiler("Store code: {$this->_fStore_id}, name: {$store->getName()}");
-                $this->logProfiler("Zip file name: {$this->_fileNameZip}");
+                $this->logProfiler("Store code: {$this->fStoreId}, name: {$store->getName()}");
+                $this->logProfiler("Zip file name: {$this->fileNameZip}");
                 $this->logProfiler('Mem usage: ' . memory_get_usage(true));
 
                 $this->comments_style('icon', "Memory usage: " . memory_get_usage(true), 'icon');
@@ -416,7 +588,7 @@ class Exporter
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
 
                 //Only run export products if there are categories assigned to the current store view.
-                if ($this->_categoriesForStore) {
+                if ($this->categoriesForStore) {
                     $this->comments_style('icon', 'Exporting products', 'icon');
                     $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
                     $this->getTimeOffset(microtime(true));
@@ -446,7 +618,7 @@ class Exporter
                 $this->comments_style('icon', 'Checking FTP upload', 'icon');
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
 
-                if ($this->_fType === "ftp"/* && $this->_bUpload*/) {
+                if ($this->fType === "ftp"/* && $this->_bUpload*/) {
                     $this->comments_style('info', 'Uploading export file', 'info');
                     $ftpRes = $this->remoteUpload($zipFilePath);
                     if (!$ftpRes) {
@@ -473,27 +645,27 @@ class Exporter
 
     public function getEntityIdByRowId($row_id)
     {
-        return (isset($this->_rowEntityMap[$row_id]) ? $this->_rowEntityMap[$row_id] : $row_id);
+        return (isset($this->rowEntityMap[$row_id]) ? $this->rowEntityMap[$row_id] : $row_id);
     }
 
     public function getRowIdByEntityId($entity_id)
     {
-        return (isset($this->_entityRowMap[$entity_id]) ? $this->_entityRowMap[$entity_id] : $entity_id);
+        return (isset($this->entityRowMap[$entity_id]) ? $this->entityRowMap[$entity_id] : $entity_id);
     }
 
     public function getEntityIdByRowIdCat($row_id)
     {
-        return (isset($this->_rowEntityMapCat[$row_id]) ? $this->_rowEntityMapCat[$row_id] : $row_id);
+        return (isset($this->rowEntityMapCat[$row_id]) ? $this->rowEntityMapCat[$row_id] : $row_id);
     }
 
     public function getRowIdByEntityIdCat($entity_id)
     {
-        return (isset($this->_entityRowMapCat[$entity_id]) ? $this->_entityRowMapCat[$entity_id] : $entity_id);
+        return (isset($this->entityRowMapCat[$entity_id]) ? $this->entityRowMapCat[$entity_id] : $entity_id);
     }
 
     public function arrayToString($fields)
     {
-        return "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+        return "^" . implode("^" . $this->fDel . "^", $fields) . "^" . "\r\n";
     }
 
     protected function export_tables($store)
@@ -501,7 +673,7 @@ class Exporter
         $rowEntityMap = [];
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
         if ($entityName == 'row_id') {
-            $this->_row_id = true;
+            $this->isRowId = true;
         }
 
         $table = $this->_resource->getTableName("catalog_product_entity");
@@ -528,8 +700,8 @@ class Exporter
             }
         }
 
-        $this->_rowEntityMap = $rowEntityMap;
-        $this->_entityRowMap = array_flip($rowEntityMap);
+        $this->rowEntityMap = $rowEntityMap;
+        $this->entityRowMap = array_flip($rowEntityMap);
 
         $rowEntityMap = [];
         $entityName = $this->getProductEntityIdName("catalog_category_entity");
@@ -557,8 +729,8 @@ class Exporter
             }
         }
 
-        $this->_rowEntityMapCat = $rowEntityMap;
-        $this->_entityRowMapCat = array_flip($rowEntityMap);
+        $this->rowEntityMapCat = $rowEntityMap;
+        $this->entityRowMapCat = array_flip($rowEntityMap);
 
         /*----- catalog_eav_attribute.txt -----*/
         $this->getTimeOffset(microtime(true));
@@ -581,7 +753,7 @@ class Exporter
         $query = $this->_read->select()->from(
             $table,
             array('attribute_id', 'attribute_code', 'backend_type', 'frontend_input')
-        )->where('entity_type_id = ?', $this->_product_entity_type_id);
+        )->where('entity_type_id = ?', $this->productEntityTypeId);
         $this->export_attributes_table($query, "attributes_lookup");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
@@ -613,7 +785,7 @@ class Exporter
         $this->exportProdIdsByAttributeValue(
             'status',
             \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_DISABLED,
-            $this->_fStore_id,
+            $this->fStoreId,
             'disabled_products'
         );
 
@@ -621,7 +793,7 @@ class Exporter
         $this->exportProdIdsByAttributeValue(
             'visibility',
             \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE,
-            $this->_fStore_id,
+            $this->fStoreId,
             'not_visible_individually_products'
         );
 
@@ -893,7 +1065,7 @@ class Exporter
         $query = $this->_read->select()->from(
             $table,
             array('product_id')
-        )->where('website_id = ?', $this->_fStore->getWebsiteId());
+        )->where('website_id = ?', $this->fStore->getWebsiteId());
         $this->export_table($query, "catalog_product_website");
         $this->logProfiler("FINISH {$table}");
         $this->logProfiler('Mem usage: ' . memory_get_usage(true));
@@ -907,9 +1079,9 @@ class Exporter
     {
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
-        $categories = $this->_objectManager->create('Magento\Catalog\Model\Category')
-            ->getCollection()->addAttributeToSelect('is_active')
-            ->setProductStoreId($this->_fStore_id);
+        $categoryCollection = $this->categoryCollectionFactory->create();
+        $categoryCollection->addAttributeToSelect('is_active')
+            ->setProductStoreId($this->fStoreId);
 
         $fh = $this->create_file($filename);
         if (!$fh) {
@@ -920,7 +1092,7 @@ class Exporter
 
         $str = "^" . $idName . "^\r\n";
 
-        foreach ($categories as $category) {
+        foreach ($categoryCollection as $category) {
             if (!$category->getIsActive()) {
                 $str .= "^" . $category->getData($idName) . "^" . "\r\n";
             }
@@ -934,9 +1106,8 @@ class Exporter
     {
         $table = $this->_resource->getTableName("catalog_category_entity");
         $idName = $this->getProductEntityIdName($table);
-        $categories = $this->_objectManager->create('Magento\Catalog\Model\Category')
-            ->getCollection()
-            ->addAttributeToSelect(['entity_id','name'])
+        $categoryCollection = $this->categoryCollectionFactory->create();
+        $categoryCollection->addAttributeToSelect(['entity_id','name'])
             ->addFieldToFilter($idName, ['in' => $categoriesIds]);
 
         $fh = $this->create_file($filename);
@@ -946,9 +1117,9 @@ class Exporter
             return;
         }
 
-        $str = "^" . $idName ."^" . $this->_fDel . "^value^\r\n";
-        foreach ($categories as $category) {
-            $str .= "^" . $category->getData($idName) . "^" . $this->_fDel . "^" . $category->getName() . "^" . "\r\n";
+        $str = "^" . $idName ."^" . $this->fDel . "^value^\r\n";
+        foreach ($categoryCollection as $category) {
+            $str .= "^" . $category->getData($idName) . "^" . $this->fDel . "^" . $category->getName() . "^" . "\r\n";
         }
 
         $this->write_to_file($str, $fh);
@@ -974,7 +1145,7 @@ class Exporter
             $secondSql = clone($sql);
 
             //On the first run, we'll only get the current store view.
-            $sql->where('store_id = ?', $this->_fStore_id);
+            $sql->where('store_id = ?', $this->fStoreId);
         }
 
         //Run the actual process of getting the rows and inserting them to the file,
@@ -1002,10 +1173,10 @@ class Exporter
     protected function create_file($name, $ext = "txt")
     {
         try {
-            if (!is_dir($this->_fPath)) {
-                $dir = mkdir($this->_fPath, 0777, true);
+            if (!is_dir($this->fPath)) {
+                $dir = mkdir($this->fPath, 0777, true);
             }
-            $filePath = $this->_fPath . '/' . $name . "." . $ext;
+            $filePath = $this->fPath . '/' . $name . "." . $ext;
             $fh = fopen($filePath, 'wb');
         } catch (\Exception $e) {
             $this->comments_style('error', 'Could not create export directory or files.', 'file permissions');
@@ -1029,7 +1200,7 @@ class Exporter
                 $fields = array_merge($fields, array_keys($read->describeTable($this->_resource->getTableName($columns[0][0]))));
             }
         }
-        $header .= implode("^" . $this->_fDel . "^", $fields);
+        $header .= implode("^" . $this->fDel . "^", $fields);
         $header .= "^" . "\r\n";
         $this->write_to_file($header, $fh);
 
@@ -1038,7 +1209,7 @@ class Exporter
 
     protected function write_to_file($str, $fh)
     {
-        fwrite($fh, $str);
+        fwrite($fh, (string) $str);
     }
 
     protected function export_table_rows($sql, $fields, $fh)
@@ -1088,7 +1259,7 @@ class Exporter
                 $processedRows[] = substr($concatenatedRow, 0, -1);
             }
 
-            $str .= "^" . implode("^" . $this->_fDel . "^", $row) . "^" . "\r\n";
+            $str .= "^" . implode("^" . $this->fDel . "^", $row) . "^" . "\r\n";
             $rowCount++;
 
             if (($rowCount%1000)==0) {
@@ -1136,7 +1307,7 @@ class Exporter
         $labelTable = $this->_resource->getTableName("eav_attribute_label");
         $sql->joinLeft(
             $labelTable,
-            "{$table['tableName']}.`attribute_id` = `{$labelTable}`.`attribute_id` AND `{$labelTable}`.`store_id` = {$this->_fStore_id}",
+            "{$table['tableName']}.`attribute_id` = `{$labelTable}`.`attribute_id` AND `{$labelTable}`.`store_id` = {$this->fStoreId}",
             array('value')
         )->where("`{$labelTable}`.`value` IS NOT NULL")
         ->group('attribute_id');
@@ -1170,21 +1341,20 @@ class Exporter
         $page = 1;
         $chunksIds = [];
 
-        if (null == isset($this->_attrProductIdsChunks[$this->_fStore_id])) {
-            $this->_attrProductIdsChunks[$this->_fStore_id] = [];
+        if (null == isset($this->attrProductIdsChunks[$this->fStoreId])) {
+            $this->attrProductIdsChunks[$this->fStoreId] = [];
             do {
-                $productIds = $this->_objectManager->create('Magento\Catalog\Model\Product')
-                    ->getCollection()
-                    ->addStoreFilter($this->_fStore_id)
+                $productCollection = $this->productCollectionFactory->create();
+                $productIds = $productCollection->addStoreFilter($this->fStoreId)
                     ->addOrder($entityIdName, "ASC")
                     ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT)
                     ->getColumnValues($entityIdName);
-                $this->_attrProductIdsChunks[$this->_fStore_id][] = $productIds;
+                $this->attrProductIdsChunks[$this->fStoreId][] = $productIds;
                 $page++;
             } while (count($productIds) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
         }
 
-        foreach ($this->_attrProductIdsChunks[$this->_fStore_id] as $ids) {
+        foreach ($this->attrProductIdsChunks[$this->fStoreId] as $ids) {
             if (is_array($ids) && !empty($ids)) {
                 $sql = clone($originalSql);
                 $table = $sql->getPart('from');
@@ -1194,7 +1364,7 @@ class Exporter
 
                 $secondSql = clone($sql);
 
-                $sql->where('`store_id` = ?', $this->_fStore_id);
+                $sql->where('`store_id` = ?', $this->fStoreId);
 
                 //Get list of rows with this specific store view, to exclude when running on the default store view.
                 $sql->columns($entityIdName);
@@ -1252,7 +1422,7 @@ class Exporter
         $sql2 = $this->_read->select()->from($table, array($field, 'path'));
 
         $results = $this->_read->fetchPairs($sql2);
-        $rootCategoryId = $this->_fStore->getRootCategoryId();
+        $rootCategoryId = $this->fStore->getRootCategoryId();
         $categories = [];
         foreach ($results as $entity_id => $path) {
             $path = explode('/', (string)$path);
@@ -1271,10 +1441,10 @@ class Exporter
     public function zipLargeFiles()
     {
         $out = false;
-        $zipPath = $this->_fPath . '/' . $this->_fileNameZip;
+        $zipPath = $this->fPath . '/' . $this->fileNameZip;
 
         try {
-            $dh = opendir($this->_fPath);
+            $dh = opendir($this->fPath);
         } catch (\Exception $e) {
             $this->comments_style('error', 'Could not open folder for archiving.', 'problem with folder');
             $this->logProfiler('Could not open folder for archiving.');
@@ -1283,7 +1453,7 @@ class Exporter
 
         $filesToZip = array();
         while (($item = readdir($dh)) !== false && !is_null($item)) {
-            $filePath = $this->_fPath . '/' . $item;
+            $filePath = $this->fPath . '/' . $item;
             $ext = pathinfo($filePath, PATHINFO_EXTENSION);
             if (is_file($filePath) && ($ext == "txt" || $ext == "log")) {
                 $filesToZip[] = $filePath;
@@ -1310,8 +1480,8 @@ class Exporter
         }
 
         if ($zip->open($zipPath, \ZipArchive::CREATE) == true) {
-            $fileName = basename($filePath);
-            $out = $zip->addFile($filePath, basename($filePath));
+            $fileName = basename((string) $filePath);
+            $out = $zip->addFile($filePath, basename((string) $filePath));
             if (!$out) {
                 throw new \Exception("Could not add file '{$fileName}' to_zip_file");
             }
@@ -1348,43 +1518,43 @@ class Exporter
      */
     private function collectIOConfig(): array
     {
-        if (!$this->_ftpUpload) {
+        if (!$this->ftpUpload) {
             throw new ConfigurationMismatchException(__('Env stamp is incorrect - ftp upload is not available'));
         }
 
-        if (!$this->_fFTPHost) {
+        if (!$this->fFTPHost) {
             throw new ConfigurationMismatchException(__('Empty host specified'));
         }
 
         $ioConfig = [];
-        if ($this->_fFTPHost != '') {
-            $ioConfig['host'] = $this->_fFTPHost;
+        if ($this->fFTPHost != '') {
+            $ioConfig['host'] = $this->fFTPHost;
         }
 
-        if ($this->_fFTPPort != '') {
-            $ioConfig['port'] = $this->_fFTPPort;
+        if ($this->fFTPPort != '') {
+            $ioConfig['port'] = $this->fFTPPort;
         }
 
-        if ($this->_fFTPUser != '') {
-            $ioConfig['user'] = $this->_fFTPUser;
+        if ($this->fFTPUser != '') {
+            $ioConfig['user'] = $this->fFTPUser;
         } else {
             $ioConfig['user']='anonymous';
             $ioConfig['password']='anonymous@noserver.com';
         }
 
-        if ($this->_fFTPPassword != '') {
-            $ioConfig['password'] = $this->_fFTPPassword;
+        if ($this->fFTPPassword != '') {
+            $ioConfig['password'] = $this->fFTPPassword;
         }
 
-        $ioConfig['passive'] = $this->_fFTPPassive;
-        $ioConfig['ssl'] = $this->_fFTPTls;
+        $ioConfig['passive'] = $this->fFTPPassive;
+        $ioConfig['ssl'] = $this->fFTPTls;
 
         return $ioConfig;
     }
 
     public function uploadLog($connection)
     {
-        $logfilename = $this->helper->getLogFilename($this->_exportProcessId);
+        $logfilename = $this->helper->getLogFilename($this->exportProcessId);
         if (file_exists($this->helper->getExportPath() . $logfilename)) {
             ftp_put($connection, 'celebros.log', $this->helper->getExportPath() . $logfilename, FTP_BINARY);
         }
@@ -1395,7 +1565,7 @@ class Exporter
         $table = $this->_resource->getTableName("eav_attribute");
         $sql = "SELECT attribute_id
         FROM {$table}
-        WHERE entity_type_id ={$this->_category_entity_type_id} AND attribute_code='is_active'";
+        WHERE entity_type_id ={$this->categoryEntityTypeId} AND attribute_code='is_active'";
 
         return $this->_resource->getConnection('read')->fetchOne($sql);
     }
@@ -1405,14 +1575,14 @@ class Exporter
         $table = $this->_resource->getTableName("eav_attribute");
         $sql = "SELECT attribute_id
         FROM {$table}
-        WHERE entity_type_id ={$this->_category_entity_type_id} AND attribute_code='name'";
+        WHERE entity_type_id ={$this->categoryEntityTypeId} AND attribute_code='name'";
 
         return $this->_resource->getConnection('read')->fetchOne($sql);
     }
 
     protected function exportProdIdsByAttributeValue($attribute_code, $attribute_value, $store_id, $filename)
     {
-        $collection = $this->_objectManager->create('Magento\Catalog\Model\Product')->getCollection();
+        $collection = $this->productCollectionFactory->create();
         $collection->setStoreId($store_id)
             ->addStoreFilter($store_id)
             ->addAttributeToFilter($attribute_code, $attribute_value);
@@ -1424,7 +1594,7 @@ class Exporter
             return;
         }
 
-        $idName = ($this->_row_id) ? 'row_id' : 'entity_id';
+        $idName = ($this->isRowId) ? 'row_id' : 'entity_id';
         $str = "^" . $idName . "^\r\n";
 
         foreach ($collection as $item) {
@@ -1475,7 +1645,7 @@ class Exporter
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
 
         do {
-            $products = $this->_productCollection->create();
+            $products = $this->productCollectionFactory->create();
             $products->setStoreId($store->getStoreId())
                 ->addStoreFilter($store->getStoreId())
                 ->addCategoryIds()
@@ -1493,20 +1663,20 @@ class Exporter
             $page++;
         } while (count($products) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
 
-        $this->_productIds = array_unique($productIds);
-        $this->_categorylessIds = array_unique($categorylessIds);
+        $this->productIds = array_unique($productIds);
+        $this->categorylessIds = array_unique($categorylessIds);
     }
 
     protected function export_store_products($store)
     {
         $this->prepareStoreProductIds($store);
-        $this->export_products($this->_productIds, $this->prod_file_name, $store);
+        $this->export_products($this->productIds, $this->productsFileName, $store);
     }
 
     protected function export_categoryless_products($store)
     {
         /*$this->prepareStoreProductIds($store);*/
-        $this->export_products($this->_categorylessIds, $this->categoryless_prod_file_name, $store);
+        $this->export_products($this->categorylessIds, $this->categorylessProductsFileName, $store);
     }
 
     protected function export_products($productIds, $fileName, $store)
@@ -1520,20 +1690,20 @@ class Exporter
 
         $fields = array('mag_id', 'price', 'type_id', 'sku');
 
-        if ($this->_row_id) {
+        if ($this->isRowId) {
             $fields[] = 'entity_id';
         }
 
-        if ($this->bExportProductLink) {
+        if ($this->isExportProductLink) {
             $fields[] = 'link';
         }
 
-        $prodParams = $this->helper->getProdParams($this->_objectManager);
+        $prodParams = $this->helper->getProdParams();
         foreach ($prodParams as $prodParam) {
             $fields[] = (string)$prodParam['label'];
         }
 
-        $imageTypes = $this->helper->getImageTypes($this->_objectManager);
+        $imageTypes = $this->helper->getImageTypes();
         foreach ($imageTypes as $imgType) {
             $fields[] = (string)$imgType['label'];
         }
@@ -1548,7 +1718,7 @@ class Exporter
         //Creating a custom fields cache for use in the separate processes.
         $this->cache->save(
             json_encode($customAttributes),
-            'export_custom_fields_' . $this->_exportProcessId,
+            'export_custom_fields_' . $this->exportProcessId,
             [],
             self::CACHE_LIFETIME
         );
@@ -1563,13 +1733,13 @@ class Exporter
         //Creating the file handler to save the export results and handling any errors that might occur in the process.
         $fh = $this->create_file($fileName);
         if (!$fh) {
-            $this->comments_style('error', 'Could not create the file in ' . $this->_fPath . '/' . $fileName . ' path', 'problem with file');
-            $this->logProfiler('Could not create the file in ' . $this->_fPath . '/' . $fileName . ' path');
+            $this->comments_style('error', 'Could not create the file in ' . $this->fPath . '/' . $fileName . ' path', 'problem with file');
+            $this->logProfiler('Could not create the file in ' . $this->fPath . '/' . $fileName . ' path');
             return;
         }
 
         //Writing the field names as the header row in the export file.
-        $header = "^" . implode("^" . $this->_fDel . "^", $fields) . "^" . "\r\n";
+        $header = "^" . implode("^" . $this->fDel . "^", $fields) . "^" . "\r\n";
         $this->write_to_file($header, $fh);
 
         $chunksIds = array_chunk($productIds, $this->helper->getExportChunkSize());
@@ -1582,7 +1752,7 @@ class Exporter
             $processes =[];
             foreach ($chunksIds as $ids) {
                 $count += 1;
-                $i = $this->_fStore_id * 1000 + $count;
+                $i = $this->fStoreId * 1000 + $count;
                 if (count($processes) >= $process_limit) {
                     do {
                         sleep(1);
@@ -1600,12 +1770,12 @@ class Exporter
                 $this->logProfiler('Exported Products: ' . implode(',', $ids));
                 $this->cache->save(
                     json_encode($ids),
-                    'export_chunk_' . $this->_exportProcessId . '_' . $i,
+                    'export_chunk_' . $this->exportProcessId . '_' . $i,
                     [],
                     self::CACHE_LIFETIME
                 );
 
-                $comm = 'php ' . $this->_dir->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->_fStore_id . ' ' . $this->_exportProcessId;
+                $comm = 'php ' . $this->directoryList->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->fStoreId . ' ' . $this->exportProcessId;
 
                 $process = new Process($comm);
                 $processes[$i] = $process;
@@ -1623,7 +1793,7 @@ class Exporter
                 sleep(1);
             } while (count($processes));
 
-            $_fPath = $this->helper->getExportPath($this->_exportProcessId) . '/' . $this->_fStore->getWebsite()->getCode() . '/' . $this->_fStore->getCode();
+            $_fPath = $this->helper->getExportPath($this->exportProcessId) . '/' . $this->fStore->getWebsite()->getCode() . '/' . $this->fStore->getCode();
             if (!is_dir($_fPath)) {
                 try {
                     $dir = mkdir($_fPath, 0777, true);
@@ -1635,7 +1805,7 @@ class Exporter
             }
 
             foreach ($finished as $key) {
-                $status = $this->cache->load('process_' . $this->_exportProcessId . '_' . $key);
+                $status = $this->cache->load('process_' . $this->exportProcessId . '_' . $key);
 
                 if ($status == 'no_errors') {
                     $filePath = $_fPath . '/' . 'export_chunk_' . $key . "." . 'txt';
@@ -1646,19 +1816,18 @@ class Exporter
                     return;
                 }
 
-                $this->cache->remove('process_' . $this->_exportProcessId . '_' . $key);
+                $this->cache->remove('process_' . $this->exportProcessId . '_' . $key);
             }
 
             fclose($fh);
 
-            $this->cache->remove('export_custom_fields_' . $this->_exportProcessId);
+            $this->cache->remove('export_custom_fields_' . $this->exportProcessId);
         } else {
-            $customAttributes = json_decode($this->cache->load('export_custom_fields_' . $this->_exportProcessId));
-            $exportHelper = $this->_objectManager->create('Celebros\Celexport\Helper\Export');
+            $customAttributes = json_decode((string) $this->cache->load('export_custom_fields_' . $this->exportProcessId));
             foreach ($chunksIds as $ids) {
                 $this->logProfiler('Exported Products: ' . implode(',', $ids));
-                $str = $exportHelper->getProductsData($ids, $customAttributes, $store->getStoreId(), $this->_objectManager);
-                fwrite($fh, $str);
+                $str = $this->helper->getProductsData($ids, $customAttributes, $store->getStoreId());
+                fwrite($fh, (string) $str);
             }
 
             fclose($fh);
@@ -1688,20 +1857,15 @@ class Exporter
         return [];
     }
 
-    public function ftpClose()
-    {
-        return ftp_close($this->_conn);
-    }
-
     public function getTimeOffset($curentMicrotime)
     {
         $result = 0;
 
-        if ($this->_timeMarker) {
-            $result = round((float)$curentMicrotime - $this->_timeMarker, 3);
+        if ($this->timeMarker) {
+            $result = round((float)$curentMicrotime - $this->timeMarker, 3);
         }
 
-        $this->_timeMarker = (float)$curentMicrotime;
+        $this->timeMarker = (float)$curentMicrotime;
 
         return $result;
     }

@@ -15,15 +15,14 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 
 class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterface
 {
-    const NOT_EXIST = "not_exist";
-    const STARTED = "started";
-    const IN_PROGRESS = "in_progress";
-    const DONE = "done";
-    const FAILED = "failed";
-    const ERROR = "error";
-
-    const MAX_PROCESS_AGE = 7200; /* 2h */
-    const MAX_LAST_UPDATE_AGE = 3600; /* 1h */
+    public const NOT_EXIST = "not_exist";
+    public const STARTED = "started";
+    public const IN_PROGRESS = "in_progress";
+    public const DONE = "done";
+    public const FAILED = "failed";
+    public const ERROR = "error";
+    public const MAX_PROCESS_AGE = 7200; /* 2h */
+    public const MAX_LAST_UPDATE_AGE = 3600; /* 1h */
 
     /**
      * @var int
@@ -34,6 +33,41 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
      * @var string
      */
     protected $status;
+
+    /**
+     * @var Exporter
+     */
+    private $exporter;
+
+    /**
+     * @var \Celebros\Celexport\Helper\Data
+     */
+    private $helper;
+
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
+     * @var \Magento\Framework\Filesystem
+     */
+    private $filesystem;
+
+    /**
+     * @var \Magento\Framework\Filesystem\DirectoryList
+     */
+    private $dir;
+
+    /**
+     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
+     */
+    private $timezone;
+
+    /**
+     * @var \Magento\Framework\Mail\Template\TransportBuilder
+     */
+    private $transportBuilder;
 
     /**
      * @param \Celebros\Celexport\Model\Exporter $exporter
@@ -71,7 +105,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
     public function exportData($dataType, int $id)
     {
         $this->id = $id;
-        $methodName = 'getData' . str_replace("_", "", ucwords($dataType, "_"));
+        $methodName = 'getData' . str_replace("_", "", ucwords((string) $dataType, "_"));
         if (method_exists($this, $methodName)) {
             return $this->$methodName();
         }
@@ -93,7 +127,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
 
     protected function _moveAndRenameExportZip($path)
     {
-        $pathArr = explode("/", $path);
+        $pathArr = explode("/", (string) $path);
         $name = $pathArr[count($pathArr) - 4];
         copy($path, $this->getIntMediaFolder('celebros') . "/" . $name . ".zip");
 
@@ -121,7 +155,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
         $rootPath = $this->dir->getRoot();
         $baseUrl = $this->storeManager->getStore()->getBaseUrl();
 
-        return str_replace($this->dir->getRoot(), $this->storeManager->getStore()->getBaseUrl(), $path);
+        return str_replace($this->dir->getRoot(), $this->storeManager->getStore()->getBaseUrl(), (string) $path);
     }
 
     public function getExportStatusByStore($store)
@@ -210,7 +244,7 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
             if ($exportProcessId) {
                 $this->exporter->setExportProcessId($exportProcessId);
             }
-            $this->exporter->export_celebros($objectManager, false, $storeId);
+            $this->exporter->export_celebros(false, $storeId);
             $url = $this->exporter->zipFileName ? : '';
             if ($url) {
                 return ['export_url' => $this->_moveAndRenameExportZip($url)];

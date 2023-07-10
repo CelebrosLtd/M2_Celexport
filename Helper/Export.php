@@ -13,28 +13,76 @@ namespace Celebros\Celexport\Helper;
 
 use Celebros\Celexport\Model\Config\Source\Images;
 use Celebros\Celexport\Model\Config\Source\Prodparams;
-use Celebros\Celexport\Model\Exporter;
-use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type as ProductType;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\CatalogInventory\Model\Stock;
 use Magento\CatalogRule\Model\Rule;
+use Magento\CatalogRule\Model\RuleFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
 use Magento\Framework\DB\Select as DbSelect;
 use Magento\Framework\Url;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedType;
-use Magento\UrlRewrite\Model\UrlRewrite;
+use Magento\UrlRewrite\Model\ResourceModel\UrlRewriteCollection;
+use Magento\UrlRewrite\Model\ResourceModel\UrlRewriteCollectionFactory;
 
 class Export extends Data
 {
-    //public const MIN_MEMORY_LIMIT = 256;
-    //public const MAX_EXEC_TIME = 18000;
+    /**
+     * @var \Magento\Framework\Json\Helper\Data
+     */
+    private $jsonHelper;
 
     /**
-     * @var \Magento\Framework\App\ObjectManager
+     * @var \Magento\Catalog\Model\View\Asset\ImageFactory
      */
-    protected $_objectManager;
+    private $viewAssetImageFactory;
+
+    /**
+     * @var Product\Image\ParamsBuilder
+     */
+    private $imageParamsBuilder;
+
+    /**
+     * @var ImageHelper
+     */
+    private $imageHelper;
+
+    /**
+     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     */
+    private $productRepository;
+
+    /**
+     * @var RuleFactory
+     */
+    private $ruleFactory;
+
+    /**
+     * @var Url
+     */
+    private $urlBuilder;
+
+    /**
+     * @var ProductCollectionFactory
+     */
+    private $productCollectionFactory;
+
+    /**
+     * @var UrlRewriteCollectionFactory
+     */
+    private $urlRewriteCollectionFactory;
+
+    /**
+     * @var Prodparams
+     */
+    private $prodparams;
+
+    /**
+     * @var Images
+     */
+    private $images;
 
     /**
      * @var int
@@ -65,10 +113,7 @@ class Export extends Data
      */
     protected $resolutions = [];
 
-    /**
-     * @var \Magento\Framework\Json\Helper\Data
-     */
-    public $jsonHelper;
+
 
     /**
      * @var Array
@@ -81,48 +126,65 @@ class Export extends Data
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin
-     * @param \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin
-     * @param \Magento\Framework\App\ResponseInterface $response
      * @param \Magento\Store\Model\StoreManager $stores
      * @param \Magento\Framework\View\Asset\Repository $assetRepo
-     * @param \Magento\Framework\Filesystem\DirectoryList $dir
+     * @param \Magento\Framework\Filesystem\DirectoryList $directoryList
      * @param \Magento\Framework\Filesystem $filesystem
      * @param \Magento\Framework\App\ResourceConnection $resource
      * @param \Magento\Config\Model\ResourceModel\Config $resourceConfig
      * @param \Magento\Framework\Json\Helper\Data $jsonHelper
-     * @return void
+     * @param \Magento\Catalog\Model\View\Asset\ImageFactory $viewAssetImageFactory
+     * @param Product\Image\ParamsBuilder $imageParamsBuilder
+     * @param ImageHelper $imageHelper
+     * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+     * @param RuleFactory $ruleFactory
+     * @param Url $urlBuilder
+     * @param ProductCollectionFactory $productCollectionFactory
+     * @param UrlRewriteCollectionFactory $urlRewriteCollectionFactory
+     * @param Prodparams $prodparams
+     * @param Images $images
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\Code\Minifier\Adapter\Css\CSSmin $cssMin,
-        \Magento\Framework\Code\Minifier\Adapter\Js\JShrink $jsMin,
-        \Magento\Framework\App\ResponseInterface $response,
         \Magento\Store\Model\StoreManager $stores,
         \Magento\Framework\View\Asset\Repository $assetRepo,
-        \Magento\Framework\Filesystem\DirectoryList $dir,
+        \Magento\Framework\Filesystem\DirectoryList $directoryList,
         \Magento\Framework\Filesystem $filesystem,
         \Magento\Framework\App\ResourceConnection $resource,
         \Magento\Config\Model\ResourceModel\Config $resourceConfig,
         \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Catalog\Model\View\Asset\ImageFactory $viewAssetImageFactory,
-        \Magento\Catalog\Model\Product\Image\ParamsBuilder $imageParamsBuilder
+        \Magento\Catalog\Model\Product\Image\ParamsBuilder $imageParamsBuilder,
+        ImageHelper $imageHelper,
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        RuleFactory $ruleFactory,
+        Url $urlBuilder,
+        ProductCollectionFactory $productCollectionFactory,
+        UrlRewriteCollectionFactory $urlRewriteCollectionFactory,
+        Prodparams $prodparams,
+        Images $images
     ) {
-        $this->jsonHelper = $jsonHelper;
-        $this->viewAssetImageFactory = $viewAssetImageFactory;
-        $this->imageParamsBuilder = $imageParamsBuilder;
         parent::__construct(
             $context,
-            $cssMin,
-            $jsMin,
-            $response,
             $stores,
             $assetRepo,
-            $dir,
+            $directoryList,
             $filesystem,
             $resource,
             $resourceConfig
         );
+        $this->jsonHelper = $jsonHelper;
+        $this->viewAssetImageFactory = $viewAssetImageFactory;
+        $this->imageParamsBuilder = $imageParamsBuilder;
+        $this->imageHelper = $imageHelper;
+        $this->productRepository = $productRepository;
+        $this->ruleFactory = $ruleFactory;
+        $this->urlBuilder = $urlBuilder;
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->urlRewriteCollectionFactory = $urlRewriteCollectionFactory;
+        $this->prodparams = $prodparams;
+        $this->images = $images;
     }
 
     /**
@@ -200,8 +262,7 @@ class Export extends Data
                     );
                     $url = $imageAsset->getUrl();
                 } else {
-                    $url = $this->_objectManager->create(Image::class)
-                        ->getDefaultPlaceholderUrl($type);
+                    $url = $this->imageHelper->getDefaultPlaceholderUrl($type);
                 }
             } else {
                 $url = (string)$product->getMediaConfig()->getMediaUrl($product->getImage());
@@ -241,20 +302,16 @@ class Export extends Data
 
         if (!$price) {
             if ($product->getData("type_id") == "bundle") {
-                $product = $this->_objectManager->create(Product::class)
-                    ->setStoreId($this->_storeId)
-                    ->load($product->getEntityId());
+                $product = $this->productRepository->getById($product->getEntityId(), false, $this->_storeId);
                 $priceModel  = $product->getPriceModel();
                 $price = $priceModel->getTotalPrices($product, 'min', null, false);
             } elseif ($product->getData("type_id") == "grouped") {
-                $product = $this->_objectManager->create(Product::class)
-                    ->setStoreId($this->_storeId)
-                    ->load($product->getEntityId());
+                $product = $this->productRepository->getById($product->getEntityId(), false, $this->_storeId);
                 $aProductIds = $product->getTypeInstance()->getChildrenIds($product->getEntityId());
                 $prices = [];
                 foreach ($aProductIds as $ids) {
                     foreach ($ids as $id) {
-                        $aProduct = $this->_objectManager->create(Product::class)->load($id);
+                        $aProduct = $this->productRepository->getById($id, false, $this->_storeId);
                         if ($aProduct->isInStock()) {
                             $prices[] = $aProduct->getPriceModel()->getFinalPrice(null, $aProduct, true);
                         }
@@ -264,7 +321,7 @@ class Export extends Data
                 $price =  array_shift($prices);
             } elseif ($product->getData("type_id") == "giftcard") {
                 $min_amount = PHP_INT_MAX;
-                $product = $this->_objectManager->create(Product::class)->load($product->getId());
+                $product = $this->productRepository->getById($product->getEntityId(), false, $this->_storeId);
                 if ($product->getData("open_amount_min") != null && $product->getData("allow_open_amount")) {
                     $min_amount = $product->getData("open_amount_min");
                 }
@@ -286,24 +343,20 @@ class Export extends Data
         }
 
         if ($this->useCatalogPriceRules()) {
-            $price = $this->_objectManager->create(Rule::class)
-                ->calcProductPriceRule($product, $price);
+            /** @var Rule $ruleModel */
+            $ruleModel = $this->ruleFactory->create();
+            $price = $ruleModel->calcProductPriceRule($product, $price);
         }
 
         return number_format($price, 2, ".", "");
     }
 
-    private function getUrlInstance($storeId)
-    {
-        return $this->_objectManager->create(Url::class)->setScope($storeId);
-    }
-
-    public function getProductUrl($product, $storeId, $urlBuilder, $urlRewrite)
+    protected function getProductUrl($product, $storeId, $urlBuilder)
     {
         $requestPath = false;
         if ($product->isVisibleInSiteVisibility()) {
             if (!$product->getRequestPath()) {
-                $requestPath = $this->extractProductUrl($product, $storeId, $urlRewrite);
+                $requestPath = $this->extractProductUrl($product, $storeId);
             };
 
             $routeParams = [
@@ -319,10 +372,13 @@ class Export extends Data
         return false;
     }
 
-    public function extractProductUrl($product, $storeId, $urlRewrite)
+    protected function extractProductUrl($product, $storeId)
     {
         $requestPath = false;
-        $paths = $urlRewrite->getCollection()
+
+        /** @var UrlRewriteCollection $urlRewriteCollection */
+        $urlRewriteCollection = $this->urlRewriteCollectionFactory->create();
+        $paths = $urlRewriteCollection
             ->addFieldToFilter('store_id', $storeId)
             ->addFieldToFilter('entity_id', $product->getEntityId())
             ->addFieldToFilter('entity_type', 'product')
@@ -335,37 +391,31 @@ class Export extends Data
         return $requestPath;
     }
 
-    public function getProductsData($ids, $customAttributes, $storeId, $objectManager)
+    public function getProductsData($ids, $customAttributes, $storeId)
     {
         $this->_storeId = $storeId;
-        $websiteId = $this->_stores->getStore($storeId)->getWebsiteId();
-        $this->_objectManager = $objectManager;
+        $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
         $str = null;
         $this->setCurrentStore($this->_storeId);
-        $urlBuilder = $this->getUrlInstance($this->_storeId);
-        $entityName = $this->_objectManager->create(
-            Exporter::class
-        )->getProductEntityIdName("catalog_product_entity");
-        $collection = $this->_objectManager->create(
-            CollectionFactory::class
-        )->create();
-        $collection->setFlag('has_stock_status_filter', true);
-        $collection->addFieldToFilter($entityName, ['in' => $ids])
+        $entityName = $this->getProductEntityIdName("catalog_product_entity");
+        $productCollection = $this->productCollectionFactory->create();
+        $productCollection->setFlag('has_stock_status_filter', true);
+        $productCollection->addFieldToFilter($entityName, ['in' => $ids])
             ->setStoreId($this->_storeId)
             ->addAttributeToSelect('visibility')
             ->addAttributeToSelect(['sku', 'price', 'image', 'small_image', 'thumbnail', 'type']);
 
         if (is_array($customAttributes) && !empty($customAttributes)) {
-            $collection->addAttributeToSelect($customAttributes);
+            $productCollection->addAttributeToSelect($customAttributes);
         }
 
         if ($this->useIndexedPrices()) {
-            $collection->addPriceData();
+            $productCollection->addPriceData();
         }
 
-        $collection->addUrlRewrite()
+        $productCollection->addUrlRewrite()
             ->joinTable(
-                ['items' => $this->_resource->getTableName('cataloginventory_stock_item')],
+                ['items' => $this->resource->getTableName('cataloginventory_stock_item')],
                 'product_id = entity_id',
                 ['manage_stock', 'is_in_stock', 'qty', 'min_sale_qty'],
                 sprintf(
@@ -377,7 +427,7 @@ class Export extends Data
                 'left'
             );
 
-        foreach ($collection as $product) {
+        foreach ($productCollection as $product) {
             $routeParams = [
                 '_direct' => $product->getRequestPath(),
                 '_query' => [],
@@ -398,11 +448,10 @@ class Export extends Data
             $values["link"] = $this->getProductUrl(
                 $product,
                 $this->_storeId,
-                $urlBuilder,
-                $this->_objectManager->create(UrlRewrite::class)
+                $this->urlBuilder->setScope($storeId)
             );
 
-            $prodParams = $this->getProdParams($this->_objectManager);
+            $prodParams = $this->getProdParams();
             foreach ($prodParams as $prodParam) {
                 switch ($prodParam['value']) {
                     case 'is_saleable':
@@ -427,7 +476,7 @@ class Export extends Data
                 }
             }
 
-            $imageTypes = $this->getImageTypes($this->_objectManager);
+            $imageTypes = $this->getImageTypes();
             foreach ($imageTypes as $imgType) {
                 $values[(string)$imgType['label']] = $this->getProductImage($product, $imgType['value']);
             }
@@ -464,10 +513,10 @@ class Export extends Data
         return $str;
     }
 
-    public function getImageTypes($objectManager)
+    public function getImageTypes()
     {
         $avTypes = (string)$this->getConfig(self::CONFIG_EXPORT_IMAGE_TYPES);
-        $imageTypes = $objectManager->create(Images::class)->toOptionArray();
+        $imageTypes = $this->images->toOptionArray();
         foreach ($imageTypes as $key => $imageType) {
             if (!in_array($imageType['value'], explode(',', $avTypes))) {
                 unset($imageTypes[$key]);
@@ -477,10 +526,10 @@ class Export extends Data
         return $imageTypes;
     }
 
-    public function getProdParams($objectManager)
+    public function getProdParams()
     {
         $avParams = (string)$this->getConfig('celexport/export_settings/product_parameters');
-        $prodParams = $objectManager->create(Prodparams::class)->toOptionArray();
+        $prodParams = $this->prodparams->toOptionArray();
         foreach ($prodParams as $key => $prodParam) {
             if (!in_array($prodParam['value'], explode(',', $avParams))) {
                 unset($prodParams[$key]);
@@ -502,5 +551,21 @@ class Export extends Data
         $execTime = (int) $this->getConfig('celexport/advanced/max_execution_time');
 
         return $execTime ?: null;
+    }
+
+    public function getProductEntityIdName($tableName)
+    {
+        $entityIds = [
+            'row_id',
+            'entity_id'
+        ];
+        $table = $this->resource->getTableName($tableName);
+        foreach ($entityIds as $entityId) {
+            $sql = "SHOW COLUMNS FROM `{$table}` LIKE '{$entityId}'";
+            if ($this->resource->getConnection('read')->fetchOne($sql)) {
+                return $entityId;
+            }
+        }
+        return false;
     }
 }

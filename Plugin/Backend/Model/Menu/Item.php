@@ -35,6 +35,6 @@ class Item
 
     protected function isCelebrosExportPath(BackendItem $item) : bool
     {
-        return (strpos($item->getUrl(), self::CELEBROS_EXPORT_PATH) !== false) ? true : false;
+        return (strpos((string) $item->getUrl(), self::CELEBROS_EXPORT_PATH) !== false) ? true : false;
     }
 }
