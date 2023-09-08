@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.8.2
+
+### UPDATES
+
+- Add Magento 2.4.6 and PHP 8.2 compatibility in https://github.com/CelebrosLtd/M2_Celexport/pull/3
+- fix: Add missing dynamic properties PHP 8.2
+- fix: Change null to strict string defined function call PHP 8.1
+
 ## 1.8.1
 
 ### FIXES
