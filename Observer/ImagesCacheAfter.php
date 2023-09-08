@@ -21,17 +21,17 @@ class ImagesCacheAfter implements ObserverInterface
     /**
      * @var Helper
      */
-    protected $helper;
+    private $helper;
 
     /**
      * @var Scheduler
      */
-    protected $scheduler;
+    private $scheduler;
 
     /**
      * @var ManagerInterface
      */
-    protected $message;
+    private $messageManager;
 
     /**
      * @param Helper $helper
@@ -49,6 +49,9 @@ class ImagesCacheAfter implements ObserverInterface
         $this->messageManager = $message;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         if ($this->helper->isAutoscheduleImages()) {

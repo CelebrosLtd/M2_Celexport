@@ -13,18 +13,26 @@ use Magento\Store\Model\Store;
 
 class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
 {
-    const DEFAULT_FILTER_OFFSET = 24;
+    public const DEFAULT_FILTER_OFFSET = 24;
 
-    protected $_collection;
+    /**
+     * @var \Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory
+     */
+    private $collectionFactory;
 
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param \Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory $collectionFactory
+     * @param array $data
+     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Backend\Helper\Data $backendHelper,
-        \Magento\Cron\Model\ResourceModel\Schedule\Collection $collection,
+        \Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory $collectionFactory,
         array $data = []
     ) {
-        $this->_collection = $collection;
-        $this->_timezone = $context->getLocaleDate();
+        $this->collectionFactory = $collectionFactory;
         parent::__construct($context, $backendHelper, $data);
     }
 
@@ -37,7 +45,7 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
         $this->setId('crontasksGrid');
         $this->setDefaultSort('created_at');
         $this->setDefaultDir('DESC');
-        $borderTime = date('Y-m-d H:i:s', ($this->_timezone->scopeTimeStamp() - self::DEFAULT_FILTER_OFFSET * 3600));
+        $borderTime = date('Y-m-d H:i:s', ($this->_localeDate->scopeTimeStamp() - self::DEFAULT_FILTER_OFFSET * 3600));
         $adminTimeZone = new \DateTimeZone(
             $this->_scopeConfig->getValue(
                 $this->_localeDate->getDefaultTimezonePath(),
@@ -56,14 +64,13 @@ class Tasks extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $collection = $this->_collection;
+        $collection = $this->collectionFactory->create();
         if ($this->getCelebrosOnly()) {
             $collection->addFieldToFilter('job_code', 'celebros_export');
         }
 
         $this->setCollection($collection);
-        parent::_prepareCollection();
-        return $this;
+        return parent::_prepareCollection();
     }
 
     protected function _prepareColumns()

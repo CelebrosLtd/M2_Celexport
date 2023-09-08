@@ -14,23 +14,25 @@ use Magento\Framework\Event\ObserverInterface;
 class CatalogUpdate
 {
     /**
-     * @var \Magento\Framework\App\ObjectManager
+     * @var \Celebros\Celexport\Model\Exporter
      */
-    protected $_objectManager;
+    private $exporter;
 
     /**
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Celebros\Celexport\Model\Exporter $exporter
      */
     public function __construct(
-        \Magento\Framework\ObjectManagerInterface $objectManager
+        \Celebros\Celexport\Model\Exporter $exporter
     ) {
-        $this->_objectManager = $objectManager;
+        $this->exporter = $exporter;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function execute($observer)
     {
-        $model = $this->_objectManager->create('Celebros\Celexport\Model\Exporter');
-        $model->export_celebros($this->_objectManager, false);
+        $this->exporter->export_celebros(false);
         return $this;
     }
 }

@@ -18,9 +18,18 @@ use Magento\Framework\App\Cache\Type\Config as CacheTypeConfig;
 class Settings implements \Celebros\Celexport\Api\SettingsInterface
 {
     /**
+     * @var Helper
+     */
+    private $helper;
+
+    /**
+     * @var CacheTypeList
+     */
+    protected $cacheTypeList;
+
+    /**
      * @param \Celebros\Celexport\Helper\Data $celebrosHelper
      * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
-     * @return void
      */
     public function __construct(
         Helper $celebrosHelper,

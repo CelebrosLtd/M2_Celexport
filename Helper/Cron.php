@@ -26,10 +26,33 @@ class Cron extends AbstractHelper
     public const SCHEDULE_EVERY_MINUTES = 30;
 
     /**
+     * @var Config
+     */
+    private $cronConfig;
+
+    /**
+     * @var TimezoneInterface
+     */
+    private $timeZone;
+
+    /**
+     * @var ScheduleCollectionFactory
+     */
+    private $scheduleCollectionFactory;
+
+    /**
+     * @var ScheduleFactory
+     */
+    private $scheduleFactory;
+
+
+    /**
+     * Cron constructor
+     *
      * @param Context $context
      * @param Config $cronConfig
      * @param TimezoneInterface $timeZone
-     * @param Schedule $cronSchedule
+     * @param ScheduleCollectionFactory $scheduleCollectionFactory
      * @param ScheduleFactory $scheduleFactory
      */
     public function __construct(
@@ -59,7 +82,7 @@ class Cron extends AbstractHelper
         if (isset($jobs[self::CRON_GROUP])) {
             $i = 0;
             foreach ($jobs[self::CRON_GROUP] as $jobCode => $jobConfig) {
-                if (strpos($jobCode, self::CRON_JOB) === false) {
+                if (strpos((string) $jobCode, self::CRON_JOB) === false) {
                     continue;
                 }
 
@@ -101,14 +124,14 @@ class Cron extends AbstractHelper
     }
 
     /**
+     * Beautify time string
+     *
      * @param array $time
      * @param string $string
      * @return string
      */
-    public function timeToString(
-        array $time,
-        string $string = ''
-    ): string {
+    public function timeToString(array $time, string $string = ''): string
+    {
         return implode(" ", $time);
     }
 
@@ -118,9 +141,8 @@ class Cron extends AbstractHelper
      * @param int $ts
      * @return int
      */
-    protected function generateNextTaskTimestamp(
-       int $ts
-    ): int {
+    protected function generateNextTaskTimestamp(int $ts): int
+    {
         //Flooring the minutes
         $sts = ((int)($ts / 60)) * 60;
         //Ceiling to the next 5 minutes

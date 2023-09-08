@@ -16,6 +16,29 @@ use Magento\Framework\App\State as AppState;
 
 class Export extends Command
 {
+    /**
+     * @var AppState
+     */
+    private $appState;
+
+    /**
+     * @var \Celebros\Celexport\Model\ExportManagement
+     */
+    private $exportManagment;
+
+    /**
+     * @param AppState $appState
+     * @param \Celebros\Celexport\Model\ExportManagement $exportManagment
+     */
+    public function __construct(
+        AppState $appState,
+        \Celebros\Celexport\Model\ExportManagement $exportManagment
+    ) {
+        $this->appState = $appState;
+        $this->exportManagment = $exportManagment;
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this->setName('celebros:export')
@@ -24,19 +47,10 @@ class Export extends Command
             ->addArgument('export_process_id');
     }
 
-    public function __construct(
-        AppState $appState,
-        \Celebros\Celexport\Model\Exporter $celebrosExport,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Celebros\Celexport\Model\ExportManagement $exportManagment
-    ) {
-        $this->appState = $appState;
-        $this->_objectManager = $objectManager;
-        $this->exportManagment = $exportManagment;
-        $this->celebrosExport = $celebrosExport;
-        parent::__construct();
-    }
-
+    /**
+     * @inheritDoc
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $storeId = $input->getArgument('store_id');

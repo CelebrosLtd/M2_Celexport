@@ -11,6 +11,9 @@ namespace Celebros\Celexport\Controller\Adminhtml\Debug;
 
 class Crongrid extends \Celebros\Celexport\Controller\Adminhtml\Debug
 {
+    /**
+     * @inheritDoc
+     */
     public function execute()
     {
         $this->_view->loadLayout();
