@@ -22,7 +22,7 @@ class Exporter
     public const ATTR_TABLE_PRODUCT_LIMIT = 1000;
     public const ORDER_COLLETION_PAGE_LIMIT = 500;
     public const ORDERS_AGE = 120; /* days */
-    public const CACHE_LIFETIME = 13600;
+    public const CACHE_LIFETIME = 86400;
 
     /**
      * @var string
@@ -163,11 +163,6 @@ class Exporter
      * @var array
      */
     protected $productIds = [];
-
-    /**
-     * @var array
-     */
-    protected $categorylessIds = [];
 
     /**
      * @var array
@@ -563,9 +558,6 @@ class Exporter
                 $this->comments_style('section', "Store code: {$this->fStoreId}, name: {$store->getName()}", 'STORE');
                 $this->comments_style('section', "Zip file name: {$this->fileNameZip}", 'STORE');
 
-                //Resetting store categories mapping.
-                $this->categoriesForStore = implode(',', $this->_getAllCategoriesForStore());
-
                 $this->logProfiler('===============');
                 $this->logProfiler('Starting Export');
                 $this->logProfiler('===============');
@@ -575,30 +567,29 @@ class Exporter
                 $this->logProfiler("Store code: {$this->fStoreId}, name: {$store->getName()}");
                 $this->logProfiler("Zip file name: {$this->fileNameZip}");
                 $this->logProfiler('Mem usage: ' . memory_get_usage(true));
-
                 $this->comments_style('icon', "Memory usage: " . memory_get_usage(true), 'icon');
                 $this->comments_style('icon', 'Exporting tables', 'icon');
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+
 
                 $this->logProfiler('Exporting tables');
                 $this->logProfiler('----------------');
 
                 $this->export_tables($store);
-
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
 
-                //Only run export products if there are categories assigned to the current store view.
-                if ($this->categoriesForStore) {
-                    $this->comments_style('icon', 'Exporting products', 'icon');
-                    $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-                    $this->getTimeOffset(microtime(true));
-                    $this->logProfiler('Writing products file');
-                    $this->logProfiler('---------------------');
+                $this->prepareStoreProductIds($store);
 
-                    $this->export_store_products($store);
-                }
+                $this->comments_style('icon', 'Exporting products', 'icon');
+                $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
+                $this->getTimeOffset(microtime(true));
+                $this->logProfiler('Writing products file');
+                $this->logProfiler('---------------------');
+
+                $this->export_store_products($store);
 
                 //Running over the products that aren't assigned to a category separately.
+                //category-less products file is not used anymore, but we always create it empty for consistency
                 $this->comments_style('icon', 'Exporting category-less products', 'icon');
                 $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
 
@@ -1636,12 +1627,8 @@ class Exporter
 
     protected function prepareStoreProductIds($store)
     {
-        $rootCategoryId = $store->getRootCategoryId();
         $productIds = [];
-        $categorylessIds = [];
-
         $page = 1;
-        $chunksIds = [];
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
 
         do {
@@ -1653,30 +1640,23 @@ class Exporter
                 ->setPage($page, self::ATTR_TABLE_PRODUCT_LIMIT);
 
             foreach ($products as $prod) {
-                if (!empty($prod->getCategoryIds())) {
-                    $productIds[] = $prod->getData($entityName);
-                } else {
-                    $categorylessIds[] = $prod->getData($entityName);
-                }
+                $productIds[] = $prod->getData($entityName);
             }
 
             $page++;
         } while (count($products) == self::ATTR_TABLE_PRODUCT_LIMIT && $page < 400);
 
         $this->productIds = array_unique($productIds);
-        $this->categorylessIds = array_unique($categorylessIds);
     }
 
     protected function export_store_products($store)
     {
-        $this->prepareStoreProductIds($store);
         $this->export_products($this->productIds, $this->productsFileName, $store);
     }
 
     protected function export_categoryless_products($store)
     {
-        /*$this->prepareStoreProductIds($store);*/
-        $this->export_products($this->categorylessIds, $this->categorylessProductsFileName, $store);
+        $this->export_products([], $this->categorylessProductsFileName, $store);
     }
 
     protected function export_products($productIds, $fileName, $store)
@@ -1684,9 +1664,7 @@ class Exporter
         $this->getTimeOffset(microtime(true));
         $this->comments_style('info', "Begining products export", 'info');
         $this->comments_style('info', "Memory usage: " . memory_get_usage(true), 'info');
-
         $this->logProfiler("START export products");
-        $startTime = time();
 
         $fields = array('mag_id', 'price', 'type_id', 'sku');
 
@@ -1698,37 +1676,17 @@ class Exporter
             $fields[] = 'link';
         }
 
-        $prodParams = $this->helper->getProdParams();
-        foreach ($prodParams as $prodParam) {
+        foreach ($this->helper->getProdParams() as $prodParam) {
             $fields[] = (string)$prodParam['label'];
         }
 
-        $imageTypes = $this->helper->getImageTypes();
-        foreach ($imageTypes as $imgType) {
+        foreach ($this->helper->getImageTypes() as $imgType) {
             $fields[] = (string)$imgType['label'];
         }
 
         //Fetching a list of custom attributes, for which we'll need to map out the values from the corresponding source models.
         $customAttributes = $this->_getCustomAttributes();
-        foreach ($customAttributes as $key => $customAttribute) {
-            $customAttributes[$key] = $customAttribute['attribute_code'];
-            $fields[] = $customAttribute['attribute_code'] . '_value';
-        }
-
-        //Creating a custom fields cache for use in the separate processes.
-        $this->cache->save(
-            json_encode($customAttributes),
-            'export_custom_fields_' . $this->exportProcessId,
-            [],
-            self::CACHE_LIFETIME
-        );
-
-        //Dispatching event in case a custom module would want to modify the export process.
-        /*Mage::dispatchEvent('celexport_before_export_products', array(
-            'fields'   => &$fields,
-            'sql'      => &$sql,
-            'filename' => &$fileName
-        ));*/
+        $fields = array_merge($fields, array_map(function($value) { return  $value . '_value';}, $customAttributes));
 
         //Creating the file handler to save the export results and handling any errors that might occur in the process.
         $fh = $this->create_file($fileName);
@@ -1743,91 +1701,113 @@ class Exporter
         $this->write_to_file($header, $fh);
 
         $chunksIds = array_chunk($productIds, $this->helper->getExportChunkSize());
-        $pids = array();
-        $finished = array();
-        $process_limit = $this->helper->getExportProcessLimit();
-        $count = 0;
 
-        if (!$this->helper->getConfig('celexport/advanced/single_process')) {
-            $processes =[];
-            foreach ($chunksIds as $ids) {
-                $count += 1;
-                $i = $this->fStoreId * 1000 + $count;
-                if (count($processes) >= $process_limit) {
-                    do {
-                        sleep(1);
-                        $state = true;
-                        foreach ($processes as $key => $proc) {
-                            if (!$proc->isRunning()) {
-                                $state = false;
-                                $finished[] = $key;
-                                unset($processes[$key]);
-                            }
-                        }
-                    } while ($state);
-                }
+        if ($chunksIds) {
+            if (!$this->helper->getConfig('celexport/advanced/single_process')) {
 
-                $this->logProfiler('Exported Products: ' . implode(',', $ids));
+                //Creating a custom fields cache for use in the separate processes.
                 $this->cache->save(
-                    json_encode($ids),
-                    'export_chunk_' . $this->exportProcessId . '_' . $i,
+                    json_encode($customAttributes),
+                    'export_custom_fields_' . $this->exportProcessId,
                     [],
                     self::CACHE_LIFETIME
                 );
 
-                $comm = 'php ' . $this->directoryList->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->fStoreId . ' ' . $this->exportProcessId;
+                $processes =[];
+                $finished = array();
+                $count = 0;
+                foreach ($chunksIds as $ids) {
+                    $count += 1;
+                    $i = $this->fStoreId * 100000 + $count;
+                    if (count($processes) >= $this->helper->getExportProcessLimit()) {
+                        do {
+                            sleep(1);
+                            $state = true;
+                            foreach ($processes as $key => $proc) {
+                                if (!$proc->isRunning()) {
+                                    $state = false;
+                                    $finished[] = $key;
+                                    unset($processes[$key]);
+                                }
+                            }
+                        } while ($state);
+                    }
 
-                $process = new Process($comm);
-                $processes[$i] = $process;
-                $process->start();
-                sleep(1);
-            }
+                    $this->logProfiler('Exported Products: ' . implode(',', $ids));
+                    $this->cache->save(
+                        json_encode($ids),
+                        'export_chunk_' . $this->exportProcessId . '_' . $i,
+                        [],
+                        self::CACHE_LIFETIME
+                    );
 
-            do {
-                foreach ($processes as $key => $proc) {
-                    if (!$proc->isRunning()) {
-                        $finished[] = $key;
-                        unset($processes[$key]);
+                    $comm = 'php ' . $this->directoryList->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->fStoreId . ' ' . $this->exportProcessId;
+
+                    $process = new Process($comm);
+                    $processes[$i] = $process;
+                    $process->start();
+                    sleep(1);
+                }
+
+                do {
+                    foreach ($processes as $key => $proc) {
+                        if (!$proc->isRunning()) {
+                            $finished[] = $key;
+                            unset($processes[$key]);
+                        }
+                    }
+                    sleep(1);
+                } while (count($processes));
+
+                $_fPath = $this->helper->getExportPath($this->exportProcessId) . '/' . $this->fStore->getWebsite()->getCode() . '/' . $this->fStore->getCode();
+                if (!is_dir($_fPath)) {
+                    try {
+                        $dir = mkdir($_fPath, 0777, true);
+                    } catch (\Exception $e) {
+                        $this->comments_style('error', 'Could not create the directory in ' . $_fPath . ' path', 'problem with dir');
+                        $this->logProfiler('Failed creating a directory at: '. $_fPath);
+                        return;
                     }
                 }
-                sleep(1);
-            } while (count($processes));
 
-            $_fPath = $this->helper->getExportPath($this->exportProcessId) . '/' . $this->fStore->getWebsite()->getCode() . '/' . $this->fStore->getCode();
-            if (!is_dir($_fPath)) {
-                try {
-                    $dir = mkdir($_fPath, 0777, true);
-                } catch (\Exception $e) {
-                    $this->comments_style('error', 'Could not create the directory in ' . $_fPath . ' path', 'problem with dir');
-                    $this->logProfiler('Failed creating a directory at: '. $_fPath);
-                    return;
+                $incompleteChunks = [];
+                foreach ($finished as $key) {
+                    $chunkStatusCacheKey = 'process_' . $this->exportProcessId . '_' . $key;
+                    $status = $this->cache->load($chunkStatusCacheKey);
+
+                    if ($status == 'no_errors') {
+                        $filePath = $_fPath . '/' . 'export_chunk_' . $key . "." . 'txt';
+                        fwrite($fh, (string)file_get_contents($filePath));
+                        unlink($filePath);
+                    } else {
+                        $errorMsg = sprintf(
+                            "Exception in chunk %s: %s",
+                            $key,
+                            $status ?: "Unknown"
+                        );
+                        $this->comments_style('error', $errorMsg);
+                        $this->logProfiler($errorMsg);
+                        $incompleteChunks[] = $key;
+                    }
+
+                    $this->cache->remove('process_' . $this->exportProcessId . '_' . $key);
                 }
-            }
+                $this->cache->remove('export_custom_fields_' . $this->exportProcessId);
 
-            foreach ($finished as $key) {
-                $status = $this->cache->load('process_' . $this->exportProcessId . '_' . $key);
-
-                if ($status == 'no_errors') {
-                    $filePath = $_fPath . '/' . 'export_chunk_' . $key . "." . 'txt';
-                    fwrite($fh, file_get_contents($filePath));
-                    unlink($filePath);
-                } else {
-                    $this->comments_style('error', 'Exception from process: ' . $status, 'problem with process');
-                    return;
+                if ($incompleteChunks) {
+                    throw new \Exception(sprintf(
+                        "There are uncompleted chunks in the process %s: %s.",
+                        $this->exportProcessId,
+                        implode(', ', $incompleteChunks)
+                    ));
                 }
 
-                $this->cache->remove('process_' . $this->exportProcessId . '_' . $key);
-            }
-
-            fclose($fh);
-
-            $this->cache->remove('export_custom_fields_' . $this->exportProcessId);
-        } else {
-            $customAttributes = json_decode((string) $this->cache->load('export_custom_fields_' . $this->exportProcessId));
-            foreach ($chunksIds as $ids) {
-                $this->logProfiler('Exported Products: ' . implode(',', $ids));
-                $str = $this->helper->getProductsData($ids, $customAttributes, $store->getStoreId());
-                fwrite($fh, (string) $str);
+            } else {
+                foreach ($chunksIds as $ids) {
+                    $this->logProfiler('Exported Products: ' . implode(',', $ids));
+                    $str = $this->helper->getProductsData($ids, $customAttributes, $store->getStoreId());
+                    fwrite($fh, (string) $str);
+                }
             }
 
             fclose($fh);
@@ -1840,21 +1820,31 @@ class Exporter
 
     protected function _getCustomAttributes()
     {
-        if ($this->helper->isCustomAttributesEnabled()) {
-            $eav_attributes = $this->_resource->getTableName("eav_attribute");
-            $catalog_eav_attribute = $this->_resource->getTableName("catalog_eav_attribute");
-            $sql = "SELECT `attribute_code` FROM `{$eav_attributes}`
-                LEFT JOIN `{$catalog_eav_attribute}` ON `{$catalog_eav_attribute}`.`attribute_id` = `{$eav_attributes}`.`attribute_id`
-                WHERE `backend_model` IS NOT NULL
-                    AND NOT `backend_model` = ''
-                    AND `source_model` IS NOT NULL
-                    AND NOT `source_model` = ''
-                    AND (`is_searchable` = 1 OR `is_filterable` = 1)";
-            $stm = $this->_resource->getConnection('read')->query($sql);
-            return $stm->fetchAll();
+        if (!$this->helper->isCustomAttributesEnabled()) {
+            return [];
         }
 
-        return [];
+        $connection = $this->_resource->getConnection('read');
+        $select = $connection->select()->from(
+            ['ea' => $this->_resource->getTableName('eav_attribute')],
+            ['attribute_code']
+        )->joinLeft(
+            ['cea' => $this->_resource->getTableName('catalog_eav_attribute')],
+            'ea.attribute_id = cea.attribute_id',
+            []
+        )->where(
+            'backend_model IS NOT NULL'
+        )->where(
+            'backend_model != ""'
+        )->where(
+            'source_model IS NOT NULL'
+        )->where(
+            'source_model != ""'
+        )->where(
+            '(is_searchable = 1 OR is_filterable = 1)'
+        );
+
+        return $connection->fetchCol($select);
     }
 
     public function getTimeOffset($curentMicrotime)

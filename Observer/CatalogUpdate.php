@@ -1,6 +1,6 @@
 <?php
 /**
- * Celebros (C) 2023. All Rights Reserved.
+ * Celebros (C) 2024. All Rights Reserved.
  *
  * DISCLAIMER
  *
@@ -9,30 +9,29 @@
  */
 namespace Celebros\Celexport\Observer;
 
-use Magento\Framework\Event\ObserverInterface;
+use Celebros\Celexport\Model\ExportManagement;
 
 class CatalogUpdate
 {
     /**
-     * @var \Celebros\Celexport\Model\Exporter
+     * @var ExportManagement
      */
-    private $exporter;
+    private ExportManagement $exportManagement;
 
     /**
-     * @param \Celebros\Celexport\Model\Exporter $exporter
+     * @param ExportManagement $exportManagement
      */
     public function __construct(
-        \Celebros\Celexport\Model\Exporter $exporter
+        ExportManagement $exportManagement
     ) {
-        $this->exporter = $exporter;
+        $this->exportManagement = $exportManagement;
     }
 
     /**
-     * @inheritDoc
+     * Run export by cron
      */
-    public function execute($observer)
+    public function execute()
     {
-        $this->exporter->export_celebros(false);
-        return $this;
+        $this->exportManagement->startExportProcess();
     }
 }

@@ -9,7 +9,8 @@
  */
 namespace Celebros\Celexport\Model;
 
-use Symfony\Component\Process\Exception\ProcessFailedException;
+use Magento\Framework\App\Area;
+use Magento\Store\Model\ScopeInterface;
 use Symfony\Component\Process\Process;
 use Magento\Framework\App\Filesystem\DirectoryList;
 
@@ -240,7 +241,6 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
     {
         try {
             $this->_prepareExportFolder();
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
             if ($exportProcessId) {
                 $this->exporter->setExportProcessId($exportProcessId);
             }
@@ -252,23 +252,31 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
                 return [];
             }
         } catch (\Exception $e) {
-            $this->sendNotificationToEmail($e->getMessage(), $storeId);
+            $message = sprintf(
+                'Export process has failed by the reason: %s',
+                $e->getMessage()
+            );
+            $this->sendNotificationToEmail($message, $storeId);
+            throw $e;
         }
     }
 
     public function sendNotificationToEmail($message, int $storeId)
     {
-        $notificationEmail = $this->helper->getNotificationsEmail();
         $transport = $this->transportBuilder
             ->setTemplateIdentifier('celexport_notification_email_template')
-            ->setTemplateOptions(['area' => 'adminhtml', 'store' => $storeId])
-            ->setTemplateVars(
+            ->setTemplateOptions(
+                [
+                    'area' => Area::AREA_ADMINHTML,
+                    'store' => $storeId
+                ]
+            )->setTemplateVars(
                 [
                     'message' => $message
                 ]
             )
-            ->setFrom('general')
-            ->addTo($notificationEmail)
+            ->setFromByScope($this->helper->getNotificationFrom($storeId), $storeId)
+            ->addTo($this->helper->getNotificationsEmail())
             ->getTransport();
         $transport->sendMessage();
 
