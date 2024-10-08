@@ -109,8 +109,10 @@ class Process extends Command
 
             $fh = fopen($filePath, 'ab');
             if (!$fh) {
-                $this->_helper->logProfiler('Cannot create file from separate process.', '');
-                return;
+                throw new \Exception(sprintf(
+                    "Can't create file %s",
+                    $filePath
+                ));
             }
 
             $ids = $this->_json->unserialize(
@@ -131,7 +133,13 @@ class Process extends Command
 
             $output->writeln(0);
         } catch (\Exception $e) {
-            $this->_helper->logProfiler('Caught exception: ' . $e->getMessage(), $chunkId);
+            $this->_helper->logProfiler('Caught exception: ' . $e->getMessage(), $processId);
+            $this->_cache->save(
+                $e->getMessage(),
+                'process_' . $processId . '_' . $chunkId,
+                [],
+                Exporter::CACHE_LIFETIME
+            );
             $output->writeln(1);
         }
     }

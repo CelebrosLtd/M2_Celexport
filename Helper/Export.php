@@ -395,7 +395,7 @@ class Export extends Data
     {
         $this->_storeId = $storeId;
         $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
-        $str = null;
+        $str = '';
         $this->setCurrentStore($this->_storeId);
         $entityName = $this->getProductEntityIdName("catalog_product_entity");
         $productCollection = $this->productCollectionFactory->create();
