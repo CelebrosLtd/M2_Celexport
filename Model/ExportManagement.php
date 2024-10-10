@@ -10,7 +10,6 @@
 namespace Celebros\Celexport\Model;
 
 use Magento\Framework\App\Area;
-use Magento\Store\Model\ScopeInterface;
 use Symfony\Component\Process\Process;
 use Magento\Framework\App\Filesystem\DirectoryList;
 
@@ -139,8 +138,9 @@ class ExportManagement implements \Celebros\Celexport\Api\ExportManagementInterf
     {
         $storeId = $this->id ? : 1;
         $exportProcessId = (int)$this->helper->getExportProcessId();
+
         $comm = 'nohup php ' . $this->dir->getRoot() . '/bin/magento celebros:export ' . $storeId . ' ' . $exportProcessId . ' > /dev/null & echo $!';
-        $process = new Process($comm);
+        $process = Process::fromShellCommandline($comm);
         $process->start();
         $pid = $process->getPid();
 
