@@ -67,6 +67,9 @@ class Export extends Command
             }
         } else {
             $output->writeln("<info>Store ID not defined<info>");
+            return 1;
         }
+
+        return 0;
     }
 }
