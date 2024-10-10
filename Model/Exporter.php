@@ -1742,10 +1742,10 @@ class Exporter
                     );
 
                     $comm = 'php ' . $this->directoryList->getRoot() . '/bin/magento celebros:process ' . $i . ' ' . $this->fStoreId . ' ' . $this->exportProcessId;
-
-                    $process = new Process($comm);
+                    $process = Process::fromShellCommandline($comm);
                     $processes[$i] = $process;
                     $process->start();
+
                     sleep(1);
                 }
 
