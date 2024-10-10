@@ -140,7 +140,9 @@ class Process extends Command
                 [],
                 Exporter::CACHE_LIFETIME
             );
-            $output->writeln(1);
+            return 1;
         }
+
+        return 0;
     }
 }
