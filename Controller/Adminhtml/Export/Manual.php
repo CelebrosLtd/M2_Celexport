@@ -15,6 +15,10 @@ class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
      * @var \Celebros\Celexport\Model\Exporter
      */
     private $exporter;
+    /**
+     * @var \Celebros\Celexport\Helper\Data
+     */
+    private \Celebros\Celexport\Helper\Data $helper;
 
     /**
      * @param \Magento\Backend\App\Action\Context $context
@@ -22,14 +26,30 @@ class Manual extends \Celebros\Celexport\Controller\Adminhtml\Export
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        \Celebros\Celexport\Model\Exporter $exporter
+        \Celebros\Celexport\Model\Exporter $exporter,
+        \Celebros\Celexport\Helper\Data $helper
     ) {
         parent::__construct($context);
         $this->exporter = $exporter;
+        $this->helper = $helper;
     }
 
+    /**
+     * @return void
+     */
     public function execute()
     {
+        if (!$this->helper->getConfig('celexport/advanced/single_process')) {
+            $this->helper->comments_style('header', 0, 0);
+            $this->helper->comments_style(
+                'warning',
+                'Exporting from the Web interface supports only Single Process Export. ' .
+                'Please switch it on in Stores > Configuration > Celebros > Product Export > Advanced Settings'
+            );
+            $this->getResponse()->setBody($this->helper->getBodyForResponse());
+            return;
+        }
+
         $isWebRun = $this->getRequest()->getParam('webadmin');
         $this->getResponse()->setBody($this->exporter->export_celebros($isWebRun));
     }
