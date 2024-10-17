@@ -8,6 +8,9 @@
 - fix: return type of console command is int [#8](https://github.com/CelebrosLtd/M2_Celexport/pull/8)
 - fix: disable multiprocess export for web UI [#9](https://github.com/CelebrosLtd/M2_Celexport/pull/9)
 
+### UPDATES
+- Now products from source_products.txt and categoryless_products.txt files are merged into one source_products.txt
+
 ## 1.8.2
 
 ### UPDATES
