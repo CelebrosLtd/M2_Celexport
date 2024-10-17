@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.8.3
+
+### Fixes
+- fix: multiprocess export failed processes [#6](https://github.com/CelebrosLtd/M2_Celexport/pull/6)
+- fix: symphony process constructor commnand argument wrong type [#7](https://github.com/CelebrosLtd/M2_Celexport/pull/7)
+- fix: return type of console command is int [#8](https://github.com/CelebrosLtd/M2_Celexport/pull/8)
+- fix: disable multiprocess export for web UI [#9](https://github.com/CelebrosLtd/M2_Celexport/pull/9)
+
 ## 1.8.2
 
 ### UPDATES

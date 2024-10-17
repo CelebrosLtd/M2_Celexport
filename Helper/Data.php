@@ -213,7 +213,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return (bool)$this->scopeConfig->getValue(
             self::CONFIG_ENABLED,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            ScopeInterface::SCOPE_STORES,
             $store
         );
     }
@@ -226,7 +226,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return (bool)$this->scopeConfig->getValue(
             self::CONFIG_EXPORT_ORDERS,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            ScopeInterface::SCOPE_STORES,
             $store
         );
     }
@@ -239,7 +239,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $this->scopeConfig->getValue(
             self::CONFIG_EXPORT_ORDERS_FILENAME,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            ScopeInterface::SCOPE_STORES,
             $store
         );
     }
@@ -257,7 +257,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::CONFIG_EXPORT_CONF_ENV_STAMP,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORES
+            ScopeInterface::SCOPE_STORES
         );
     }
 
@@ -288,15 +288,31 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getNotificationsEmail($store = null)
     {
-        if ($store === null) {
-            $store = $this->getCurrentStore();
-        }
-
         return $this->scopeConfig->getValue(
             self::CONFIG_NOTIFICATION_EMAIL,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+            ScopeInterface::SCOPE_STORES,
             $store
         );
+    }
+
+    /**
+     * @param $store
+     * @return array
+     */
+    public function getNotificationFrom($store = null)
+    {
+        return [
+            'name' => $this->scopeConfig->getValue(
+                'trans_email/ident_general/name',
+                ScopeInterface::SCOPE_STORES,
+                $store
+            ),
+            'email' => $this->scopeConfig->getValue(
+                'trans_email/ident_general/email',
+                ScopeInterface::SCOPE_STORES,
+                $store
+            )
+        ];
     }
 
     public function useIndexedPrices()
@@ -414,7 +430,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             ",",
             (string)$this->scopeConfig->getValue(
                 self::CONFIG_EXPORT_AUTOSCHEDULE_EVENTS,
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORES,
+                ScopeInterface::SCOPE_STORES,
                 $store
             )
         );
